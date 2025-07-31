@@ -10,6 +10,7 @@ interface Message {
 export function useMessageNotifications(messages: Message[], currentUser: { username: string } | null, soundEnabled: boolean = false) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isTabFocused, setIsTabFocused] = useState(true);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const previousMessageCountRef = useRef(0);
   const audioContextRef = useRef<AudioContext | null>(null);
   const originalTitleRef = useRef(document.title);
@@ -62,6 +63,46 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
     }
   };
 
+  // Check notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+      return permission;
+    }
+    return Notification.permission;
+  };
+
+  // Show desktop notification
+  const showDesktopNotification = (sender: string, content: string) => {
+    if ('Notification' in window && notificationPermission === 'granted' && !isTabFocused) {
+      const notification = new Notification(`New message from ${sender}`, {
+        body: content,
+        icon: '/favicon.ico', // You can add a chat icon here
+        badge: '/favicon.ico',
+        tag: 'chat-message', // This replaces previous notifications
+      });
+
+      // Auto-close notification after 5 seconds
+      setTimeout(() => {
+        notification.close();
+      }, 5000);
+
+      // Focus window when notification is clicked
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  };
+
   // Track tab focus
   useEffect(() => {
     const handleFocus = () => {
@@ -101,6 +142,8 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
           if (soundEnabled) {
             playNotificationSound();
           }
+          // Show desktop notification when tab is not focused
+          showDesktopNotification(latestMessage.sender, latestMessage.content);
         }
       }
     }
@@ -131,5 +174,11 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
     }
   };
 
-  return { unreadCount, isTabFocused, initializeAudio };
+  return { 
+    unreadCount, 
+    isTabFocused, 
+    initializeAudio, 
+    notificationPermission, 
+    requestNotificationPermission 
+  };
 }

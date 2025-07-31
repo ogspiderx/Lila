@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, Send, Volume2, VolumeX } from "lucide-react";
+import { LogOut, Send, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { TypingIndicator } from "@/components/ui/typing-indicator";
 import { useWebSocket } from "@/hooks/use-websocket";
@@ -77,7 +77,7 @@ export default function Chat() {
   });
 
   // Initialize message notifications with all sorted messages
-  const { unreadCount, initializeAudio } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);
+  const { unreadCount, initializeAudio, notificationPermission, requestNotificationPermission } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);
 
   // Initialize audio when sound is first enabled
   useEffect(() => {
@@ -85,6 +85,13 @@ export default function Chat() {
       initializeAudio();
     }
   }, [soundEnabled, initializeAudio]);
+
+  // Handle notification permission request
+  const handleNotificationToggle = async () => {
+    if (notificationPermission === 'default') {
+      await requestNotificationPermission();
+    }
+  };
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -186,6 +193,25 @@ export default function Chat() {
                 <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />
               ) : (
                 <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleNotificationToggle}
+              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
+              title={
+                notificationPermission === 'granted' 
+                  ? "Desktop notifications enabled" 
+                  : notificationPermission === 'denied'
+                  ? "Desktop notifications blocked - check browser settings"
+                  : "Enable desktop notifications"
+              }
+            >
+              {notificationPermission === 'granted' ? (
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
+              ) : (
+                <BellOff className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
             </Button>
             <Button

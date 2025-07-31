@@ -10,11 +10,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Updates)
 
+### January 31, 2025 - Desktop Notifications Added
+- **Desktop Notifications**: Added native browser notifications that only appear when tab isn't focused
+- **Permission Management**: Smart notification permission handling with visual indicators
+- **Auto-close & Click Actions**: Notifications auto-close after 5 seconds and focus the window when clicked
+- **Proper Timing**: Desktop notifications only trigger for new messages when tab is not active
+
 ### January 31, 2025 - Notification Sound System Fixed
 - **Fixed Notification Sounds**: Resolved duplicate sound playing and browser audio policy issues
 - **Improved Audio Context Handling**: Added proper audio context initialization and error handling
 - **Sound Toggle Functionality**: Sound notifications now properly respect the user's sound toggle setting
-- **Better User Experience**: Sounds play for all messages from other users when enabled, regardless of tab focus
+- **Better Timing**: Sounds only play when tab isn't focused and sound is enabled
 - **Cleaned Up Code**: Removed unused sound notification hook and consolidated audio logic
 
 ### January 31, 2025 - Enhanced Color Scheme & UI Polish
