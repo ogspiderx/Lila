@@ -69,7 +69,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   private messagesCache: { messages: Message[], timestamp: number } | null = null;
-  private readonly MESSAGES_CACHE_TTL = 10 * 1000; // 10 seconds
+  private readonly MESSAGES_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   async getMessages(): Promise<Message[]> {
     // Check cache first for messages

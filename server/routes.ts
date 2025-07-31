@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messages = await storage.getMessages();
       
       // Add cache headers for messages
-      res.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
+      res.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60');
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch messages" });

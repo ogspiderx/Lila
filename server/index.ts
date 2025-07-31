@@ -31,14 +31,19 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    if (path.startsWith("/api") && !path.includes("/read")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      if (capturedJsonResponse && Object.keys(capturedJsonResponse).length > 0) {
+        const responseStr = JSON.stringify(capturedJsonResponse);
+        if (responseStr.length > 100) {
+          logLine += ` :: ${responseStr.slice(0, 100)}...`;
+        } else {
+          logLine += ` :: ${responseStr}`;
+        }
       }
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+      if (logLine.length > 150) {
+        logLine = logLine.slice(0, 149) + "…";
       }
 
       log(logLine);

@@ -81,28 +81,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
             backdrop-blur-sm
           `}
         >
-          {/* Subtle gradient overlay for depth */}
-          <div className={`
-            absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300
-            ${isCurrentUser 
-              ? "bg-gradient-to-br from-white/10 via-transparent to-black/10" 
-              : "bg-gradient-to-br from-white/5 via-transparent to-black/20"
-            }
-          `} />
-          
-          {/* Shimmer effect on hover */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div className={`
-              absolute inset-0 
-              ${isCurrentUser 
-                ? "bg-gradient-to-r from-transparent via-white/20 to-transparent" 
-                : "bg-gradient-to-r from-transparent via-slate-300/20 to-transparent"
-              }
-              transform -skew-x-12 -translate-x-full group-hover:translate-x-full 
-              transition-transform duration-700 ease-out
-            `} />
-          </div>
-          
           {/* Content */}
           <p className={`
             relative z-10 text-xs sm:text-sm leading-snug 
@@ -118,18 +96,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
           }}>
             {message.content}
           </p>
-          
-          {/* Subtle bottom border glow */}
-          <div className={`
-            absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px
-            ${isCurrentUser 
-              ? "bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent" 
-              : "bg-gradient-to-r from-transparent via-slate-400/40 to-transparent"
-            }
-            opacity-0 group-hover:opacity-100 transition-opacity duration-300
-          `} />
-          
-
         </motion.div>
         </div>
 
