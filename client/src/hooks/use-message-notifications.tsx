@@ -97,10 +97,10 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
       if (isFromOtherUser) {
         if (!isTabFocused) {
           setUnreadCount(prev => prev + 1);
-        }
-        // Play sound for all messages from others when sound is enabled
-        if (soundEnabled) {
-          playNotificationSound();
+          // Only play sound when tab is not focused AND sound is enabled
+          if (soundEnabled) {
+            playNotificationSound();
+          }
         }
       }
     }
