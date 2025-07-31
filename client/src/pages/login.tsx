@@ -36,7 +36,7 @@ export default function Login() {
           }
         });
         if (response.ok) {
-          setLocation("/chat");
+          setLocation("/welcome");
           return;
         }
       } catch (error) {
@@ -67,7 +67,7 @@ export default function Login() {
       });
 
       if (response.ok) {
-        setLocation("/chat");
+        setLocation("/welcome");
       } else {
         const data = await response.json();
         setError(data.message || "Invalid credentials. Please try again.");

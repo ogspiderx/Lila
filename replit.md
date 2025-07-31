@@ -10,6 +10,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Updates)
 
+### January 31, 2025 - Personalized Welcome Screen Added  
+- **Welcome Page Created**: Beautiful personalized welcome screen with user greeting and avatar
+- **Smooth Animations**: Modern animations with time display and user stats
+- **Enhanced UX Flow**: Updated routing from Login → Welcome → Chat for better user experience
+- **Fixed Authentication**: Stabilized JWT tokens with consistent secret to prevent invalidation
+
 ### January 31, 2025 - Replit Agent to Environment Migration Completed
 - **Migration Successful**: Project successfully migrated from Replit Agent to standard Replit environment
 - **PostgreSQL Setup**: Database provisioned and schema applied with test users (wale/xiu with password123)

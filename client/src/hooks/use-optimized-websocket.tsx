@@ -23,15 +23,12 @@ export function useOptimizedWebSocket() {
         .find(row => row.startsWith('authToken='))
         ?.split('=')[1];
       
-      console.log('Auth token found:', !!authToken);
-      
       if (authToken) {
         ws.send(JSON.stringify({
           type: 'auth',
           token: authToken
         }));
       } else {
-        console.log('No auth token found, closing connection');
         ws.close(4000, 'No auth token');
       }
     };

@@ -19,8 +19,8 @@ const messageSchema = z.object({
   content: z.string().min(1).max(1000).trim(),
 });
 
-// JWT secret key - in production, this should be in environment variables
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+// JWT secret key - use a fixed secret for development to prevent token invalidation on restart
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-for-replit-environment-do-not-use-in-production';
 const SALT_ROUNDS = 12;
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -43,7 +43,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(decoded.userId);
       
       if (!user) {
-        res.clearCookie('authToken');
+        res.clearCookie('authToken', {
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+        });
         return res.status(401).json({ message: "Invalid session" });
       }
       
@@ -74,7 +79,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(decoded.userId);
       if (!user) {
         authCache.delete(decoded.userId);
-        res.clearCookie('authToken');
+        res.clearCookie('authToken', {
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+        });
         return res.status(401).json({ message: "Invalid session" });
       }
       
@@ -87,7 +97,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Expires', '0');
       res.json(userResponse);
     } catch (error) {
-      res.clearCookie('authToken');
+      res.clearCookie('authToken', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      });
       return res.status(401).json({ message: "Invalid token" });
     }
   });
@@ -208,7 +223,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (messageData.type === 'auth' && !isAuthenticated) {
           try {
             const token = messageData.token;
-            console.log('WebSocket auth attempt with token:', !!token);
             const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
             const user = await storage.getUser(decoded.userId);
             
@@ -217,14 +231,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               userInfo = { userId: user.id, username: user.username };
               authenticatedSockets.set(ws, userInfo);
               clearTimeout(authTimeout);
-              console.log('WebSocket authenticated for user:', user.username);
               ws.send(JSON.stringify({ type: 'auth', success: true }));
             } else {
-              console.log('WebSocket auth failed: user not found');
               ws.close(4003, 'Invalid user');
             }
           } catch (error) {
-            console.log('WebSocket auth failed: invalid token', error.message);
             ws.close(4004, 'Invalid token');
           }
           return;
