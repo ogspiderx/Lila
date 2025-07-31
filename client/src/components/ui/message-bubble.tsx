@@ -26,15 +26,15 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
         stiffness: 100,
         damping: 15
       }}
-      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-3`}
+      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-2`}
     >
-      <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[90%] sm:max-w-[75%] md:max-w-[65%]`}>
+      <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[75%] sm:max-w-[60%] md:max-w-[50%]`}>
         {/* Sender and timestamp */}
-        <div className={`flex items-center space-x-2 mb-1 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
-          <span className={`text-xs font-semibold ${isCurrentUser ? "text-emerald-400" : "text-amber-400"}`}>
+        <div className={`flex items-center space-x-1.5 mb-0.5 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
+          <span className={`text-[10px] font-medium ${isCurrentUser ? "text-emerald-400" : "text-amber-400"}`}>
             {message.sender}
           </span>
-          <span className="text-slate-400 text-xs">
+          <span className="text-slate-400 text-[10px]">
             {formatTime(message.timestamp)}
           </span>
         </div>
@@ -42,8 +42,7 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
         {/* Message bubble */}
         <motion.div
           whileHover={{ 
-            scale: 1.02,
-            y: -2,
+            scale: 1.01,
             transition: { duration: 0.2, ease: "easeOut" }
           }}
           whileTap={{ scale: 0.98 }}
@@ -53,9 +52,9 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
               ? "bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white rounded-tr-sm" 
               : "bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-slate-50 border border-slate-500/40 rounded-tl-sm"
             } 
-            rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 
+            rounded-lg px-3 py-2 sm:px-3 sm:py-2 
             transition-all duration-300 ease-out
-            shadow-lg hover:shadow-2xl
+            shadow-sm hover:shadow-lg
             ${isCurrentUser ? "shadow-emerald-500/30 hover:shadow-emerald-500/40" : "shadow-slate-900/40 hover:shadow-slate-900/60"}
             backdrop-blur-sm
           `}
@@ -84,7 +83,7 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
           
           {/* Content */}
           <p className={`
-            relative z-10 text-sm sm:text-base leading-relaxed break-words
+            relative z-10 text-xs sm:text-sm leading-snug break-words
             ${isCurrentUser ? "text-white" : "text-slate-50"} 
             drop-shadow-sm
           `}>
@@ -101,16 +100,7 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
             opacity-0 group-hover:opacity-100 transition-opacity duration-300
           `} />
           
-          {/* Typing indicator dots effect (subtle animation) */}
-          <div className={`
-            absolute -bottom-2 ${isCurrentUser ? "right-2" : "left-2"} 
-            opacity-0 group-hover:opacity-50 transition-all duration-300
-            flex space-x-1
-          `}>
-            <div className={`w-1 h-1 rounded-full ${isCurrentUser ? "bg-emerald-300" : "bg-slate-400"} animate-pulse`} style={{ animationDelay: '0ms' }} />
-            <div className={`w-1 h-1 rounded-full ${isCurrentUser ? "bg-emerald-300" : "bg-slate-400"} animate-pulse`} style={{ animationDelay: '150ms' }} />
-            <div className={`w-1 h-1 rounded-full ${isCurrentUser ? "bg-emerald-300" : "bg-slate-400"} animate-pulse`} style={{ animationDelay: '300ms' }} />
-          </div>
+
         </motion.div>
       </div>
     </motion.div>
