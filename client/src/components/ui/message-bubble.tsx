@@ -29,7 +29,7 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
       }}
       className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-2`}
     >
-      <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[75%] sm:max-w-[60%] md:max-w-[50%]`}>
+      <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] min-w-0`}>
         {/* Sender and timestamp */}
         <div className={`flex items-center space-x-1.5 mb-0.5 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
           <span className={`text-[10px] font-medium ${isCurrentUser ? "text-emerald-400" : "text-amber-400"}`}>
@@ -48,7 +48,7 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
           }}
           whileTap={{ scale: 0.98 }}
           className={`
-            relative overflow-hidden group
+            relative overflow-hidden group min-w-0 w-full
             ${isCurrentUser 
               ? "bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white rounded-tr-sm" 
               : "bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-slate-50 border border-slate-500/40 rounded-tl-sm"
@@ -84,10 +84,17 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
           
           {/* Content */}
           <p className={`
-            relative z-10 text-xs sm:text-sm leading-snug break-words
+            relative z-10 text-xs sm:text-sm leading-snug 
+            break-words whitespace-pre-wrap
             ${isCurrentUser ? "text-white" : "text-slate-50"} 
             drop-shadow-sm
-          `}>
+          `}
+          style={{
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            wordWrap: 'break-word',
+            hyphens: 'auto'
+          }}>
             {message.content}
           </p>
           

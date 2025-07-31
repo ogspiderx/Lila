@@ -13,7 +13,7 @@ export function TypingIndicator({ sender }: TypingIndicatorProps) {
       transition={{ duration: 0.2 }}
       className="flex justify-start mb-2"
     >
-      <div className="flex flex-col items-start max-w-[75%] sm:max-w-[60%] md:max-w-[50%]">
+      <div className="flex flex-col items-start max-w-[85%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[55%]">
         <div className="flex items-center space-x-1.5 mb-0.5">
           <span className="text-[10px] font-medium text-amber-400">
             {sender}
