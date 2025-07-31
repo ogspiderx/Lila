@@ -1,5 +1,13 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { MoreVertical, Copy, Check } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import type { Message, WebSocketMessage } from "@shared/schema";
 
 interface MessageBubbleProps {
@@ -8,12 +16,24 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
+  const [isCopied, setIsCopied] = useState(false);
+
   const formatTime = (timestamp: Date | number) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     return date.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit"
     });
+  };
+
+  const handleCopyMessage = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy message:', error);
+    }
   };
 
   return (
@@ -27,9 +47,10 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
         stiffness: 100,
         damping: 15
       }}
-      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-2`}
+      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-2 group/message`}
     >
-      <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] min-w-0`}>
+      <div className={`flex ${isCurrentUser ? "flex-row-reverse" : "flex-row"} items-end space-x-2 ${isCurrentUser ? "space-x-reverse" : ""} max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] min-w-0`}>
+        <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} min-w-0 flex-1`}>
         {/* Sender and timestamp */}
         <div className={`flex items-center space-x-1.5 mb-0.5 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
           <span className={`text-[10px] font-medium ${isCurrentUser ? "text-emerald-400" : "text-amber-400"}`}>
@@ -110,6 +131,37 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
           
 
         </motion.div>
+        </div>
+
+        {/* Copy button with 3 dots */}
+        <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+              >
+                <MoreVertical className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
+              <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
+                {isCopied ? (
+                  <>
+                    <Check className="mr-2 h-3 w-3 text-green-500" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 h-3 w-3" />
+                    Copy message
+                  </>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </motion.div>
   );
