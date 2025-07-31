@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
-import { MoreVertical, Copy, Check } from "lucide-react";
+import { MoreVertical, Copy, Check, Reply } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,15 +8,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import type { Message, WebSocketMessage } from "@shared/schema";
+import { ReadReceipts } from "./read-receipts";
+import type { Message, WebSocketMessage, MessageWithReads, MessageRead } from "@shared/schema";
 
 interface MessageBubbleProps {
-  message: Message | WebSocketMessage;
+  message: Message | WebSocketMessage | MessageWithReads;
   isCurrentUser: boolean;
+  currentUserId?: string;
+  onReply?: (message: Message | WebSocketMessage) => void;
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser, currentUserId, onReply }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
+
+  const messageWithReads = message as MessageWithReads;
+  const readBy = messageWithReads.readBy || [];
+  const hasReplyTo = message.replyToId && message.replyToSender;
 
   const formatTime = (timestamp: Date | number) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
@@ -81,6 +88,17 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
             backdrop-blur-sm
           `}
         >
+          {/* Reply to message indicator */}
+          {hasReplyTo && (
+            <div className="mb-2 pb-2 border-b border-white/20">
+              <div className="text-xs opacity-75">
+                <span className="font-medium">↳ {message.replyToSender}</span>
+              </div>
+              <div className="text-xs opacity-60 truncate">
+                {message.replyToContent}
+              </div>
+            </div>
+          )}
           {/* Subtle gradient overlay for depth */}
           <div className={`
             absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300
@@ -131,6 +149,15 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
           
 
         </motion.div>
+        
+        {/* Read receipts */}
+        {currentUserId && (
+          <ReadReceipts 
+            readBy={readBy} 
+            currentUserId={currentUserId} 
+            isCurrentUserMessage={isCurrentUser} 
+          />
+        )}
         </div>
 
         {/* Copy button with 3 dots */}
@@ -146,6 +173,12 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
+              {onReply && (
+                <DropdownMenuItem onClick={() => onReply(message)} className="cursor-pointer">
+                  <Reply className="mr-2 h-3 w-3" />
+                  Reply
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
                 {isCopied ? (
                   <>

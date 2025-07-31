@@ -5,22 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { LogOut, Send, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
+import { MessageReply } from "@/components/ui/message-reply";
 
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
 
-import { useQuery } from "@tanstack/react-query";
-import { getQueryFn } from "@/lib/queryClient";
-import type { Message, WebSocketMessage } from "@shared/schema";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getQueryFn, apiRequest } from "@/lib/queryClient";
+import type { Message, WebSocketMessage, MessageWithReads } from "@shared/schema";
 import { useMemo } from "react";
 
 export default function Chat() {
   const [messageInput, setMessageInput] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | WebSocketMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   
   const { isConnected, messages: wsMessages, sendMessage, setMessages } = useWebSocket();
 
@@ -40,12 +43,27 @@ export default function Chat() {
     }
   }, [userData, userLoading, setLocation]);
 
-  // Fetch existing messages with optimized query
-  const { data: existingMessages, isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: ["/api/messages"],
+  // Fetch existing messages with read receipts
+  const { data: existingMessages, isLoading: messagesLoading } = useQuery<MessageWithReads[]>({
+    queryKey: ["/api/messages/with-reads"],
     enabled: !!currentUser,
-    staleTime: 10 * 1000, // 10 seconds
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 1000, // 5 seconds
+    gcTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  // Mark message as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      const response = await fetch(`/api/messages/${messageId}/read`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to mark as read');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/messages/with-reads"] });
+    }
   });
 
   // Optimize message processing with useMemo
@@ -53,7 +71,7 @@ export default function Chat() {
     if (!existingMessages && wsMessages.length === 0) return [];
     
     // Create a Map for faster duplicate checking
-    const messageMap = new Map<string, Message | WebSocketMessage>();
+    const messageMap = new Map<string, Message | WebSocketMessage | MessageWithReads>();
     
     // Add existing messages
     existingMessages?.forEach(message => {
@@ -72,6 +90,19 @@ export default function Chat() {
       return aTime - bTime;
     });
   }, [existingMessages, wsMessages]);
+
+  // Mark messages as read when they come into view
+  useEffect(() => {
+    if (!currentUser || !existingMessages) return;
+    
+    // Mark all messages as read that haven't been read by current user
+    existingMessages.forEach(message => {
+      const alreadyRead = message.readBy?.some(read => read.userId === currentUser.id);
+      if (!alreadyRead && message.sender !== currentUser.username) {
+        markAsReadMutation.mutate(message.id);
+      }
+    });
+  }, [existingMessages, currentUser, markAsReadMutation]);
 
   // Initialize message notifications with all sorted messages
   const { unreadCount, initializeAudio, notificationPermission, requestNotificationPermission } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);
@@ -110,11 +141,27 @@ export default function Chat() {
     
     const content = messageInput.trim();
     if (content && currentUser) {
-
+      // Send message with optional reply data
+      const messageData: any = {
+        sender: currentUser.username,
+        content
+      };
       
-      sendMessage(currentUser.username, content);
+      if (replyingTo) {
+        messageData.replyToId = replyingTo.id;
+        messageData.replyToSender = replyingTo.sender;
+        messageData.replyToContent = replyingTo.content;
+      }
+      
+      sendMessage(messageData.sender, messageData.content, messageData.replyToId, messageData.replyToSender, messageData.replyToContent);
       setMessageInput("");
+      setReplyingTo(null);
     }
+  };
+
+  const handleReply = (message: Message | WebSocketMessage) => {
+    setReplyingTo(message);
+    textareaRef.current?.focus();
   };
 
   const handleLogout = async () => {
@@ -241,6 +288,8 @@ export default function Chat() {
                     key={message.id}
                     message={message}
                     isCurrentUser={message.sender === currentUser.username}
+                    currentUserId={currentUser.id}
+                    onReply={handleReply}
                   />
                 ))}
                 
@@ -262,6 +311,10 @@ export default function Chat() {
           <div className="absolute inset-0 bg-gradient-to-t from-primary/3 via-transparent to-transparent opacity-50" />
           
           <div className="max-w-4xl mx-auto relative z-10">
+            <MessageReply 
+              replyingTo={replyingTo} 
+              onCancel={() => setReplyingTo(null)} 
+            />
             <form onSubmit={handleSubmit} className="flex items-end gap-3">
               <div className="flex-1 relative">
                 <div className="relative">

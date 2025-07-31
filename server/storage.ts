@@ -1,6 +1,6 @@
-import { users, messages, type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
+import { users, messages, messageReads, type User, type InsertUser, type Message, type InsertMessage, type MessageWithReads, type InsertMessageRead, type MessageRead } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -8,6 +8,9 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(): Promise<Message[]>;
+  getMessagesWithReads(): Promise<MessageWithReads[]>;
+  markMessageAsRead(messageId: string, userId: string): Promise<void>;
+  getMessageReads(messageId: string): Promise<MessageRead[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -83,6 +86,45 @@ export class DatabaseStorage implements IStorage {
     this.messagesCache = { messages: messagesList, timestamp: Date.now() };
     
     return messagesList;
+  }
+
+  async getMessagesWithReads(): Promise<MessageWithReads[]> {
+    const messagesList = await db.select().from(messages).orderBy(desc(messages.timestamp)).limit(50);
+    
+    // Get read receipts for all messages
+    const messagesWithReads: MessageWithReads[] = [];
+    
+    for (const message of messagesList) {
+      const reads = await db.select().from(messageReads).where(eq(messageReads.messageId, message.id));
+      messagesWithReads.push({
+        ...message,
+        readBy: reads
+      });
+    }
+    
+    return messagesWithReads;
+  }
+
+  async markMessageAsRead(messageId: string, userId: string): Promise<void> {
+    // Check if already read to avoid duplicates
+    const existingRead = await db.select()
+      .from(messageReads)
+      .where(and(
+        eq(messageReads.messageId, messageId),
+        eq(messageReads.userId, userId)
+      ))
+      .limit(1);
+    
+    if (existingRead.length === 0) {
+      await db.insert(messageReads).values({
+        messageId,
+        userId
+      });
+    }
+  }
+
+  async getMessageReads(messageId: string): Promise<MessageRead[]> {
+    return await db.select().from(messageReads).where(eq(messageReads.messageId, messageId));
   }
 }
 
