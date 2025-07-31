@@ -255,11 +255,18 @@ export default function Chat() {
                 ))}
                 
                 {/* Show typing indicators for other users */}
-                {Array.from(typingUsers.entries())
-                  .filter(([sender]) => sender !== currentUser?.username)
-                  .map(([sender]) => (
-                    <TypingIndicator key={`typing-${sender}`} sender={sender} />
-                  ))}
+                {(() => {
+                  console.log('Current typing users:', Array.from(typingUsers.entries()));
+                  return Array.from(typingUsers.entries())
+                    .filter(([sender]) => {
+                      const shouldShow = sender !== currentUser?.username;
+                      console.log('Typing indicator filter:', { sender, currentUser: currentUser?.username, shouldShow });
+                      return shouldShow;
+                    })
+                    .map(([sender]) => (
+                      <TypingIndicator key={`typing-${sender}`} sender={sender} />
+                    ));
+                })()}
               </AnimatePresence>
             )}
             <div ref={messagesEndRef} />
