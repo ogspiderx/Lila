@@ -99,8 +99,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.clearCookie('authToken', {
         httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: false,
+        sameSite: 'none',
         path: '/',
       });
       return res.status(401).json({ message: "Invalid token" });
@@ -140,11 +140,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { expiresIn: '7d' } // 7 days
       );
 
-      // Set secure cookie that JavaScript can read for WebSocket auth
+      // Set cookie optimized for Replit environment
       res.cookie('authToken', token, {
         httpOnly: false, // Allow JavaScript access for WebSocket authentication
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax', // More permissive for Replit environment
+        secure: false, // Set to false for development (Replit serves over HTTP internally)
+        sameSite: 'none', // Allow cross-site cookies for Replit
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         path: '/',
       });
@@ -160,8 +160,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/logout", (req, res) => {
     res.clearCookie('authToken', {
       httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: false,
+      sameSite: 'none',
       path: '/',
     });
     res.json({ message: "Logged out successfully" });

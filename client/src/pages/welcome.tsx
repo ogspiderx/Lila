@@ -22,6 +22,8 @@ export default function Welcome() {
     queryKey: ["/api/auth/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const user = (userData as any)?.user as User | undefined;

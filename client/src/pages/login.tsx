@@ -22,7 +22,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
   const [, setLocation] = useLocation();
 
-  // Check if user is already authenticated with faster timeout
+  // Check if user is already authenticated
   useEffect(() => {
     const controller = new AbortController();
     const checkAuth = async () => {
@@ -37,7 +37,7 @@ export default function Login() {
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') return;
-        // User not authenticated, continue with login
+        // Silently continue - user just needs to login
       }
       setIsLoading(false);
     };
