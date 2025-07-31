@@ -16,48 +16,44 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      initial={{ opacity: 0, y: 15, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ 
-        duration: 0.4, 
-        ease: [0.23, 1, 0.32, 1],
-        scale: { type: "spring", damping: 20, stiffness: 300 }
+        duration: 0.3, 
+        ease: [0.23, 1, 0.32, 1]
       }}
-      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
+      className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-2`}
     >
-      <motion.div
-        whileHover={{ 
-          scale: 1.02,
-          y: -2,
-          transition: { duration: 0.2, ease: "easeOut" }
-        }}
-        className={`
-          ${isCurrentUser 
-            ? "bg-primary text-primary-foreground rounded-br-sm hover:shadow-lg hover:shadow-primary/30" 
-            : "bg-card text-card-foreground glow-green rounded-bl-sm hover:glow-green"
-          } 
-          rounded-2xl px-4 py-3 max-w-md butter-smooth cursor-pointer
-        `}
-      >
-        <div className={`flex items-center space-x-2 mb-1 ${isCurrentUser ? "justify-end" : ""}`}>
-          {!isCurrentUser && (
-            <span className="text-accent text-sm font-medium">
-              {message.sender}
-            </span>
-          )}
-          <span className={`${isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground"} text-xs`}>
+      <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[85%] sm:max-w-[70%] md:max-w-[60%]`}>
+        {/* Sender and timestamp */}
+        <div className={`flex items-center space-x-2 mb-1 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
+          <span className="text-accent text-xs font-medium">
+            {message.sender}
+          </span>
+          <span className="text-muted-foreground text-xs">
             {formatTime(message.timestamp)}
           </span>
-          {isCurrentUser && (
-            <span className="text-primary-foreground text-sm font-medium">
-              {message.sender}
-            </span>
-          )}
         </div>
-        <p className={isCurrentUser ? "text-primary-foreground" : "text-card-foreground"}>
-          {message.content}
-        </p>
-      </motion.div>
+        
+        {/* Message bubble */}
+        <motion.div
+          whileHover={{ 
+            scale: 1.01,
+            transition: { duration: 0.2, ease: "easeOut" }
+          }}
+          className={`
+            ${isCurrentUser 
+              ? "bg-primary text-primary-foreground rounded-tr-sm" 
+              : "bg-card/80 text-card-foreground border border-border/50 rounded-tl-sm"
+            } 
+            rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 backdrop-blur-sm smooth-transition shadow-sm
+          `}
+        >
+          <p className={`text-sm sm:text-base leading-relaxed ${isCurrentUser ? "text-primary-foreground" : "text-card-foreground"} break-words`}>
+            {message.content}
+          </p>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }

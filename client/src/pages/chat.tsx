@@ -90,58 +90,55 @@ export default function Chat() {
   }
 
   return (
-    <div className="chat-gradient min-h-screen flex flex-col">
-      {/* Chat Header */}
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Chat Header - Fixed */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-card border-b border-border p-4 smooth-transition"
+        className="flex-shrink-0 bg-card/50 backdrop-blur-sm border-b border-border/50 px-4 sm:px-6 py-3"
       >
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-3xl font-bold text-primary glow-text-green animate-glow tracking-wide">
+        <div className="flex items-center justify-between max-w-full">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary glow-text-green animate-glow tracking-wide">
               Lila
             </h1>
             <div className="flex items-center space-x-2 text-muted-foreground">
-              <div className={`w-3 h-3 rounded-full transition-all duration-500 ${isConnected ? 'bg-primary animate-pulse-green' : 'bg-destructive animate-bounce-subtle'}`} />
-              <span className="text-sm font-medium">
+              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-500 ${isConnected ? 'bg-primary animate-pulse-green' : 'bg-destructive animate-bounce-subtle'}`} />
+              <span className="text-xs sm:text-sm font-medium hidden sm:inline">
                 {isConnected ? "Connected" : "Reconnecting..."}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <span className="text-accent font-medium">{currentUser.username}</span>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <span className="text-accent font-medium text-sm sm:text-base">{currentUser.username}</span>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-primary smooth-transition"
+              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
       </motion.header>
 
-      {/* Messages Area */}
-      <main className="flex-1 overflow-hidden">
-        <div className="max-w-4xl mx-auto h-full flex flex-col">
-          <div
-            className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
-            style={{ height: "calc(100vh - 140px)" }}
-          >
+      {/* Messages Area - Flexible */}
+      <main className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3 scroll-smooth">
+          <div className="max-w-4xl mx-auto w-full">
             {sortedMessages.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="text-center py-8"
+                className="flex items-center justify-center h-full min-h-[200px]"
               >
-                <div className="bg-card rounded-2xl p-6 inline-block glow-green">
-                  <h3 className="text-primary font-semibold mb-2">Welcome to Lila!</h3>
-                  <p className="text-muted-foreground text-sm">Your private chat space is ready</p>
+                <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 text-center border border-border/50">
+                  <h3 className="text-primary font-semibold mb-2 text-sm sm:text-base">Welcome to Lila!</h3>
+                  <p className="text-muted-foreground text-xs sm:text-sm">Your private chat space is ready</p>
                 </div>
               </motion.div>
             ) : (
@@ -157,16 +154,18 @@ export default function Chat() {
             )}
             <div ref={messagesEndRef} />
           </div>
+        </div>
 
-          {/* Message Input */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="p-4 bg-card border-t border-border"
-          >
-            <form onSubmit={handleSubmit} className="flex items-end space-x-4">
-              <div className="flex-1">
+        {/* Message Input - Fixed at bottom */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex-shrink-0 bg-card/50 backdrop-blur-sm border-t border-border/50 p-4 sm:p-6"
+        >
+          <div className="max-w-4xl mx-auto">
+            <form onSubmit={handleSubmit} className="flex items-end gap-3">
+              <div className="flex-1 relative">
                 <Textarea
                   ref={textareaRef}
                   value={messageInput}
@@ -174,19 +173,19 @@ export default function Chat() {
                   onKeyDown={handleKeyDown}
                   placeholder="Type your message..."
                   rows={1}
-                  className="resize-none bg-input border-border rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 smooth-transition max-h-32"
+                  className="resize-none bg-input/80 backdrop-blur-sm border-border/50 rounded-lg focus:border-primary/50 focus:ring-1 focus:ring-primary/20 smooth-transition min-h-[44px] max-h-[120px] py-3 px-4 text-sm sm:text-base leading-relaxed"
                 />
               </div>
               <Button
                 type="submit"
                 disabled={!messageInput.trim() || !isConnected}
-                className="bg-primary text-primary-foreground p-3 rounded-2xl glow-green hover:bg-primary/90 smooth-transition transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex-shrink-0"
+                className="bg-primary text-primary-foreground h-[44px] w-[44px] sm:h-[48px] sm:w-[48px] rounded-lg glow-green hover:bg-primary/90 smooth-transition disabled:opacity-50 flex-shrink-0"
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </form>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </main>
     </div>
   );

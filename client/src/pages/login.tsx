@@ -39,24 +39,24 @@ export default function Login() {
   };
 
   return (
-    <div className="login-gradient min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-card/50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md"
+        className="w-full max-w-sm sm:max-w-md"
       >
         {/* App Branding */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h1 className="text-7xl font-bold text-primary glow-text-green mb-4 animate-glow tracking-wide">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-primary glow-text-green animate-glow tracking-wide mb-2 sm:mb-4">
             Lila
           </h1>
-          <p className="text-muted-foreground text-lg font-light">
+          <p className="text-muted-foreground text-base sm:text-lg font-light">
             Private chat for two
           </p>
         </motion.div>
@@ -67,15 +67,15 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Card className="glow-green ultra-smooth bg-card border-border">
-            <CardContent className="p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+            <CardContent className="p-6 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
                   <Label htmlFor="username" className="text-sm font-medium text-card-foreground mb-2 block">
                     Username
                   </Label>
                   <Select value={username} onValueChange={setUsername}>
-                    <SelectTrigger className="w-full bg-input border-border rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 smooth-transition">
+                    <SelectTrigger className="w-full bg-input/80 backdrop-blur-sm border-border/50 rounded-lg focus:border-primary/50 focus:ring-1 focus:ring-primary/20 smooth-transition h-11">
                       <SelectValue placeholder="Select your identity" />
                     </SelectTrigger>
                     <SelectContent>
@@ -95,14 +95,14 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your secret key"
-                    className="w-full bg-input border-border rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 smooth-transition"
+                    className="w-full bg-input/80 backdrop-blur-sm border-border/50 rounded-lg focus:border-primary/50 focus:ring-1 focus:ring-primary/20 smooth-transition h-11"
                   />
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isLoading || !username || !password}
-                  className="w-full bg-primary text-primary-foreground font-semibold py-3 rounded-xl glow-green hover:bg-primary/90 smooth-transition transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+                  className="w-full bg-primary text-primary-foreground font-semibold py-2.5 sm:py-3 rounded-lg glow-green hover:bg-primary/90 smooth-transition disabled:opacity-50 h-11 sm:h-12"
                 >
                   <LogIn className="mr-2 h-4 w-4" />
                   {isLoading ? "Entering..." : "Enter Chat"}
@@ -116,9 +116,9 @@ export default function Login() {
                   transition={{ duration: 0.3 }}
                   className="mt-4"
                 >
-                  <Alert variant="destructive" className="bg-destructive/20 border-destructive/50">
+                  <Alert variant="destructive" className="bg-destructive/20 border-destructive/50 backdrop-blur-sm">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription className="text-sm">{error}</AlertDescription>
                   </Alert>
                 </motion.div>
               )}
@@ -131,7 +131,7 @@ export default function Login() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.6 }}
-          className="mt-8 text-center text-muted-foreground text-sm"
+          className="mt-6 sm:mt-8 text-center text-muted-foreground text-xs sm:text-sm"
         >
           <p>Only Wale and Xiu can access this private space</p>
         </motion.div>

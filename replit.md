@@ -8,6 +8,20 @@ This is a full-stack real-time chat application built with a modern web stack. T
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (Latest Updates)
+
+### January 31, 2025 - Major UI/UX Redesign
+- **Professional Design Overhaul**: Completely redesigned UI with cleaner, more professional aesthetics
+- **Responsive Design**: Full mobile-first responsive design for all screen sizes (phone, tablet, desktop)
+- **Color Adjustments**: Reduced green brightness from 100% to 85% saturation for better visual comfort
+- **Font Integration**: Added Inter font with advanced font features and smooth rendering
+- **Custom Cursor**: Implemented minimal cursor trail with click effects and green/yellow color transitions
+- **Message Bubbles**: Redesigned smaller, more professional message bubbles with proper sizing
+- **Chat Layout**: Fixed chat layout with proper viewport handling, fixed header/input positioning
+- **Glass Effects**: Added backdrop blur effects for modern glassmorphism design
+- **Enhanced Animations**: Smoother transitions with hardware acceleration and spring physics
+- **Input Improvements**: Professional rounded input fields with proper auto-sizing and edge refinement
+
 ## System Architecture
 
 The application follows a monorepo structure with clear separation between client, server, and shared code:
