@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
-import type { Message } from "@shared/schema";
+import type { Message, WebSocketMessage } from "@shared/schema";
 
 interface MessageBubbleProps {
-  message: Message;
+  message: Message | WebSocketMessage;
   isCurrentUser: boolean;
 }
 
 export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
-  const formatTime = (timestamp: Date) => {
-    return new Date(timestamp).toLocaleTimeString([], {
+  const formatTime = (timestamp: Date | number) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    return date.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit"
     });

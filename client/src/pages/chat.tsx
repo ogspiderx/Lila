@@ -8,7 +8,7 @@ import { MessageBubble } from "@/components/ui/message-bubble";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
 import { useQuery } from "@tanstack/react-query";
-import type { Message } from "@shared/schema";
+import type { Message, WebSocketMessage } from "@shared/schema";
 
 export default function Chat() {
   const [messageInput, setMessageInput] = useState("");
@@ -53,16 +53,8 @@ export default function Chat() {
     }
   });
 
-  // Convert existing messages timestamps to numbers for consistency
-  const normalizedExistingMessages = (existingMessages || []).map(msg => ({
-    ...msg,
-    timestamp: typeof msg.timestamp === 'string' || msg.timestamp instanceof Date 
-      ? new Date(msg.timestamp).getTime() 
-      : msg.timestamp
-  }));
-
-  // Combine existing messages with WebSocket messages
-  const allMessages = [...normalizedExistingMessages, ...wsMessages];
+  // Combine messages with normalized timestamps
+  const allMessages: (Message | WebSocketMessage)[] = [...(existingMessages || []), ...wsMessages];
 
   // Remove duplicates based on message ID
   const uniqueMessages = allMessages.reduce((acc, message) => {
@@ -70,12 +62,14 @@ export default function Chat() {
       acc.push(message);
     }
     return acc;
-  }, [] as Message[]);
+  }, [] as (Message | WebSocketMessage)[]);
 
-  // Sort messages by timestamp
-  const sortedMessages = uniqueMessages.sort(
-    (a, b) => a.timestamp - b.timestamp
-  );
+  // Sort messages by timestamp (handle both Date and number types)
+  const sortedMessages = uniqueMessages.sort((a, b) => {
+    const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
+    const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
+    return aTime - bTime;
+  });
 
   // Initialize message notifications with all sorted messages
   const { unreadCount } = useMessageNotifications(sortedMessages, currentUser);

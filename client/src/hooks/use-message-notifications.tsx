@@ -4,7 +4,7 @@ interface Message {
   id: string;
   sender: string;
   content: string;
-  timestamp: number;
+  timestamp: number | Date;
 }
 
 export function useMessageNotifications(messages: Message[], currentUser: { username: string } | null) {

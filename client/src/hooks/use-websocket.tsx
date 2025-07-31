@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import type { Message } from "@shared/schema";
+import type { WebSocketMessage } from "@shared/schema";
 
-interface WebSocketMessage {
+interface WebSocketEventMessage {
   type: string;
-  data?: Message;
+  data?: WebSocketMessage;
 }
 
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<WebSocketMessage[]>([]);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function useWebSocket() {
 
       ws.current.onmessage = (event) => {
         try {
-          const message: WebSocketMessage = JSON.parse(event.data);
+          const message: WebSocketEventMessage = JSON.parse(event.data);
           if (message.type === "message" && message.data) {
             setMessages(prev => [...prev, message.data!]);
           }
