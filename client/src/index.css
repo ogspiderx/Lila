@@ -136,15 +136,87 @@
 
   /* Enhanced UI improvements */
   .floating-element {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(15, 23, 42, 0.90);
+    border: 1px solid rgba(148, 163, 184, 0.25);
   }
 
   .message-hover-effect:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Message bubble animations */
+  @keyframes messageSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .message-slide-in {
+    animation: messageSlideIn 0.3s ease-out;
+  }
+
+  /* Enhanced glow effects for messages */
+  .message-glow-green {
+    box-shadow: 
+      0 4px 20px rgba(16, 185, 129, 0.25),
+      0 0 0 1px rgba(16, 185, 129, 0.1);
+  }
+
+  .message-glow-green:hover {
+    box-shadow: 
+      0 6px 30px rgba(16, 185, 129, 0.35),
+      0 0 0 1px rgba(16, 185, 129, 0.2);
+  }
+
+  .message-glow-slate {
+    box-shadow: 
+      0 4px 20px rgba(71, 85, 105, 0.4),
+      0 0 0 1px rgba(148, 163, 184, 0.1);
+  }
+
+  .message-glow-slate:hover {
+    box-shadow: 
+      0 6px 30px rgba(71, 85, 105, 0.6),
+      0 0 0 1px rgba(148, 163, 184, 0.2);
+  }
+
+  /* Smooth text selection */
+  ::selection {
+    background-color: rgba(16, 185, 129, 0.3);
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  ::-moz-selection {
+    background-color: rgba(16, 185, 129, 0.3);
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  /* Enhanced scrollbar styling */
+  .messages-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .messages-container::-webkit-scrollbar-track {
+    background: rgba(71, 85, 105, 0.1);
+    border-radius: 3px;
+  }
+
+  .messages-container::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+
+  .messages-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
   }
 
   .gradient-border {

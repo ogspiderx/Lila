@@ -168,7 +168,7 @@ export default function Chat() {
 
       {/* Messages Area - Flexible */}
       <main className="flex-1 flex flex-col min-h-0">
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3 scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3 scroll-smooth messages-container">
           <div className="max-w-4xl mx-auto w-full">
             {sortedMessages.length === 0 ? (
               <motion.div
