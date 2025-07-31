@@ -298,13 +298,13 @@ export default function Chat() {
                           clearTimeout(typingTimeoutRef.current);
                         }
                         
-                        // Set new timeout to stop typing indicator
+                        // Set new timeout to stop typing indicator (longer timeout for continuous typing)
                         typingTimeoutRef.current = setTimeout(() => {
                           if (currentUser) {
                             setIsTyping(false);
                             sendTyping(currentUser.username, false);
                           }
-                        }, 1000);
+                        }, 2500); // Increased to 2.5 seconds
                       } else if (isTyping && currentUser) {
                         setIsTyping(false);
                         sendTyping(currentUser.username, false);

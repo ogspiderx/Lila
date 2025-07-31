@@ -10,6 +10,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Updates)
 
+### January 31, 2025 - Typing Indicator Fix
+- **Fixed Long Typing Sessions**: Increased typing indicator timeout from 1 to 2.5 seconds
+- **Better Continuous Typing**: Typing indicator now properly handles extended typing sessions
+- **Improved User Experience**: Typing status persists appropriately during active typing
+
 ### January 31, 2025 - Desktop Notifications Added
 - **Desktop Notifications**: Added native browser notifications that only appear when tab isn't focused
 - **Permission Management**: Smart notification permission handling with visual indicators
