@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { LogOut, Send, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
-import { TranslationToggle } from "@/components/ui/translation-toggle";
 
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
@@ -17,7 +16,6 @@ export default function Chat() {
   const [messageInput, setMessageInput] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
-  const [targetLanguage, setTargetLanguage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [, setLocation] = useLocation();
@@ -177,10 +175,6 @@ export default function Chat() {
               <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
               <span className="text-accent font-medium text-sm sm:text-base">{currentUser.username}</span>
             </div>
-            <TranslationToggle 
-              currentLanguage={targetLanguage}
-              onLanguageChange={setTargetLanguage}
-            />
             <Button
               variant="ghost"
               size="icon"
@@ -248,7 +242,6 @@ export default function Chat() {
                     key={message.id}
                     message={message}
                     isCurrentUser={message.sender === currentUser.username}
-                    targetLanguage={targetLanguage}
                   />
                 ))}
                 

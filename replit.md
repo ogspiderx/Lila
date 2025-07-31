@@ -4,8 +4,6 @@
 
 This is a full-stack real-time chat application built with a modern web stack. The application features a React frontend with TypeScript, an Express.js backend, PostgreSQL database with Drizzle ORM, and WebSocket integration for real-time messaging. The UI is built using shadcn/ui components with Tailwind CSS for styling.
 
-**Latest Feature**: Free real-time message translation using Google Translate API without any cost. Users can translate messages to 20+ languages including Spanish, French, German, Japanese, Chinese, Arabic, and more.
-
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
