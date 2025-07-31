@@ -16,28 +16,50 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
 
   // Create smooth notification sound using Web Audio API
   const playNotificationSound = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      const audioContext = audioContextRef.current;
+      
+      // Check if audio context is suspended (requires user interaction)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          createSound(audioContext);
+        }).catch(error => {
+          console.log('Audio context resume failed:', error);
+        });
+      } else {
+        createSound(audioContext);
+      }
+    } catch (error) {
+      console.log('Could not play notification sound:', error);
     }
-    
-    const audioContext = audioContextRef.current;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Create a pleasant notification sound (soft chime)
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-    oscillator.frequency.setValueAtTime(400, audioContext.currentTime + 0.2);
-    
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+  };
+
+  const createSound = (audioContext: AudioContext) => {
+    try {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Create a pleasant notification sound (soft chime)
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(400, audioContext.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Could not create notification sound:', error);
+    }
   };
 
   // Track tab focus
@@ -75,9 +97,10 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
       if (isFromOtherUser) {
         if (!isTabFocused) {
           setUnreadCount(prev => prev + 1);
-          if (soundEnabled) {
-            playNotificationSound();
-          }
+        }
+        // Play sound for all messages from others when sound is enabled
+        if (soundEnabled) {
+          playNotificationSound();
         }
       }
     }
@@ -94,5 +117,19 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
     }
   }, [unreadCount]);
 
-  return { unreadCount, isTabFocused };
+  // Initialize audio context on first user interaction
+  const initializeAudio = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+    } catch (error) {
+      console.log('Could not initialize audio:', error);
+    }
+  };
+
+  return { unreadCount, isTabFocused, initializeAudio };
 }

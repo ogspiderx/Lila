@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Updates)
 
+### January 31, 2025 - Notification Sound System Fixed
+- **Fixed Notification Sounds**: Resolved duplicate sound playing and browser audio policy issues
+- **Improved Audio Context Handling**: Added proper audio context initialization and error handling
+- **Sound Toggle Functionality**: Sound notifications now properly respect the user's sound toggle setting
+- **Better User Experience**: Sounds play for all messages from other users when enabled, regardless of tab focus
+- **Cleaned Up Code**: Removed unused sound notification hook and consolidated audio logic
+
 ### January 31, 2025 - Enhanced Color Scheme & UI Polish
 - **Improved Color Palette**: Enhanced dark theme with better contrast and modern slate/emerald/amber color scheme
 - **Message Bubble Redesign**: Beautiful gradient message bubbles with improved shadows and hover effects

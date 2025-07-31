@@ -77,7 +77,14 @@ export default function Chat() {
   });
 
   // Initialize message notifications with all sorted messages
-  const { unreadCount } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);
+  const { unreadCount, initializeAudio } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);
+
+  // Initialize audio when sound is first enabled
+  useEffect(() => {
+    if (soundEnabled) {
+      initializeAudio();
+    }
+  }, [soundEnabled, initializeAudio]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
