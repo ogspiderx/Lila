@@ -12,7 +12,7 @@
   --card: hsl(240, 6%, 8%);
   --card-foreground: hsl(0, 0%, 98%);
   --border: hsl(240, 4%, 18%);
-  --input: hsl(240, 4%, 16%);
+  --input: hsl(240, 6%, 12%);
   --primary: hsl(134, 85%, 45%);
   --primary-foreground: hsl(240, 8%, 4%);
   --secondary: hsl(240, 4%, 16%);
@@ -82,6 +82,42 @@
 }
 
 @layer components {
+  /* Input and form field fixes */
+  .input-field {
+    background: hsl(240, 6%, 12%) !important;
+    color: hsl(0, 0%, 98%) !important;
+    border: 1px solid hsl(240, 4%, 18%) !important;
+  }
+
+  .input-field:focus {
+    border-color: hsl(134, 85%, 45%) !important;
+    box-shadow: 0 0 0 1px hsla(134, 85%, 45%, 0.2) !important;
+  }
+
+  .input-field::placeholder {
+    color: hsl(240, 5%, 65%) !important;
+  }
+
+  /* Select dropdown fixes */
+  .select-trigger {
+    background: hsl(240, 6%, 12%) !important;
+    color: hsl(0, 0%, 98%) !important;
+    border: 1px solid hsl(240, 4%, 18%) !important;
+  }
+
+  .select-content {
+    background: hsl(240, 6%, 10%) !important;
+    border: 1px solid hsl(240, 4%, 18%) !important;
+  }
+
+  .select-item {
+    color: hsl(0, 0%, 98%) !important;
+  }
+
+  .select-item:hover {
+    background: hsl(134, 85%, 45%, 0.1) !important;
+  }
+
   .glow-green {
     box-shadow: 
       0 0 15px hsla(134, 85%, 45%, 0.3),
@@ -105,6 +141,64 @@
     text-shadow: 
       0 0 8px hsla(134, 85%, 45%, 0.6),
       0 0 16px hsla(134, 85%, 45%, 0.4);
+  }
+
+  /* Enhanced UI improvements */
+  .floating-element {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .message-hover-effect:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(135deg, hsl(240, 6%, 8%), hsl(240, 4%, 12%));
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(134, 85%, 45%), hsl(51, 90%, 55%));
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: destination-out;
+  }
+
+  .typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .typing-dot {
+    width: 4px;
+    height: 4px;
+    background: hsl(134, 85%, 45%);
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+  .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+  @keyframes typing {
+    0%, 80%, 100% { 
+      opacity: 0.3;
+      transform: scale(0.8);
+    }
+    40% { 
+      opacity: 1;
+      transform: scale(1);
+    }
   }
   
   .ultra-smooth {

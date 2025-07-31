@@ -96,15 +96,22 @@ export default function Chat() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex-shrink-0 bg-card/50 backdrop-blur-sm border-b border-border/50 px-4 sm:px-6 py-3"
+        className="flex-shrink-0 floating-element border-b border-border/30 px-4 sm:px-6 py-3 relative overflow-hidden"
       >
-        <div className="flex items-center justify-between max-w-full">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 opacity-50" />
+        
+        <div className="flex items-center justify-between max-w-full relative z-10">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary glow-text-green animate-glow tracking-wide">
-              Lila
-            </h1>
+            <div className="relative">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary glow-text-green animate-glow tracking-wide">
+                Lila
+              </h1>
+              <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary opacity-60 rounded-full" />
+            </div>
+            
             <div className="flex items-center space-x-2 text-muted-foreground">
-              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-500 ${isConnected ? 'bg-primary animate-pulse-green' : 'bg-destructive animate-bounce-subtle'}`} />
+              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-500 shadow-lg ${isConnected ? 'bg-primary animate-pulse-green shadow-primary/50' : 'bg-destructive animate-bounce-subtle shadow-destructive/50'}`} />
               <span className="text-xs sm:text-sm font-medium hidden sm:inline">
                 {isConnected ? "Connected" : "Reconnecting..."}
               </span>
@@ -112,12 +119,15 @@ export default function Chat() {
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <span className="text-accent font-medium text-sm sm:text-base">{currentUser.username}</span>
+            <div className="flex items-center space-x-2 bg-card/50 rounded-full px-3 py-1.5 border border-border/30">
+              <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+              <span className="text-accent font-medium text-sm sm:text-base">{currentUser.username}</span>
+            </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleLogout}
-              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition"
+              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
             >
               <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
@@ -161,27 +171,43 @@ export default function Chat() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex-shrink-0 bg-card/50 backdrop-blur-sm border-t border-border/50 p-4 sm:p-6"
+          className="flex-shrink-0 floating-element border-t border-border/30 p-4 sm:p-6 relative overflow-hidden"
         >
-          <div className="max-w-4xl mx-auto">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/3 via-transparent to-transparent opacity-50" />
+          
+          <div className="max-w-4xl mx-auto relative z-10">
             <form onSubmit={handleSubmit} className="flex items-end gap-3">
               <div className="flex-1 relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type your message..."
-                  rows={1}
-                  className="resize-none bg-input/80 backdrop-blur-sm border-border/50 rounded-lg focus:border-primary/50 focus:ring-1 focus:ring-primary/20 smooth-transition min-h-[44px] max-h-[120px] py-3 px-4 text-sm sm:text-base leading-relaxed"
-                />
+                <div className="relative">
+                  <Textarea
+                    ref={textareaRef}
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type your message..."
+                    rows={1}
+                    className="resize-none input-field rounded-xl smooth-transition min-h-[44px] max-h-[120px] py-3 px-4 pr-12 text-sm sm:text-base leading-relaxed shadow-lg border-2 border-transparent focus:border-primary/30"
+                  />
+                  
+                  {/* Character counter for longer messages */}
+                  {messageInput.length > 100 && (
+                    <div className="absolute bottom-2 right-3 text-xs text-muted-foreground">
+                      {messageInput.length}/500
+                    </div>
+                  )}
+                </div>
               </div>
+              
               <Button
                 type="submit"
                 disabled={!messageInput.trim() || !isConnected}
-                className="bg-primary text-primary-foreground h-[44px] w-[44px] sm:h-[48px] sm:w-[48px] rounded-lg glow-green hover:bg-primary/90 smooth-transition disabled:opacity-50 flex-shrink-0"
+                className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground h-[44px] w-[44px] sm:h-[48px] sm:w-[48px] rounded-xl glow-green hover:from-primary/90 hover:to-primary smooth-transition disabled:opacity-50 flex-shrink-0 shadow-lg hover:shadow-primary/30 relative overflow-hidden group"
               >
-                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Send className="h-4 w-4 sm:h-5 sm:w-5 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                
+                {/* Button shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] duration-700" />
               </Button>
             </form>
           </div>

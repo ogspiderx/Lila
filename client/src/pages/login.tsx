@@ -67,20 +67,20 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
-            <CardContent className="p-6 sm:p-8">
+          <Card className="gradient-border shadow-2xl relative">
+            <CardContent className="p-6 sm:p-8 relative z-10">
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
                   <Label htmlFor="username" className="text-sm font-medium text-card-foreground mb-2 block">
                     Username
                   </Label>
                   <Select value={username} onValueChange={setUsername}>
-                    <SelectTrigger className="w-full bg-input/80 backdrop-blur-sm border-border/50 rounded-lg focus:border-primary/50 focus:ring-1 focus:ring-primary/20 smooth-transition h-11">
+                    <SelectTrigger className="w-full select-trigger rounded-lg smooth-transition h-11">
                       <SelectValue placeholder="Select your identity" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Wale">Wale</SelectItem>
-                      <SelectItem value="Xiu">Xiu</SelectItem>
+                    <SelectContent className="select-content">
+                      <SelectItem value="Wale" className="select-item">Wale</SelectItem>
+                      <SelectItem value="Xiu" className="select-item">Xiu</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -95,7 +95,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your secret key"
-                    className="w-full bg-input/80 backdrop-blur-sm border-border/50 rounded-lg focus:border-primary/50 focus:ring-1 focus:ring-primary/20 smooth-transition h-11"
+                    className="w-full input-field rounded-lg smooth-transition h-11"
                   />
                 </div>
 

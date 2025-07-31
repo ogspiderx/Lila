@@ -39,19 +39,28 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
         <motion.div
           whileHover={{ 
             scale: 1.01,
+            y: -1,
             transition: { duration: 0.2, ease: "easeOut" }
           }}
           className={`
             ${isCurrentUser 
-              ? "bg-primary text-primary-foreground rounded-tr-sm" 
-              : "bg-card/80 text-card-foreground border border-border/50 rounded-tl-sm"
+              ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-tr-sm shadow-lg" 
+              : "floating-element text-card-foreground rounded-tl-sm message-hover-effect"
             } 
-            rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 backdrop-blur-sm smooth-transition shadow-sm
+            rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 smooth-transition relative overflow-hidden
           `}
         >
-          <p className={`text-sm sm:text-base leading-relaxed ${isCurrentUser ? "text-primary-foreground" : "text-card-foreground"} break-words`}>
+          {/* Subtle gradient overlay for current user messages */}
+          {isCurrentUser && (
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-50" />
+          )}
+          
+          <p className={`text-sm sm:text-base leading-relaxed ${isCurrentUser ? "text-primary-foreground" : "text-card-foreground"} break-words relative z-10`}>
             {message.content}
           </p>
+          
+          {/* Subtle shine effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 transform -skew-x-12 translate-x-full hover:translate-x-[-200%] duration-700" />
         </motion.div>
       </div>
     </motion.div>
