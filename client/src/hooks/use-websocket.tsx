@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import type { WebSocketMessage } from "@shared/schema";
+import { useEffect, useRef, useState, useCallback } from "react";
+import type { WebSocketMessage, TypingMessage } from "@shared/schema";
 
 interface WebSocketEventMessage {
   type: string;
-  data?: WebSocketMessage;
+  data?: WebSocketMessage | TypingMessage;
 }
 
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<WebSocketMessage[]>([]);
+  const [typingUsers, setTypingUsers] = useState<Map<string, boolean>>(new Map());
   const ws = useRef<WebSocket | null>(null);
+  const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   useEffect(() => {
     const connectWebSocket = () => {
@@ -27,7 +29,39 @@ export function useWebSocket() {
         try {
           const message: WebSocketEventMessage = JSON.parse(event.data);
           if (message.type === "message" && message.data) {
-            setMessages(prev => [...prev, message.data!]);
+            setMessages(prev => [...prev, message.data as WebSocketMessage]);
+          } else if (message.type === "typing" && message.data) {
+            const typingData = message.data as TypingMessage;
+            setTypingUsers(prev => {
+              const updated = new Map(prev);
+              if (typingData.isTyping) {
+                updated.set(typingData.sender, true);
+                // Clear existing timeout for this user
+                const existingTimeout = typingTimeouts.current.get(typingData.sender);
+                if (existingTimeout) {
+                  clearTimeout(existingTimeout);
+                }
+                // Set new timeout to auto-clear typing status
+                const timeout = setTimeout(() => {
+                  setTypingUsers(prev => {
+                    const updated = new Map(prev);
+                    updated.delete(typingData.sender);
+                    return updated;
+                  });
+                  typingTimeouts.current.delete(typingData.sender);
+                }, 3000);
+                typingTimeouts.current.set(typingData.sender, timeout);
+              } else {
+                updated.delete(typingData.sender);
+                // Clear timeout
+                const existingTimeout = typingTimeouts.current.get(typingData.sender);
+                if (existingTimeout) {
+                  clearTimeout(existingTimeout);
+                  typingTimeouts.current.delete(typingData.sender);
+                }
+              }
+              return updated;
+            });
           }
         } catch (error) {
           console.error("Failed to parse WebSocket message:", error);
@@ -68,10 +102,22 @@ export function useWebSocket() {
     }
   };
 
+  const sendTyping = useCallback((sender: string, isTyping: boolean) => {
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({
+        type: "typing",
+        sender,
+        isTyping
+      }));
+    }
+  }, []);
+
   return {
     isConnected,
     messages,
     sendMessage,
+    sendTyping,
+    typingUsers,
     setMessages
   };
 }

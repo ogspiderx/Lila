@@ -3,21 +3,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, Send } from "lucide-react";
+import { LogOut, Send, Volume2, VolumeX } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
+import { TypingIndicator } from "@/components/ui/typing-indicator";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
+import { useSoundNotifications } from "@/hooks/use-sound-notifications";
 import { useQuery } from "@tanstack/react-query";
 import type { Message, WebSocketMessage } from "@shared/schema";
 
 export default function Chat() {
   const [messageInput, setMessageInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const { playNotification } = useSoundNotifications({ enabled: soundEnabled });
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [, setLocation] = useLocation();
   
-  const { isConnected, messages: wsMessages, sendMessage, setMessages } = useWebSocket();
+  const { isConnected, messages: wsMessages, sendMessage, sendTyping, typingUsers, setMessages } = useWebSocket();
 
   // Load current user from cookie-based auth
   useEffect(() => {
@@ -73,6 +80,16 @@ export default function Chat() {
 
   // Initialize message notifications with all sorted messages
   const { unreadCount } = useMessageNotifications(sortedMessages, currentUser);
+  
+  // Play sound notification for new messages from others
+  useEffect(() => {
+    if (wsMessages.length > 0) {
+      const lastMessage = wsMessages[wsMessages.length - 1];
+      if (lastMessage.sender !== currentUser?.username) {
+        playNotification();
+      }
+    }
+  }, [wsMessages, currentUser?.username, playNotification]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -92,6 +109,15 @@ export default function Chat() {
     
     const content = messageInput.trim();
     if (content && currentUser) {
+      // Stop typing indicator when sending message
+      if (isTyping) {
+        setIsTyping(false);
+        sendTyping(currentUser.username, false);
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+      }
+      
       sendMessage(currentUser.username, content);
       setMessageInput("");
     }
@@ -157,6 +183,19 @@ export default function Chat() {
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
+              title={soundEnabled ? "Disable sound notifications" : "Enable sound notifications"}
+            >
+              {soundEnabled ? (
+                <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />
+              ) : (
+                <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleLogout}
               className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
             >
@@ -191,6 +230,13 @@ export default function Chat() {
                     isCurrentUser={message.sender === currentUser.username}
                   />
                 ))}
+                
+                {/* Show typing indicators for other users */}
+                {Array.from(typingUsers.entries())
+                  .filter(([sender]) => sender !== currentUser?.username)
+                  .map(([sender]) => (
+                    <TypingIndicator key={`typing-${sender}`} sender={sender} />
+                  ))}
               </AnimatePresence>
             )}
             <div ref={messagesEndRef} />
@@ -214,7 +260,36 @@ export default function Chat() {
                   <Textarea
                     ref={textareaRef}
                     value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
+                    onChange={(e) => {
+                      setMessageInput(e.target.value);
+                      
+                      // Handle typing indicator
+                      if (currentUser && e.target.value.trim() !== "") {
+                        if (!isTyping) {
+                          setIsTyping(true);
+                          sendTyping(currentUser.username, true);
+                        }
+                        
+                        // Clear existing timeout
+                        if (typingTimeoutRef.current) {
+                          clearTimeout(typingTimeoutRef.current);
+                        }
+                        
+                        // Set new timeout to stop typing indicator
+                        typingTimeoutRef.current = setTimeout(() => {
+                          if (currentUser) {
+                            setIsTyping(false);
+                            sendTyping(currentUser.username, false);
+                          }
+                        }, 1000);
+                      } else if (isTyping && currentUser) {
+                        setIsTyping(false);
+                        sendTyping(currentUser.username, false);
+                        if (typingTimeoutRef.current) {
+                          clearTimeout(typingTimeoutRef.current);
+                        }
+                      }
+                    }}
                     onKeyDown={handleKeyDown}
                     placeholder="Type your message..."
                     rows={1}

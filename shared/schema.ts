@@ -31,3 +31,13 @@ export type User = typeof users.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 export type WebSocketMessage = Omit<Message, 'timestamp'> & { timestamp: number };
+
+// Typing indicator message type
+export type TypingMessage = {
+  type: 'typing';
+  sender: string;
+  isTyping: boolean;
+};
+
+// Combined WebSocket message types
+export type WebSocketChatMessage = WebSocketMessage | TypingMessage;

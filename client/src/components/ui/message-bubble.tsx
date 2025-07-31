@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import type { Message, WebSocketMessage } from "@shared/schema";
 
 interface MessageBubbleProps {

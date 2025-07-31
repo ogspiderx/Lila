@@ -116,6 +116,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
               client.send(broadcastData);
             }
           });
+        } else if (messageData.type === 'typing') {
+          // Broadcast typing indicator to all connected clients
+          const typingData = JSON.stringify({
+            type: 'typing',
+            data: {
+              type: 'typing',
+              sender: messageData.sender,
+              isTyping: messageData.isTyping
+            }
+          });
+          
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(typingData);
+            }
+          });
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
