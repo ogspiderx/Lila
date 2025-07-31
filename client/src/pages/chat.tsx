@@ -14,15 +14,13 @@ import type { Message, WebSocketMessage } from "@shared/schema";
 
 export default function Chat() {
   const [messageInput, setMessageInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [, setLocation] = useLocation();
   
-  const { isConnected, messages: wsMessages, sendMessage, sendTyping, typingUsers, setMessages } = useWebSocket();
+  const { isConnected, messages: wsMessages, sendMessage, setMessages } = useWebSocket();
 
   // Load current user from cookie-based auth
   useEffect(() => {
@@ -113,14 +111,7 @@ export default function Chat() {
     
     const content = messageInput.trim();
     if (content && currentUser) {
-      // Stop typing indicator when sending message
-      if (isTyping) {
-        setIsTyping(false);
-        sendTyping(currentUser.username, false);
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
-      }
+
       
       sendMessage(currentUser.username, content);
       setMessageInput("");
@@ -254,24 +245,7 @@ export default function Chat() {
                   />
                 ))}
                 
-                {/* Show typing indicators for other users */}
-                {Array.from(typingUsers.entries())
-                  .filter(([sender]) => sender !== currentUser?.username)
-                  .map(([sender]) => (
-                    <div key={`typing-${sender}`} className="flex justify-start mb-3">
-                      <div className="bg-slate-700/50 border border-emerald-500/30 rounded-lg px-4 py-2 max-w-xs">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-emerald-400 text-sm font-medium">{sender}</span>
-                          <span className="text-slate-300 text-sm">is typing</span>
-                          <div className="flex space-x-1">
-                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+
               </AnimatePresence>
             )}
             <div ref={messagesEndRef} />
@@ -298,35 +272,7 @@ export default function Chat() {
                     onChange={(e) => {
                       setMessageInput(e.target.value);
                       
-                      // Handle typing indicator - trigger on any text input
-                      if (currentUser) {
-                        if (e.target.value !== "" && !isTyping) {
-                          setIsTyping(true);
-                          sendTyping(currentUser.username, true);
-                        }
-                        
-                        // Clear existing timeout
-                        if (typingTimeoutRef.current) {
-                          clearTimeout(typingTimeoutRef.current);
-                        }
-                        
-                        // Set new timeout to stop typing indicator
-                        typingTimeoutRef.current = setTimeout(() => {
-                          if (currentUser) {
-                            setIsTyping(false);
-                            sendTyping(currentUser.username, false);
-                          }
-                        }, 1500);
-                        
-                        // If input is empty, immediately stop typing indicator
-                        if (e.target.value === "" && isTyping) {
-                          setIsTyping(false);
-                          sendTyping(currentUser.username, false);
-                          if (typingTimeoutRef.current) {
-                            clearTimeout(typingTimeoutRef.current);
-                          }
-                        }
-                      }
+
                     }}
                     onKeyDown={handleKeyDown}
                     placeholder="Type your message..."
