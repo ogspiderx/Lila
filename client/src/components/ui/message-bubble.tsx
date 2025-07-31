@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import type { Message, WebSocketMessage } from "@shared/schema";
+import { Languages, RotateCcw, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { translateText, languageNames } from "@/lib/translation";
+import type { Message, WebSocketMessage, MessageWithTranslation } from "@shared/schema";
 
 interface MessageBubbleProps {
   message: Message | WebSocketMessage;
@@ -8,6 +11,19 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
+  const [translationState, setTranslationState] = useState<{
+    isTranslated: boolean;
+    originalContent: string;
+    translatedContent: string;
+    targetLanguage: string;
+    isLoading: boolean;
+  }>({
+    isTranslated: false,
+    originalContent: message.content,
+    translatedContent: '',
+    targetLanguage: '',
+    isLoading: false,
+  });
   const formatTime = (timestamp: Date | number) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     return date.toLocaleTimeString([], {
@@ -15,6 +31,38 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
       minute: "2-digit"
     });
   };
+
+  const handleTranslate = async () => {
+    if (translationState.isLoading) return;
+    
+    setTranslationState(prev => ({ ...prev, isLoading: true }));
+    
+    try {
+      const result = await translateText(translationState.originalContent);
+      setTranslationState(prev => ({
+        ...prev,
+        isTranslated: true,
+        translatedContent: result.translatedText,
+        targetLanguage: result.detectedLanguage || 'unknown',
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error('Translation failed:', error);
+      setTranslationState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const handleUndoTranslation = () => {
+    setTranslationState(prev => ({
+      ...prev,
+      isTranslated: false,
+      isLoading: false,
+    }));
+  };
+
+  const currentContent = translationState.isTranslated 
+    ? translationState.translatedContent 
+    : translationState.originalContent;
 
   return (
     <motion.div
@@ -83,20 +131,82 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
           </div>
           
           {/* Content */}
-          <p className={`
-            relative z-10 text-xs sm:text-sm leading-snug 
-            break-words whitespace-pre-wrap
-            ${isCurrentUser ? "text-white" : "text-slate-50"} 
-            drop-shadow-sm
-          `}
-          style={{
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            wordWrap: 'break-word',
-            hyphens: 'auto'
-          }}>
-            {message.content}
-          </p>
+          <div className="relative z-10">
+            <p className={`
+              text-xs sm:text-sm leading-snug 
+              break-words whitespace-pre-wrap
+              ${isCurrentUser ? "text-white" : "text-slate-50"} 
+              drop-shadow-sm
+            `}
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              wordWrap: 'break-word',
+              hyphens: 'auto'
+            }}>
+              {currentContent}
+            </p>
+            
+            {/* Translation indicator */}
+            {translationState.isTranslated && (
+              <div className={`
+                text-[10px] mt-1 flex items-center gap-1
+                ${isCurrentUser ? "text-emerald-100" : "text-slate-300"}
+                opacity-70
+              `}>
+                <Languages className="w-3 h-3" />
+                <span>Translated</span>
+              </div>
+            )}
+          </div>
+
+          {/* Translation buttons - appear on hover */}
+          <div className={`
+            absolute top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200
+            ${isCurrentUser ? "left-2" : "right-2"}
+            flex gap-1
+          `}>
+            {!translationState.isTranslated ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleTranslate}
+                disabled={translationState.isLoading}
+                className={`
+                  h-6 w-6 p-0 rounded-full 
+                  ${isCurrentUser 
+                    ? "bg-emerald-400/20 hover:bg-emerald-400/30 text-white" 
+                    : "bg-slate-500/20 hover:bg-slate-400/30 text-slate-100"
+                  }
+                  backdrop-blur-sm border-0 shadow-sm
+                `}
+                title="Translate message"
+              >
+                {translationState.isLoading ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Languages className="w-3 h-3" />
+                )}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleUndoTranslation}
+                className={`
+                  h-6 w-6 p-0 rounded-full 
+                  ${isCurrentUser 
+                    ? "bg-emerald-400/20 hover:bg-emerald-400/30 text-white" 
+                    : "bg-slate-500/20 hover:bg-slate-400/30 text-slate-100"
+                  }
+                  backdrop-blur-sm border-0 shadow-sm
+                `}
+                title="Show original message"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </Button>
+            )}
+          </div>
           
           {/* Subtle bottom border glow */}
           <div className={`

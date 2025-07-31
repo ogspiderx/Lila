@@ -32,6 +32,14 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 export type WebSocketMessage = Omit<Message, 'timestamp'> & { timestamp: number };
 
+// Translation state for messages
+export type MessageWithTranslation = (Message | WebSocketMessage) & {
+  isTranslated?: boolean;
+  originalContent?: string;
+  translatedContent?: string;
+  targetLanguage?: string;
+};
+
 // Typing indicator message type
 export type TypingMessage = {
   type: 'typing';
