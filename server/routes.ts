@@ -5,16 +5,10 @@ import cookieParser from "cookie-parser";
 import { storage } from "./storage";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
-import gtranslate from "@vitalets/google-translate-api";
 
 const loginSchema = z.object({
   username: z.string(),
   password: z.string(),
-});
-
-const translateSchema = z.object({
-  text: z.string(),
-  targetLang: z.string(),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -90,24 +84,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch messages" });
-    }
-  });
-
-  // Translation endpoint
-  app.post("/api/translate", requireAuth, async (req, res) => {
-    try {
-      const { text, targetLang } = translateSchema.parse(req.body);
-      
-      const result = await gtranslate(text, { to: targetLang });
-      
-      res.json({ 
-        translatedText: result.text,
-        originalText: text,
-        targetLanguage: targetLang
-      });
-    } catch (error) {
-      console.error("Translation error:", error);
-      res.status(500).json({ message: "Translation failed" });
     }
   });
 
