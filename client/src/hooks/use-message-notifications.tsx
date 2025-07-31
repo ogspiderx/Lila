@@ -63,10 +63,16 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
     }
   };
 
-  // Check notification permission on mount
+  // Check notification permission on mount and auto-request
   useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
+      // Auto-request permission if not yet asked
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          setNotificationPermission(permission);
+        });
+      }
     }
   }, []);
 
@@ -82,24 +88,38 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
 
   // Show desktop notification
   const showDesktopNotification = (sender: string, content: string) => {
+    console.log('Trying to show notification:', { sender, content, notificationPermission, isTabFocused });
+    
     if ('Notification' in window && notificationPermission === 'granted' && !isTabFocused) {
-      const notification = new Notification(`New message from ${sender}`, {
-        body: content,
-        icon: '/favicon.ico', // You can add a chat icon here
-        badge: '/favicon.ico',
-        tag: 'chat-message', // This replaces previous notifications
+      try {
+        const notification = new Notification(`New message from ${sender}`, {
+          body: content,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag: 'chat-message',
+        });
+
+        console.log('Desktop notification created successfully');
+
+        // Auto-close notification after 5 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 5000);
+
+        // Focus window when notification is clicked
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+      } catch (error) {
+        console.error('Failed to create notification:', error);
+      }
+    } else {
+      console.log('Notification not shown:', {
+        hasNotification: 'Notification' in window,
+        permission: notificationPermission,
+        tabFocused: isTabFocused
       });
-
-      // Auto-close notification after 5 seconds
-      setTimeout(() => {
-        notification.close();
-      }, 5000);
-
-      // Focus window when notification is clicked
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
     }
   };
 
@@ -149,7 +169,7 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
     }
     
     previousMessageCountRef.current = currentMessageCount;
-  }, [messages, currentUser, isTabFocused]);
+  }, [messages, currentUser, isTabFocused, soundEnabled, notificationPermission]);
 
   // Update page title with unread count
   useEffect(() => {

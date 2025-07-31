@@ -88,8 +88,10 @@ export default function Chat() {
 
   // Handle notification permission request
   const handleNotificationToggle = async () => {
-    if (notificationPermission === 'default') {
-      await requestNotificationPermission();
+    console.log('Notification button clicked, current permission:', notificationPermission);
+    if (notificationPermission === 'default' || notificationPermission === 'denied') {
+      const newPermission = await requestNotificationPermission();
+      console.log('New permission after request:', newPermission);
     }
   };
 
