@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { MoreVertical, Copy, Check } from "lucide-react";
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ interface MessageBubbleProps {
   isCurrentUser: boolean;
 }
 
-export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   const formatTime = (timestamp: Date | number) => {
@@ -165,4 +165,4 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
       </div>
     </motion.div>
   );
-}
+});

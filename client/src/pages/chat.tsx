@@ -10,7 +10,9 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
 
 import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
 import type { Message, WebSocketMessage } from "@shared/schema";
+import { useMemo } from "react";
 
 export default function Chat() {
   const [messageInput, setMessageInput] = useState("");
@@ -22,57 +24,54 @@ export default function Chat() {
   
   const { isConnected, messages: wsMessages, sendMessage, setMessages } = useWebSocket();
 
-  // Load current user from cookie-based auth
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch("/api/auth/user", {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCurrentUser(data.user);
-        } else {
-          setLocation("/");
-        }
-      } catch (error) {
-        setLocation("/");
-      }
-    };
-    
-    fetchUser();
-  }, [setLocation]);
+  // Load current user from cookie-based auth with react-query
+  const { data: userData, isLoading: userLoading } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false,
+  });
 
-  // Fetch existing messages
-  const { data: existingMessages } = useQuery<Message[]>({
+  useEffect(() => {
+    if (userData && typeof userData === 'object' && 'user' in userData) {
+      setCurrentUser((userData as any).user);
+    } else if (userData === null || (!userLoading && !userData)) {
+      setLocation("/");
+    }
+  }, [userData, userLoading, setLocation]);
+
+  // Fetch existing messages with optimized query
+  const { data: existingMessages, isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
     enabled: !!currentUser,
-    queryFn: async () => {
-      const response = await fetch("/api/messages", {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch messages');
-      return response.json();
-    }
+    staleTime: 10 * 1000, // 10 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Combine messages with normalized timestamps
-  const allMessages: (Message | WebSocketMessage)[] = [...(existingMessages || []), ...wsMessages];
-
-  // Remove duplicates based on message ID
-  const uniqueMessages = allMessages.reduce((acc, message) => {
-    if (!acc.find(m => m.id === message.id)) {
-      acc.push(message);
-    }
-    return acc;
-  }, [] as (Message | WebSocketMessage)[]);
-
-  // Sort messages by timestamp (handle both Date and number types)
-  const sortedMessages = uniqueMessages.sort((a, b) => {
-    const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
-    const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
-    return aTime - bTime;
-  });
+  // Optimize message processing with useMemo
+  const sortedMessages = useMemo(() => {
+    if (!existingMessages && wsMessages.length === 0) return [];
+    
+    // Create a Map for faster duplicate checking
+    const messageMap = new Map<string, Message | WebSocketMessage>();
+    
+    // Add existing messages
+    existingMessages?.forEach(message => {
+      messageMap.set(message.id, message);
+    });
+    
+    // Add WebSocket messages (they override existing ones if same ID)
+    wsMessages.forEach(message => {
+      messageMap.set(message.id, message);
+    });
+    
+    // Convert to array and sort
+    return Array.from(messageMap.values()).sort((a, b) => {
+      const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
+      const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
+      return aTime - bTime;
+    });
+  }, [existingMessages, wsMessages]);
 
   // Initialize message notifications with all sorted messages
   const { unreadCount, initializeAudio, notificationPermission, requestNotificationPermission } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);

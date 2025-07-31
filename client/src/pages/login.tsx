@@ -22,24 +22,33 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
   const [, setLocation] = useLocation();
 
-  // Check if user is already authenticated
+  // Check if user is already authenticated with faster timeout
   useEffect(() => {
+    const controller = new AbortController();
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/auth/user", {
           credentials: "include",
+          signal: controller.signal,
+          // Add cache control for faster subsequent requests
+          headers: {
+            'Cache-Control': 'max-age=60'
+          }
         });
         if (response.ok) {
           setLocation("/chat");
           return;
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return;
         // User not authenticated, continue with login
       }
       setIsLoading(false);
     };
 
     checkAuth();
+    
+    return () => controller.abort();
   }, [setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {

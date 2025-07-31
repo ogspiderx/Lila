@@ -14,6 +14,10 @@ const loginSchema = z.object({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add cookie parser middleware
   app.use(cookieParser());
+  
+  // Add caching middleware for auth endpoints
+  const authCache = new Map<string, { user: any, timestamp: number }>();
+  const AUTH_CACHE_TTL = 30 * 1000; // 30 seconds
 
   // Auth middleware to check if user is logged in
   const requireAuth = async (req: any, res: any, next: any) => {
@@ -31,19 +35,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Check current auth status
+  // Check current auth status with caching
   app.get("/api/auth/user", async (req, res) => {
     const userId = req.cookies.userId;
     if (!userId) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     
+    // Check cache first
+    const cached = authCache.get(userId);
+    if (cached && (Date.now() - cached.timestamp) < AUTH_CACHE_TTL) {
+      return res.json(cached.user);
+    }
+    
     const user = await storage.getUser(userId);
     if (!user) {
+      authCache.delete(userId);
       return res.status(401).json({ message: "Invalid session" });
     }
     
-    res.json({ user: { id: user.id, username: user.username } });
+    const userResponse = { user: { id: user.id, username: user.username } };
+    authCache.set(userId, { user: userResponse, timestamp: Date.now() });
+    
+    // Add cache headers
+    res.set('Cache-Control', 'private, max-age=30');
+    res.json(userResponse);
   });
 
   // Authentication endpoint
@@ -77,10 +93,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Logged out successfully" });
   });
 
-  // Get chat messages
+  // Get chat messages with caching
   app.get("/api/messages", requireAuth, async (req, res) => {
     try {
       const messages = await storage.getMessages();
+      
+      // Add cache headers for messages
+      res.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch messages" });
