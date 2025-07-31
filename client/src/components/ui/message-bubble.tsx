@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import type { Message, WebSocketMessage } from "@shared/schema";
+import { TranslatedMessage } from "./translated-message";
 
 interface MessageBubbleProps {
   message: Message | WebSocketMessage;
   isCurrentUser: boolean;
+  targetLanguage?: string | null;
 }
 
-export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
+export function MessageBubble({ message, isCurrentUser, targetLanguage }: MessageBubbleProps) {
   const formatTime = (timestamp: Date | number) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     return date.toLocaleTimeString([], {
@@ -83,7 +85,7 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
           </div>
           
           {/* Content */}
-          <p className={`
+          <div className={`
             relative z-10 text-xs sm:text-sm leading-snug 
             break-words whitespace-pre-wrap
             ${isCurrentUser ? "text-white" : "text-slate-50"} 
@@ -95,8 +97,15 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
             wordWrap: 'break-word',
             hyphens: 'auto'
           }}>
-            {message.content}
-          </p>
+            {targetLanguage ? (
+              <TranslatedMessage 
+                originalText={message.content}
+                targetLanguage={targetLanguage}
+              />
+            ) : (
+              message.content
+            )}
+          </div>
           
           {/* Subtle bottom border glow */}
           <div className={`
