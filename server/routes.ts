@@ -208,6 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (messageData.type === 'auth' && !isAuthenticated) {
           try {
             const token = messageData.token;
+            console.log('WebSocket auth attempt with token:', !!token);
             const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
             const user = await storage.getUser(decoded.userId);
             
@@ -216,11 +217,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               userInfo = { userId: user.id, username: user.username };
               authenticatedSockets.set(ws, userInfo);
               clearTimeout(authTimeout);
+              console.log('WebSocket authenticated for user:', user.username);
               ws.send(JSON.stringify({ type: 'auth', success: true }));
             } else {
+              console.log('WebSocket auth failed: user not found');
               ws.close(4003, 'Invalid user');
             }
           } catch (error) {
+            console.log('WebSocket auth failed: invalid token', error.message);
             ws.close(4004, 'Invalid token');
           }
           return;

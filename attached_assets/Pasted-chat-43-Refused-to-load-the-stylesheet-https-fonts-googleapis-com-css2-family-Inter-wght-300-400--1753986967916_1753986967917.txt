@@ -1,0 +1,27 @@
+chat:43 Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline'". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+chat:1 Refused to load the script 'https://replit.com/public/js/replit-dev-banner.js' because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+
+client:536 WebSocket connection to 'wss://6ea75ae8-5dca-4a68-8155-cfb3e3131a7f-00-19uufm24dqslv.worf.replit.dev/?token=e-pcfgOv9NNd' failed: 
+setupWebSocket @ client:536
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=e-pcfgOv9NNd' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+chunk-WERSD76P.js?v=14e0e67a:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+use-optimized-websocket.tsx:18 WebSocket connected
+use-optimized-websocket.tsx:73 WebSocket disconnected
+use-optimized-websocket.tsx:18 WebSocket connected
+use-optimized-websocket.tsx:73 WebSocket disconnected
+use-optimized-websocket.tsx:18 WebSocket connected
+use-optimized-websocket.tsx:73 WebSocket disconnected
+use-optimized-websocket.tsx:18 WebSocket connected
+use-optimized-websocket.tsx:73 WebSocket disconnected
+use-optimized-websocket.tsx:18 WebSocket connected
+use-optimized-websocket.tsx:73 WebSocket disconnected
+chat:1 Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap' because it violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline'". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback.
+
+use-optimized-websocket.tsx:18 WebSocket connected
+use-optimized-websocket.tsx:73 WebSocket disconnected
+use-optimized-websocket.tsx:18 WebSocket connected
+use-optimized-websocket.tsx:73 WebSocket disconnected
