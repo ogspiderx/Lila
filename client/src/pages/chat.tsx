@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LogOut, Send } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { useMessageNotifications } from "@/hooks/use-message-notifications";
 import { useQuery } from "@tanstack/react-query";
 import type { Message } from "@shared/schema";
 
@@ -49,6 +50,9 @@ export default function Chat() {
   const sortedMessages = uniqueMessages.sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
+
+  // Initialize message notifications with all sorted messages
+  const { unreadCount } = useMessageNotifications(sortedMessages, currentUser);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

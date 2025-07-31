@@ -1,77 +1,95 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from 'react';
 
-interface CursorTrail {
+interface CursorPosition {
   x: number;
   y: number;
-  timestamp: number;
+}
+
+interface CursorTrail extends CursorPosition {
+  id: number;
+  opacity: number;
+  scale: number;
+}
+
+interface ClickRipple extends CursorPosition {
+  id: number;
+  scale: number;
+  opacity: number;
 }
 
 export function useCursor() {
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const trailRef = useRef<CursorTrail[]>([]);
-  const animationRef = useRef<number>();
+  const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 });
+  const [trail, setTrail] = useState<CursorTrail[]>([]);
+  const [isClicking, setIsClicking] = useState(false);
+  const [clickRipples, setClickRipples] = useState<ClickRipple[]>([]);
 
   useEffect(() => {
-    const cursor = cursorRef.current;
-    if (!cursor) return;
+    let trailId = 0;
+    let rippleId = 0;
 
     const updateCursor = (e: MouseEvent) => {
-      cursor.style.left = e.clientX - 10 + "px";
-      cursor.style.top = e.clientY - 10 + "px";
+      const newPosition = { x: e.clientX, y: e.clientY };
+      setPosition(newPosition);
 
-      // Add trail point
-      trailRef.current.push({
+      // Add new trail point with random slight offset for organic feel
+      const newTrail: CursorTrail = {
+        x: newPosition.x + (Math.random() - 0.5) * 2,
+        y: newPosition.y + (Math.random() - 0.5) * 2,
+        id: trailId++,
+        opacity: 1,
+        scale: 0.8 + Math.random() * 0.4,
+      };
+
+      setTrail(prev => [...prev.slice(-12), newTrail]);
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      setIsClicking(true);
+      
+      // Create click ripple effect
+      const newRipple: ClickRipple = {
         x: e.clientX,
         y: e.clientY,
-        timestamp: Date.now(),
-      });
+        id: rippleId++,
+        scale: 0,
+        opacity: 1,
+      };
+      
+      setClickRipples(prev => [...prev, newRipple]);
+    };
 
-      // Keep only recent trail points
-      trailRef.current = trailRef.current.filter(
-        (point) => Date.now() - point.timestamp < 500
+    const handleMouseUp = () => setIsClicking(false);
+
+    document.addEventListener('mousemove', updateCursor);
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    // Animate trail fade and ripples
+    const animationInterval = setInterval(() => {
+      setTrail(prev => 
+        prev.map(point => ({ 
+          ...point, 
+          opacity: point.opacity * 0.88,
+          scale: point.scale * 0.98
+        })).filter(point => point.opacity > 0.05)
       );
-    };
 
-    const handleClick = () => {
-      cursor.classList.add("clicking");
-      setTimeout(() => cursor.classList.remove("clicking"), 150);
-    };
-
-    const animateTrail = () => {
-      // Remove old trail elements
-      document.querySelectorAll(".cursor-trail").forEach((el) => el.remove());
-
-      // Create new trail elements
-      trailRef.current.forEach((point, index) => {
-        const trail = document.createElement("div");
-        trail.className = "cursor-trail";
-        trail.style.left = point.x - 2 + "px";
-        trail.style.top = point.y - 2 + "px";
-        
-        const age = Date.now() - point.timestamp;
-        const opacity = Math.max(0, (500 - age) / 500);
-        trail.style.opacity = (opacity * 0.6).toString();
-        trail.style.transform = `scale(${opacity})`;
-        
-        document.body.appendChild(trail);
-      });
-
-      animationRef.current = requestAnimationFrame(animateTrail);
-    };
-
-    document.addEventListener("mousemove", updateCursor);
-    document.addEventListener("click", handleClick);
-    animationRef.current = requestAnimationFrame(animateTrail);
+      setClickRipples(prev =>
+        prev.map(ripple => ({
+          ...ripple,
+          scale: ripple.scale + 0.8,
+          opacity: ripple.opacity * 0.92
+        })).filter(ripple => ripple.opacity > 0.01 && ripple.scale < 50)
+      );
+    }, 16);
 
     return () => {
-      document.removeEventListener("mousemove", updateCursor);
-      document.removeEventListener("click", handleClick);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      document.querySelectorAll(".cursor-trail").forEach((el) => el.remove());
+      document.removeEventListener('mousemove', updateCursor);
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
+      clearInterval(animationInterval);
     };
   }, []);
 
-  return cursorRef;
+  return { position, trail, isClicking, clickRipples };
 }
