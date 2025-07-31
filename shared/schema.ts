@@ -19,11 +19,16 @@ export const messages = pgTable("messages", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+}).extend({
+  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, "Username must contain only letters, numbers, and underscores"),
+  password: z.string().min(8).max(128),
 });
 
 export const insertMessageSchema = createInsertSchema(messages).pick({
   sender: true,
   content: true,
+}).extend({
+  content: z.string().min(1).max(1000).trim(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

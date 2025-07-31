@@ -16,32 +16,53 @@ export function useOptimizedWebSocket() {
     
     ws.onopen = () => {
       console.log('WebSocket connected');
-      setIsConnected(true);
       
-      // Send queued messages
-      while (messageQueueRef.current.length > 0) {
-        const message = messageQueueRef.current.shift();
-        if (message) ws.send(message);
+      // Authenticate with JWT token
+      const authToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('authToken='))
+        ?.split('=')[1];
+      
+      if (authToken) {
+        ws.send(JSON.stringify({
+          type: 'auth',
+          token: authToken
+        }));
+      } else {
+        ws.close(4000, 'No auth token');
       }
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'message' && data.data) {
-          const newMessage = {
-            ...data.data,
-            timestamp: new Date(data.data.timestamp).getTime()
-          };
+        
+        if (data.type === 'auth' && data.success) {
+          console.log('WebSocket authenticated');
+          setIsConnected(true);
           
-          setMessages(prev => {
-            // Use Map for O(1) deduplication
-            const messageMap = new Map(prev.map(m => [m.id, m]));
-            if (!messageMap.has(newMessage.id)) {
-              return [...prev, newMessage];
-            }
-            return prev;
-          });
+          // Send queued messages after authentication
+          while (messageQueueRef.current.length > 0) {
+            const message = messageQueueRef.current.shift();
+            if (message) ws.send(message);
+          }
+        } else if (data.type === 'message' && data.data) {
+          // Validate message data
+          if (data.data.id && data.data.sender && data.data.content && data.data.timestamp) {
+            const newMessage = {
+              ...data.data,
+              timestamp: new Date(data.data.timestamp).getTime()
+            };
+            
+            setMessages(prev => {
+              // Use Map for O(1) deduplication
+              const messageMap = new Map(prev.map(m => [m.id, m]));
+              if (!messageMap.has(newMessage.id)) {
+                return [...prev, newMessage];
+              }
+              return prev;
+            });
+          }
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -78,19 +99,22 @@ export function useOptimizedWebSocket() {
   }, [connectWebSocket]);
 
   const sendMessage = useCallback((sender: string, content: string) => {
+    // Sanitize and validate content
+    const sanitizedContent = content.trim().substring(0, 1000);
+    if (!sanitizedContent) return;
+    
     const message = JSON.stringify({
       type: "message",
-      sender,
-      content
+      content: sanitizedContent
     });
 
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
       wsRef.current.send(message);
     } else {
       // Queue message for when connection is restored
       messageQueueRef.current.push(message);
     }
-  }, []);
+  }, [isConnected]);
 
   return {
     isConnected,

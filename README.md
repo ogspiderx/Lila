@@ -149,11 +149,32 @@ npm run start
 
 ## 🔒 Security Features
 
-- **HTTP-only Cookies**: Secure session management
-- **CSRF Protection**: Built-in request validation
-- **Input Sanitization**: XSS prevention with Zod validation
-- **Connection Security**: WebSocket connection authentication
-- **Rate Limiting**: Implicit through caching strategies
+### Authentication & Authorization
+- **JWT-based Authentication**: Secure token-based session management with 7-day expiration
+- **Password Hashing**: bcrypt with salt rounds (12) for secure password storage
+- **Secure Cookies**: HTTP-only, secure, SameSite=strict cookies for token storage
+- **WebSocket Authentication**: JWT token validation for real-time connections
+- **Session Management**: Automatic token validation and renewal
+
+### Input Validation & Sanitization
+- **Comprehensive Input Validation**: Server-side validation using express-validator and Zod
+- **XSS Prevention**: Content sanitization and length limits (1000 characters)
+- **SQL Injection Protection**: Parameterized queries with Drizzle ORM
+- **Message Size Limits**: 10KB limit on WebSocket messages, 10MB on HTTP requests
+- **Username Validation**: Alphanumeric characters and underscores only
+
+### Security Headers & Protection
+- **Helmet.js Integration**: Complete security headers suite including CSP, HSTS, X-Frame-Options
+- **Content Security Policy**: Strict CSP preventing XSS and code injection
+- **Rate Limiting**: 100 requests/15min general, 5 requests/15min for auth endpoints
+- **CORS Protection**: SameSite cookie policy and origin validation
+- **Error Handling**: Secure error responses without information leakage
+
+### Infrastructure Security
+- **HTTPS Enforcement**: Secure flag on cookies in production
+- **Connection Timeouts**: 10-second authentication timeout for WebSocket connections
+- **Timing Attack Protection**: Consistent response times for invalid credentials
+- **Memory Protection**: Automatic cleanup of authentication caches and connections
 
 ## 📊 Performance Metrics
 
