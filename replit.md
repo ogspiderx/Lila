@@ -10,17 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Updates)
 
-### January 31, 2025 - Major UI/UX Redesign
-- **Professional Design Overhaul**: Completely redesigned UI with cleaner, more professional aesthetics
-- **Responsive Design**: Full mobile-first responsive design for all screen sizes (phone, tablet, desktop)
-- **Color Adjustments**: Reduced green brightness from 100% to 85% saturation for better visual comfort
-- **Font Integration**: Added Inter font with advanced font features and smooth rendering
-- **Custom Cursor**: Implemented minimal cursor trail with click effects and green/yellow color transitions
-- **Message Bubbles**: Redesigned smaller, more professional message bubbles with proper sizing
-- **Chat Layout**: Fixed chat layout with proper viewport handling, fixed header/input positioning
-- **Glass Effects**: Added backdrop blur effects for modern glassmorphism design
-- **Enhanced Animations**: Smoother transitions with hardware acceleration and spring physics
-- **Input Improvements**: Professional rounded input fields with proper auto-sizing and edge refinement
+### January 31, 2025 - Authentication & UI Updates
+- **Cookie-Based Authentication**: Implemented persistent login sessions using secure HTTP-only cookies
+- **Database Integration**: Added PostgreSQL database with Drizzle ORM for permanent data storage
+- **Clean Message Design**: Removed gradient bubbles and custom cursor effects for professional appearance
+- **Fixed Chat Scrolling**: Proper auto-scroll to latest messages with upward scrolling capability
+- **Custom Text Selection**: Added custom green highlight styling for text selection
+- **Timestamp Handling**: Fixed type compatibility between database Date objects and WebSocket number timestamps
+- **Secure Session Management**: 30-day persistent login sessions with proper cookie security settings
+- **Authentication Endpoints**: Complete login/logout API with proper error handling
 
 ## System Architecture
 

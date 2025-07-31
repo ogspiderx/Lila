@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import cookieParser from "cookie-parser";
 import { storage } from "./storage";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
@@ -11,6 +12,40 @@ const loginSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add cookie parser middleware
+  app.use(cookieParser());
+
+  // Auth middleware to check if user is logged in
+  const requireAuth = async (req: any, res: any, next: any) => {
+    const userId = req.cookies.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(401).json({ message: "Invalid session" });
+    }
+    
+    req.user = user;
+    next();
+  };
+
+  // Check current auth status
+  app.get("/api/auth/user", async (req, res) => {
+    const userId = req.cookies.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(401).json({ message: "Invalid session" });
+    }
+    
+    res.json({ user: { id: user.id, username: user.username } });
+  });
+
   // Authentication endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -21,14 +56,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
+      // Set cookie that expires in 30 days
+      res.cookie('userId', user.id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      });
+
       res.json({ user: { id: user.id, username: user.username } });
     } catch (error) {
+      console.error("Login error:", error);
       res.status(400).json({ message: "Invalid request" });
     }
   });
 
+  // Logout endpoint
+  app.post("/api/auth/logout", (req, res) => {
+    res.clearCookie('userId');
+    res.json({ message: "Logged out successfully" });
+  });
+
   // Get chat messages
-  app.get("/api/messages", async (req, res) => {
+  app.get("/api/messages", requireAuth, async (req, res) => {
     try {
       const messages = await storage.getMessages();
       res.json(messages);

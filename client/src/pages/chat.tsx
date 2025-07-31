@@ -19,24 +19,50 @@ export default function Chat() {
   
   const { isConnected, messages: wsMessages, sendMessage, setMessages } = useWebSocket();
 
-  // Load current user from localStorage
+  // Load current user from cookie-based auth
   useEffect(() => {
-    const user = localStorage.getItem("currentUser");
-    if (user) {
-      setCurrentUser(JSON.parse(user));
-    } else {
-      setLocation("/");
-    }
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/auth/user", {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentUser(data.user);
+        } else {
+          setLocation("/");
+        }
+      } catch (error) {
+        setLocation("/");
+      }
+    };
+    
+    fetchUser();
   }, [setLocation]);
 
   // Fetch existing messages
   const { data: existingMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
     enabled: !!currentUser,
+    queryFn: async () => {
+      const response = await fetch("/api/messages", {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      return response.json();
+    }
   });
 
+  // Convert existing messages timestamps to numbers for consistency
+  const normalizedExistingMessages = (existingMessages || []).map(msg => ({
+    ...msg,
+    timestamp: typeof msg.timestamp === 'string' || msg.timestamp instanceof Date 
+      ? new Date(msg.timestamp).getTime() 
+      : msg.timestamp
+  }));
+
   // Combine existing messages with WebSocket messages
-  const allMessages = [...(existingMessages || []), ...wsMessages];
+  const allMessages = [...normalizedExistingMessages, ...wsMessages];
 
   // Remove duplicates based on message ID
   const uniqueMessages = allMessages.reduce((acc, message) => {
@@ -48,7 +74,7 @@ export default function Chat() {
 
   // Sort messages by timestamp
   const sortedMessages = uniqueMessages.sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    (a, b) => a.timestamp - b.timestamp
   );
 
   // Initialize message notifications with all sorted messages
@@ -77,8 +103,15 @@ export default function Chat() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("currentUser");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: 'include'
+      });
+    } catch (error) {
+      // Ignore logout errors, just redirect
+    }
     setLocation("/");
   };
 

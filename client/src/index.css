@@ -249,6 +249,17 @@
   ::-webkit-scrollbar-corner {
     background: hsl(240, 6%, 8%);
   }
+
+  /* Custom text selection */
+  ::selection {
+    background: hsl(134, 85%, 45%, 0.3);
+    color: hsl(0, 0%, 98%);
+  }
+
+  ::-moz-selection {
+    background: hsl(134, 85%, 45%, 0.3);
+    color: hsl(0, 0%, 98%);
+  }
   
   .ultra-smooth {
     transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
