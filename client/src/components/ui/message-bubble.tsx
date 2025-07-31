@@ -28,10 +28,10 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
       <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[85%] sm:max-w-[70%] md:max-w-[60%]`}>
         {/* Sender and timestamp */}
         <div className={`flex items-center space-x-2 mb-1 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
-          <span className="text-accent text-xs font-medium">
+          <span className={`text-xs font-semibold ${isCurrentUser ? "text-emerald-400" : "text-amber-400"}`}>
             {message.sender}
           </span>
-          <span className="text-muted-foreground text-xs">
+          <span className="text-slate-400 text-xs">
             {formatTime(message.timestamp)}
           </span>
         </div>
@@ -44,13 +44,13 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
           }}
           className={`
             ${isCurrentUser 
-              ? "bg-primary text-primary-foreground rounded-tr-sm" 
-              : "bg-card text-card-foreground border border-border/50 rounded-tl-sm"
+              ? "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-tr-sm shadow-lg shadow-emerald-500/25" 
+              : "bg-gradient-to-r from-slate-700 to-slate-600 text-slate-100 border border-slate-500/30 rounded-tl-sm shadow-lg shadow-slate-900/25"
             } 
-            rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 shadow-sm hover:shadow-md
+            rounded-lg px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-300 hover:shadow-xl hover:scale-[1.02]
           `}
         >
-          <p className={`text-sm sm:text-base leading-relaxed ${isCurrentUser ? "text-primary-foreground" : "text-card-foreground"} break-words`}>
+          <p className={`text-sm sm:text-base leading-relaxed ${isCurrentUser ? "text-white" : "text-slate-100"} break-words`}>
             {message.content}
           </p>
         </motion.div>

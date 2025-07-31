@@ -3,32 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(240, 8%, 4%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 4%, 14%);
-  --muted-foreground: hsl(240, 5%, 65%);
-  --popover: hsl(240, 8%, 6%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 6%, 8%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 4%, 18%);
-  --input: hsl(240, 6%, 12%);
-  --primary: hsl(134, 85%, 45%);
-  --primary-foreground: hsl(240, 8%, 4%);
-  --secondary: hsl(240, 4%, 16%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(51, 90%, 55%);
-  --accent-foreground: hsl(240, 8%, 4%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
+  --background: hsl(222, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 32.6%, 17.5%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --popover: hsl(222, 84%, 4.9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 4.9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32.6%, 17.5%);
+  --input: hsl(217, 32.6%, 17.5%);
+  --primary: hsl(142, 76%, 36%);
+  --primary-foreground: hsl(355, 7%, 97%);
+  --secondary: hsl(217, 32.6%, 17.5%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(45, 93%, 47%);
+  --accent-foreground: hsl(222, 84%, 4.9%);
+  --destructive: hsl(0, 72%, 51%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(142, 76%, 36%);
+  --radius: 0.75rem;
   
-  --primary-green: hsl(134, 85%, 45%);
-  --accent-yellow: hsl(51, 90%, 55%);
-  --dark-bg: hsl(240, 8%, 4%);
-  --dark-surface: hsl(240, 6%, 8%);
-  --dark-surface-light: hsl(240, 5%, 12%);
+  --primary-green: hsl(142, 76%, 36%);
+  --primary-light: hsl(142, 76%, 42%);
+  --accent-yellow: hsl(45, 93%, 47%);
+  --accent-orange: hsl(25, 95%, 53%);
+  --surface-1: hsl(217, 32.6%, 17.5%);
+  --surface-2: hsl(215, 27.9%, 16.9%);
+  --surface-3: hsl(215, 25%, 27%);
+  --text-primary: hsl(210, 40%, 98%);
+  --text-secondary: hsl(215, 20.2%, 65.1%);
+  --text-accent: hsl(142, 76%, 52%);
 }
 
 @layer base {
@@ -53,83 +58,99 @@
 }
 
 @layer components {
-  /* Input and form field fixes */
+  /* Input and form field styling */
   .input-field {
-    background: hsl(240, 6%, 12%) !important;
-    color: hsl(0, 0%, 98%) !important;
-    border: 1px solid hsl(240, 4%, 18%) !important;
+    background: var(--surface-1) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .input-field:focus {
-    border-color: hsl(134, 85%, 45%) !important;
-    box-shadow: 0 0 0 1px hsla(134, 85%, 45%, 0.2) !important;
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 0 0 2px hsla(142, 76%, 36%, 0.15) !important;
+    background: var(--surface-2) !important;
   }
 
   .input-field::placeholder {
-    color: hsl(240, 5%, 65%) !important;
+    color: var(--text-secondary) !important;
   }
 
-  /* Select dropdown fixes */
+  /* Select dropdown styling */
   .select-trigger {
-    background: hsl(240, 6%, 12%) !important;
-    color: hsl(0, 0%, 98%) !important;
-    border: 1px solid hsl(240, 4%, 18%) !important;
+    background: var(--surface-1) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .select-trigger:hover {
+    background: var(--surface-2) !important;
+    border-color: var(--primary-light) !important;
   }
 
   .select-content {
-    background: hsl(240, 6%, 10%) !important;
-    border: 1px solid hsl(240, 4%, 18%) !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   }
 
   .select-item {
-    color: hsl(0, 0%, 98%) !important;
+    color: var(--text-primary) !important;
+    transition: all 0.15s ease;
   }
 
   .select-item:hover {
-    background: hsl(134, 85%, 45%, 0.1) !important;
+    background: hsla(142, 76%, 36%, 0.15) !important;
+    color: var(--text-accent) !important;
   }
 
   .glow-green {
     box-shadow: 
-      0 0 15px hsla(134, 85%, 45%, 0.3),
-      0 0 30px hsla(134, 85%, 45%, 0.15);
-    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      0 0 20px hsla(142, 76%, 36%, 0.4),
+      0 0 40px hsla(142, 76%, 36%, 0.2),
+      inset 0 1px 2px hsla(142, 76%, 52%, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .glow-green:hover {
     box-shadow: 
-      0 0 20px hsla(134, 85%, 45%, 0.4),
-      0 0 40px hsla(134, 85%, 45%, 0.2);
+      0 0 25px hsla(142, 76%, 36%, 0.5),
+      0 0 50px hsla(142, 76%, 36%, 0.25),
+      inset 0 1px 2px hsla(142, 76%, 52%, 0.15);
+    transform: translateY(-1px);
   }
   
   .glow-yellow {
     box-shadow: 
-      0 0 10px hsla(51, 90%, 55%, 0.3),
-      0 0 20px hsla(51, 90%, 55%, 0.15);
+      0 0 15px hsla(45, 93%, 47%, 0.4),
+      0 0 30px hsla(45, 93%, 47%, 0.2);
   }
 
   .glow-text-green {
     text-shadow: 
-      0 0 8px hsla(134, 85%, 45%, 0.6),
-      0 0 16px hsla(134, 85%, 45%, 0.4);
+      0 0 10px hsla(142, 76%, 52%, 0.8),
+      0 0 20px hsla(142, 76%, 52%, 0.5),
+      0 0 30px hsla(142, 76%, 52%, 0.3);
   }
 
   /* Enhanced UI improvements */
   .floating-element {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.2);
   }
 
   .message-hover-effect:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   }
 
   .gradient-border {
     position: relative;
-    background: linear-gradient(135deg, hsl(240, 6%, 8%), hsl(240, 4%, 12%));
+    background: linear-gradient(135deg, var(--surface-1), var(--surface-2));
+    border: 1px solid transparent;
   }
 
   .gradient-border::before {
@@ -137,11 +158,19 @@
     position: absolute;
     inset: 0;
     padding: 1px;
-    background: linear-gradient(135deg, hsl(134, 85%, 45%), hsl(51, 90%, 55%));
+    background: linear-gradient(135deg, 
+      var(--primary-green), 
+      var(--accent-yellow),
+      var(--accent-orange));
     border-radius: inherit;
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     -webkit-mask-composite: destination-out;
+    opacity: 0.8;
+  }
+
+  .gradient-border:hover::before {
+    opacity: 1;
   }
 
   .typing-indicator {

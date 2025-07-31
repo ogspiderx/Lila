@@ -121,7 +121,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       {/* Chat Header - Fixed */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
