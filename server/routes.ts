@@ -125,11 +125,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { expiresIn: '7d' } // 7 days
       );
 
-      // Set secure cookie
+      // Set secure cookie that JavaScript can read for WebSocket auth
       res.cookie('authToken', token, {
-        httpOnly: true,
+        httpOnly: false, // Allow JavaScript access for WebSocket authentication
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax', // More permissive for Replit environment
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         path: '/',
       });
@@ -144,9 +144,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Secure logout endpoint
   app.post("/api/auth/logout", (req, res) => {
     res.clearCookie('authToken', {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
     });
     res.json({ message: "Logged out successfully" });
