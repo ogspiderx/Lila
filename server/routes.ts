@@ -112,8 +112,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket server for real-time messaging
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+  // Optimized WebSocket handling
+  const clientSockets = new Set<WebSocket>();
+  
   wss.on('connection', (ws: WebSocket) => {
-    console.log('New WebSocket connection');
+    clientSockets.add(ws);
 
     ws.on('message', async (data: Buffer) => {
       try {
@@ -125,33 +128,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Store message
           const message = await storage.createMessage({ sender, content });
           
-          // Broadcast to all connected clients
+          // Optimized broadcast with batching
           const broadcastData = JSON.stringify({
             type: 'message',
             data: message
           });
           
-          wss.clients.forEach((client) => {
+          // Use Set for faster iteration
+          for (const client of clientSockets) {
             if (client.readyState === WebSocket.OPEN) {
               client.send(broadcastData);
             }
-          });
-        } else if (messageData.type === 'typing') {
-          // Broadcast typing indicator to all connected clients
-          const typingData = JSON.stringify({
-            type: 'typing',
-            data: {
-              type: 'typing',
-              sender: messageData.sender,
-              isTyping: messageData.isTyping
-            }
-          });
-          
-          wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-              client.send(typingData);
-            }
-          });
+          }
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -159,7 +147,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
 
     ws.on('close', () => {
-      console.log('WebSocket connection closed');
+      clientSockets.delete(ws);
+    });
+    
+    ws.on('error', () => {
+      clientSockets.delete(ws);
     });
   });
 

@@ -31,8 +31,6 @@ export const VirtualizedMessageList = memo(function VirtualizedMessageList({
     currentUser,
   }), [messages, currentUser]);
 
-  const getItemSize = useCallback(() => 80, []); // Approximate height per message
-
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-slate-400">
@@ -45,7 +43,7 @@ export const VirtualizedMessageList = memo(function VirtualizedMessageList({
     <List
       height={height}
       itemCount={messages.length}
-      itemSize={getItemSize}
+      itemSize={80}
       itemData={itemData}
       overscanCount={5}
       className="scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800"

@@ -31,21 +31,12 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api") && !path.includes("/read")) {
+    // Only log slow requests or errors to reduce noise
+    if (path.startsWith("/api") && (duration > 100 || res.statusCode >= 400)) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse && Object.keys(capturedJsonResponse).length > 0) {
-        const responseStr = JSON.stringify(capturedJsonResponse);
-        if (responseStr.length > 100) {
-          logLine += ` :: ${responseStr.slice(0, 100)}...`;
-        } else {
-          logLine += ` :: ${responseStr}`;
-        }
+      if (res.statusCode >= 400 && capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse).slice(0, 50)}...`;
       }
-
-      if (logLine.length > 150) {
-        logLine = logLine.slice(0, 149) + "…";
-      }
-
       log(logLine);
     }
   });

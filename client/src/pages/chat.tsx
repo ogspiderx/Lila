@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LogOut, Send, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
 
-import { useWebSocket } from "@/hooks/use-websocket";
+import { useOptimizedWebSocket } from "@/hooks/use-optimized-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
 
 import { useQuery } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ export default function Chat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [, setLocation] = useLocation();
   
-  const { isConnected, messages: wsMessages, sendMessage, setMessages } = useWebSocket();
+  const { isConnected, messages: wsMessages, sendMessage, setMessages } = useOptimizedWebSocket();
 
   // Load current user from cookie-based auth with aggressive caching
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -68,7 +68,12 @@ export default function Chat() {
     // Only add WebSocket messages that don't exist
     wsMessages.forEach(message => {
       if (!existingIds.has(message.id)) {
-        allMessages.push(message);
+        // Normalize timestamp for consistent sorting
+        const normalizedMessage = {
+          ...message,
+          timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)
+        };
+        allMessages.push(normalizedMessage);
       }
     });
     

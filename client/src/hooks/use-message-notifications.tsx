@@ -144,31 +144,32 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
     };
   }, []);
 
-  // Handle new messages - optimized with throttling
+  // Handle new messages - throttled and optimized
   useEffect(() => {
     if (!currentUser || !messages.length) return;
 
     const currentMessageCount = messages.length;
-    const hasNewMessage = currentMessageCount > previousMessageCountRef.current;
+    if (currentMessageCount <= previousMessageCountRef.current) {
+      previousMessageCountRef.current = currentMessageCount;
+      return;
+    }
+
+    const latestMessage = messages[messages.length - 1];
+    const isFromOtherUser = latestMessage.sender !== currentUser.username;
     
-    if (hasNewMessage && previousMessageCountRef.current > 0) {
-      const latestMessage = messages[messages.length - 1];
-      const isFromOtherUser = latestMessage.sender !== currentUser.username;
-      
-      if (isFromOtherUser && !isTabFocused) {
-        // Batch updates to reduce re-renders
-        setTimeout(() => {
-          setUnreadCount(prev => prev + 1);
-          if (soundEnabled) {
-            playNotificationSound();
-          }
-          showDesktopNotification(latestMessage.sender, latestMessage.content);
-        }, 0);
-      }
+    if (isFromOtherUser && !isTabFocused) {
+      // Use requestAnimationFrame for better performance
+      requestAnimationFrame(() => {
+        setUnreadCount(prev => prev + 1);
+        if (soundEnabled) {
+          playNotificationSound();
+        }
+        showDesktopNotification(latestMessage.sender, latestMessage.content);
+      });
     }
     
     previousMessageCountRef.current = currentMessageCount;
-  }, [messages.length, currentUser?.username, isTabFocused, soundEnabled]); // Optimized dependencies
+  }, [messages.length, currentUser?.username, isTabFocused, soundEnabled]);
 
   // Update page title with unread count
   useEffect(() => {
