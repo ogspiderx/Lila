@@ -92,21 +92,13 @@ export function useWebSocket() {
     };
   }, []);
 
-  const sendMessage = (sender: string, content: string, replyToId?: string, replyToSender?: string, replyToContent?: string) => {
+  const sendMessage = (sender: string, content: string) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
-      const messageData: any = {
+      ws.current.send(JSON.stringify({
         type: "message",
         sender,
         content
-      };
-      
-      if (replyToId) {
-        messageData.replyToId = replyToId;
-        messageData.replyToSender = replyToSender;
-        messageData.replyToContent = replyToContent;
-      }
-      
-      ws.current.send(JSON.stringify(messageData));
+      }));
     }
   };
 

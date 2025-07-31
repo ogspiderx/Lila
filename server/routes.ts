@@ -106,32 +106,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get messages with read receipts
-  app.get("/api/messages/with-reads", requireAuth, async (req, res) => {
-    try {
-      const messagesWithReads = await storage.getMessagesWithReads();
-      
-      // Add cache headers for messages
-      res.set('Cache-Control', 'private, max-age=5, stale-while-revalidate=15');
-      res.json(messagesWithReads);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch messages with reads" });
-    }
-  });
-
-  // Mark message as read
-  app.post("/api/messages/:messageId/read", requireAuth, async (req: any, res) => {
-    try {
-      const { messageId } = req.params;
-      const userId = req.user.id;
-      
-      await storage.markMessageAsRead(messageId, userId);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to mark message as read" });
-    }
-  });
-
   const httpServer = createServer(app);
 
   // WebSocket server for real-time messaging
@@ -145,16 +119,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const messageData = JSON.parse(data.toString());
         
         if (messageData.type === 'message') {
-          const { sender, content, replyToId, replyToSender, replyToContent } = insertMessageSchema.parse(messageData);
+          const { sender, content } = insertMessageSchema.parse(messageData);
           
-          // Store message with optional reply data
-          const message = await storage.createMessage({ 
-            sender, 
-            content, 
-            replyToId: replyToId || null,
-            replyToSender: replyToSender || null,
-            replyToContent: replyToContent || null
-          });
+          // Store message
+          const message = await storage.createMessage({ sender, content });
           
           // Broadcast to all connected clients
           const broadcastData = JSON.stringify({
