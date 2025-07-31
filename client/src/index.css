@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(134, 100%, 50%);
+  --primary-foreground: hsl(240, 10%, 3.9%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(51, 100%, 50%);
+  --accent-foreground: hsl(240, 10%, 3.9%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.75rem;
+  
+  --primary-green: hsl(134, 100%, 50%);
+  --accent-yellow: hsl(51, 100%, 50%);
+  --dark-bg: hsl(240, 10%, 3.9%);
+  --dark-surface: hsl(240, 6%, 10%);
+  --dark-surface-light: hsl(240, 5%, 12%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .glow-green {
+    box-shadow: 0 0 20px hsla(134, 100%, 50%, 0.3);
+    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glow-green:hover {
+    box-shadow: 0 0 30px hsla(134, 100%, 50%, 0.5);
+  }
+  
+  .glow-yellow {
+    box-shadow: 0 0 15px hsla(51, 100%, 50%, 0.3);
+  }
+  
+  .ultra-smooth {
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .chat-gradient {
+    background: linear-gradient(135deg, hsl(240, 10%, 3.9%) 0%, hsl(240, 8%, 6%) 100%);
+  }
+  
+  .login-gradient {
+    background: radial-gradient(ellipse at center, hsl(240, 6%, 10%) 0%, hsl(240, 10%, 3.9%) 70%);
+  }
+  
+  .scroll-smooth {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(134, 100%, 50%) hsl(240, 6%, 10%);
+  }
+  
+  .scroll-smooth::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scroll-smooth::-webkit-scrollbar-track {
+    background: hsl(240, 6%, 10%);
+  }
+  
+  .scroll-smooth::-webkit-scrollbar-thumb {
+    background: hsl(134, 100%, 50%);
+    border-radius: 3px;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes glow {
+    0% { 
+      text-shadow: 0 0 20px hsla(134, 100%, 50%, 0.3);
+    }
+    100% { 
+      text-shadow: 0 0 30px hsla(134, 100%, 50%, 0.6);
+    }
+  }
+  
+  .animate-slide-in-up {
+    animation: slideInUp 0.3s ease-out;
+  }
+  
+  @keyframes slideInUp {
+    0% { 
+      transform: translateY(20px); 
+      opacity: 0; 
+    }
+    100% { 
+      transform: translateY(0); 
+      opacity: 1; 
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+}
