@@ -10,21 +10,21 @@ export async function setupTestUsers() {
     const existingXiu = await storage.getUserByUsername('xiu');
 
     if (!existingWale) {
-      const hashedPassword = await bcrypt.hash('password', SALT_ROUNDS);
+      const hashedPassword = await bcrypt.hash('password123', SALT_ROUNDS);
       await storage.createUser({
         username: 'wale',
         password: hashedPassword
       });
-      console.log('Created test user: wale');
+      console.log('Created test user: wale with password: password123');
     }
 
     if (!existingXiu) {
-      const hashedPassword = await bcrypt.hash('password', SALT_ROUNDS);
+      const hashedPassword = await bcrypt.hash('password123', SALT_ROUNDS);
       await storage.createUser({
         username: 'xiu',
         password: hashedPassword
       });
-      console.log('Created test user: xiu');
+      console.log('Created test user: xiu with password: password123');
     }
   } catch (error) {
     console.error('Failed to setup test users:', error);
