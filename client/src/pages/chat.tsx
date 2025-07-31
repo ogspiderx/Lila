@@ -8,7 +8,7 @@ import { MessageBubble } from "@/components/ui/message-bubble";
 import { TypingIndicator } from "@/components/ui/typing-indicator";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
-import { useSoundNotifications } from "@/hooks/use-sound-notifications";
+
 import { useQuery } from "@tanstack/react-query";
 import type { Message, WebSocketMessage } from "@shared/schema";
 
@@ -17,8 +17,6 @@ export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const { playNotification } = useSoundNotifications({ enabled: soundEnabled });
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -79,17 +77,7 @@ export default function Chat() {
   });
 
   // Initialize message notifications with all sorted messages
-  const { unreadCount } = useMessageNotifications(sortedMessages, currentUser);
-  
-  // Play sound notification for new messages from others
-  useEffect(() => {
-    if (wsMessages.length > 0) {
-      const lastMessage = wsMessages[wsMessages.length - 1];
-      if (lastMessage.sender !== currentUser?.username) {
-        playNotification();
-      }
-    }
-  }, [wsMessages, currentUser?.username, playNotification]);
+  const { unreadCount } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

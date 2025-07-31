@@ -7,7 +7,7 @@ interface Message {
   timestamp: number | Date;
 }
 
-export function useMessageNotifications(messages: Message[], currentUser: { username: string } | null) {
+export function useMessageNotifications(messages: Message[], currentUser: { username: string } | null, soundEnabled: boolean = false) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isTabFocused, setIsTabFocused] = useState(true);
   const previousMessageCountRef = useRef(0);
@@ -75,7 +75,9 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
       if (isFromOtherUser) {
         if (!isTabFocused) {
           setUnreadCount(prev => prev + 1);
-          playNotificationSound();
+          if (soundEnabled) {
+            playNotificationSound();
+          }
         }
       }
     }
