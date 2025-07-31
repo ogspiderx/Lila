@@ -12,7 +12,8 @@ export function useOptimizedWebSocket() {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+    const host = window.location.host;
+    const ws = new WebSocket(`${protocol}//${host}/ws`);
     
     ws.onopen = () => {
       console.log('WebSocket connected');
@@ -69,13 +70,24 @@ export function useOptimizedWebSocket() {
       }
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
+    ws.onclose = (event) => {
+      console.log('WebSocket disconnected, code:', event.code);
       setIsConnected(false);
+      wsRef.current = null;
       
-      // Exponential backoff reconnection
-      const delay = Math.min(1000 * Math.pow(2, 0), 30000);
-      reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
+      // Only reconnect for specific error codes, avoid infinite loops
+      if (event.code !== 1000 && event.code !== 4000 && event.code !== 4003 && event.code !== 4004) {
+        reconnectTimeoutRef.current = setTimeout(() => {
+          // Only reconnect if we still have a valid auth token
+          const authToken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('authToken='))
+            ?.split('=')[1];
+          if (authToken) {
+            connectWebSocket();
+          }
+        }, 5000); // Increased delay to prevent rapid reconnections
+      }
     };
 
     ws.onerror = (error) => {

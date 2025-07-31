@@ -30,10 +30,6 @@ export default function Login() {
         const response = await fetch("/api/auth/user", {
           credentials: "include",
           signal: controller.signal,
-          // Add cache control for faster subsequent requests
-          headers: {
-            'Cache-Control': 'max-age=60'
-          }
         });
         if (response.ok) {
           setLocation("/welcome");

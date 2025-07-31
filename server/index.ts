@@ -7,8 +7,8 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Trust proxy for Replit environment
-app.set('trust proxy', true);
+// Trust proxy for Replit environment - set to 1 to avoid warnings
+app.set('trust proxy', 1);
 
 // Security headers middleware
 app.use(helmet({
@@ -35,6 +35,7 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true,
 });
 app.use('/api/', limiter);
 
@@ -45,6 +46,7 @@ const authLimiter = rateLimit({
   message: "Too many authentication attempts, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true,
 });
 app.use('/api/auth/login', authLimiter);
 
