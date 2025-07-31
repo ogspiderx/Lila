@@ -90,11 +90,11 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
         >
           {/* Reply to message indicator */}
           {hasReplyTo && (
-            <div className="mb-2 pb-2 border-b border-white/20">
-              <div className="text-xs opacity-75">
-                <span className="font-medium">↳ {message.replyToSender}</span>
+            <div className={`mb-2 pb-2 border-b ${isCurrentUser ? 'border-white/30' : 'border-slate-400/30'}`}>
+              <div className={`text-xs font-medium ${isCurrentUser ? 'text-emerald-100' : 'text-slate-200'}`}>
+                ↳ {message.replyToSender}
               </div>
-              <div className="text-xs opacity-60 truncate">
+              <div className={`text-xs truncate ${isCurrentUser ? 'text-emerald-50/90' : 'text-slate-300/90'}`}>
                 {message.replyToContent}
               </div>
             </div>
