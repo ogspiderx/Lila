@@ -4,7 +4,13 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LogIn, AlertCircle } from "lucide-react";
@@ -21,7 +27,7 @@ export default function Login() {
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/auth/user", {
-          credentials: 'include'
+          credentials: "include",
         });
         if (response.ok) {
           setLocation("/chat");
@@ -32,7 +38,7 @@ export default function Login() {
       }
       setIsLoading(false);
     };
-    
+
     checkAuth();
   }, [setLocation]);
 
@@ -47,7 +53,7 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
@@ -105,7 +111,10 @@ export default function Login() {
             <CardContent className="p-6 sm:p-8 relative z-10">
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
-                  <Label htmlFor="username" className="text-sm font-medium text-card-foreground mb-2 block">
+                  <Label
+                    htmlFor="username"
+                    className="text-sm font-medium text-card-foreground mb-2 block"
+                  >
                     Username
                   </Label>
                   <Select value={username} onValueChange={setUsername}>
@@ -113,14 +122,21 @@ export default function Login() {
                       <SelectValue placeholder="Select your identity" />
                     </SelectTrigger>
                     <SelectContent className="select-content">
-                      <SelectItem value="Wale" className="select-item">Wale</SelectItem>
-                      <SelectItem value="Xiu" className="select-item">Xiu</SelectItem>
+                      <SelectItem value="Wale" className="select-item">
+                        Wale
+                      </SelectItem>
+                      <SelectItem value="Xiu" className="select-item">
+                        Xiu
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="password" className="text-sm font-medium text-card-foreground mb-2 block">
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-medium text-card-foreground mb-2 block"
+                  >
                     Password
                   </Label>
                   <Input
@@ -128,7 +144,7 @@ export default function Login() {
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your secret key"
+                    placeholder="Enter your password..."
                     className="w-full input-field rounded-lg smooth-transition h-11"
                   />
                 </div>
@@ -150,9 +166,14 @@ export default function Login() {
                   transition={{ duration: 0.3 }}
                   className="mt-4"
                 >
-                  <Alert variant="destructive" className="bg-destructive/20 border-destructive/50 backdrop-blur-sm">
+                  <Alert
+                    variant="destructive"
+                    className="bg-destructive/20 border-destructive/50 backdrop-blur-sm"
+                  >
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">{error}</AlertDescription>
+                    <AlertDescription className="text-sm">
+                      {error}
+                    </AlertDescription>
                   </Alert>
                 </motion.div>
               )}

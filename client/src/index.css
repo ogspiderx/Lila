@@ -34,7 +34,6 @@
 @layer base {
   * {
     @apply border-border;
-    cursor: none;
   }
 
   body {
@@ -50,35 +49,7 @@
     scroll-behavior: smooth;
   }
 
-  /* Custom cursor */
-  .custom-cursor {
-    position: fixed;
-    width: 20px;
-    height: 20px;
-    background: radial-gradient(circle, var(--primary-green) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    mix-blend-mode: screen;
-    transition: transform 0.1s ease-out;
-  }
 
-  .custom-cursor.clicking {
-    transform: scale(0.5);
-    background: radial-gradient(circle, var(--accent-yellow) 0%, transparent 70%);
-  }
-
-  /* Cursor trail */
-  .cursor-trail {
-    position: fixed;
-    width: 4px;
-    height: 4px;
-    background: var(--primary-green);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9998;
-    opacity: 0.6;
-  }
 }
 
 @layer components {
