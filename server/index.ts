@@ -5,10 +5,10 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Add compression middleware
+// Add aggressive compression middleware
 app.use(compression({
-  level: 6,
-  threshold: 1024,
+  level: 9, // Maximum compression
+  threshold: 512, // Compress smaller responses
   filter: (req: any, res: any) => {
     if (req.headers['x-no-compression']) return false;
     return compression.filter(req, res);

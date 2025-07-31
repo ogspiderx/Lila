@@ -29,7 +29,12 @@ export function useWebSocket() {
         try {
           const message: WebSocketEventMessage = JSON.parse(event.data);
           if (message.type === "message" && message.data) {
-            setMessages(prev => [...prev, message.data as WebSocketMessage]);
+            setMessages(prev => {
+              // Check for duplicates before adding
+              const newMessage = message.data as WebSocketMessage;
+              const exists = prev.some(m => m.id === newMessage.id);
+              return exists ? prev : [...prev, newMessage];
+            });
           } else if (message.type === "typing" && message.data) {
             const typingData = message.data as TypingMessage;
             setTypingUsers(prev => {

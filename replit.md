@@ -13,9 +13,9 @@ Preferred communication style: Simple, everyday language.
 ### January 31, 2025 - Migration & Performance Optimization Complete
 - **Migration Completed**: Successfully migrated from Replit Agent to standard Replit environment with PostgreSQL database
 - **Performance Optimization**: Fixed excessive API calls and implemented efficient caching strategies
-- **Server-side Caching**: Database queries cached for 5 minutes, user authentication cached for 30 seconds
-- **HTTP Compression**: Gzip compression reducing response sizes by 60-80%
-- **Client Optimization**: React Query with 5-minute stale time, disabled unnecessary refetching
+- **Server-side Caching**: Database queries cached for 10 minutes, user authentication cached for 5 minutes
+- **HTTP Compression**: Maximum Gzip compression reducing response sizes by 60-80%
+- **Client Optimization**: React Query with 15-minute stale time, disabled unnecessary refetching
 - **Database Performance**: Limited queries to 50 recent messages with smart caching
 - **Logging Optimization**: Reduced verbose logging and filtered out non-essential API calls
 - **Component Memoization**: Message components optimized with React.memo for better performance

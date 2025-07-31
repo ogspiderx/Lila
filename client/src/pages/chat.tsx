@@ -24,12 +24,16 @@ export default function Chat() {
   
   const { isConnected, messages: wsMessages, sendMessage, setMessages } = useWebSocket();
 
-  // Load current user from cookie-based auth with react-query
+  // Load current user from cookie-based auth with aggressive caching
   const { data: userData, isLoading: userLoading } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   useEffect(() => {
@@ -40,40 +44,42 @@ export default function Chat() {
     }
   }, [userData, userLoading, setLocation]);
 
-  // Fetch existing messages with optimized query
+  // Fetch existing messages with aggressive caching
   const { data: existingMessages, isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
     enabled: !!currentUser,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 15 * 60 * 1000, // 15 minutes - very long stale time
+    gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+    refetchInterval: false,
+    refetchIntervalInBackground: false,
   });
 
-  // Optimize message processing with useMemo
+  // Ultra-optimized message processing with useMemo
   const sortedMessages = useMemo(() => {
     if (!existingMessages && wsMessages.length === 0) return [];
     
-    // Create a Map for faster duplicate checking
-    const messageMap = new Map<string, Message | WebSocketMessage>();
+    // Use Set for O(1) lookup of existing IDs
+    const existingIds = new Set(existingMessages?.map(m => m.id) || []);
+    const allMessages = [...(existingMessages || [])];
     
-    // Add existing messages
-    existingMessages?.forEach(message => {
-      messageMap.set(message.id, message);
-    });
-    
-    // Add WebSocket messages (they override existing ones if same ID)
+    // Only add WebSocket messages that don't exist
     wsMessages.forEach(message => {
-      messageMap.set(message.id, message);
+      if (!existingIds.has(message.id)) {
+        allMessages.push(message);
+      }
     });
     
-    // Convert to array and sort
-    return Array.from(messageMap.values()).sort((a, b) => {
+    // Sort once at the end
+    allMessages.sort((a, b) => {
       const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
       const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
       return aTime - bTime;
     });
+    
+    return allMessages;
   }, [existingMessages, wsMessages]);
 
   // Initialize message notifications with all sorted messages
@@ -95,9 +101,13 @@ export default function Chat() {
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive - debounced
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const timeoutId = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50); // Small delay to batch updates
+    
+    return () => clearTimeout(timeoutId);
   }, [sortedMessages]);
 
   // Auto-resize textarea

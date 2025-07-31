@@ -17,7 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add caching middleware for auth endpoints
   const authCache = new Map<string, { user: any, timestamp: number }>();
-  const AUTH_CACHE_TTL = 30 * 1000; // 30 seconds
+  const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5 minutes - longer auth cache
 
   // Auth middleware to check if user is logged in
   const requireAuth = async (req: any, res: any, next: any) => {
@@ -57,8 +57,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userResponse = { user: { id: user.id, username: user.username } };
     authCache.set(userId, { user: userResponse, timestamp: Date.now() });
     
-    // Add cache headers
-    res.set('Cache-Control', 'private, max-age=30');
+    // Add aggressive cache headers
+    res.set('Cache-Control', 'private, max-age=300'); // 5 minutes
     res.json(userResponse);
   });
 
@@ -93,13 +93,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Logged out successfully" });
   });
 
-  // Get chat messages with caching
+  // Get chat messages with aggressive caching
   app.get("/api/messages", requireAuth, async (req, res) => {
     try {
       const messages = await storage.getMessages();
       
-      // Add cache headers for messages
-      res.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60');
+      // Add aggressive cache headers for messages
+      res.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600'); // 5 min cache, 10 min stale
+      res.set('ETag', `"${Date.now()}"`);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch messages" });

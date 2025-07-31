@@ -144,7 +144,7 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
     };
   }, []);
 
-  // Handle new messages
+  // Handle new messages - optimized with throttling
   useEffect(() => {
     if (!currentUser || !messages.length) return;
 
@@ -155,21 +155,20 @@ export function useMessageNotifications(messages: Message[], currentUser: { user
       const latestMessage = messages[messages.length - 1];
       const isFromOtherUser = latestMessage.sender !== currentUser.username;
       
-      if (isFromOtherUser) {
-        if (!isTabFocused) {
+      if (isFromOtherUser && !isTabFocused) {
+        // Batch updates to reduce re-renders
+        setTimeout(() => {
           setUnreadCount(prev => prev + 1);
-          // Only play sound when tab is not focused AND sound is enabled
           if (soundEnabled) {
             playNotificationSound();
           }
-          // Show desktop notification when tab is not focused
           showDesktopNotification(latestMessage.sender, latestMessage.content);
-        }
+        }, 0);
       }
     }
     
     previousMessageCountRef.current = currentMessageCount;
-  }, [messages, currentUser, isTabFocused, soundEnabled, notificationPermission]);
+  }, [messages.length, currentUser?.username, isTabFocused, soundEnabled]); // Optimized dependencies
 
   // Update page title with unread count
   useEffect(() => {
