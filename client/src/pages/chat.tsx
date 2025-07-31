@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { LogOut, Send, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
-import { TypingIndicator } from "@/components/ui/typing-indicator";
+
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
 
@@ -255,18 +255,23 @@ export default function Chat() {
                 ))}
                 
                 {/* Show typing indicators for other users */}
-                {(() => {
-                  console.log('Current typing users:', Array.from(typingUsers.entries()));
-                  return Array.from(typingUsers.entries())
-                    .filter(([sender]) => {
-                      const shouldShow = sender !== currentUser?.username;
-                      console.log('Typing indicator filter:', { sender, currentUser: currentUser?.username, shouldShow });
-                      return shouldShow;
-                    })
-                    .map(([sender]) => (
-                      <TypingIndicator key={`typing-${sender}`} sender={sender} />
-                    ));
-                })()}
+                {Array.from(typingUsers.entries())
+                  .filter(([sender]) => sender !== currentUser?.username)
+                  .map(([sender]) => (
+                    <div key={`typing-${sender}`} className="flex justify-start mb-3">
+                      <div className="bg-slate-700/50 border border-emerald-500/30 rounded-lg px-4 py-2 max-w-xs">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-emerald-400 text-sm font-medium">{sender}</span>
+                          <span className="text-slate-300 text-sm">is typing</span>
+                          <div className="flex space-x-1">
+                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
               </AnimatePresence>
             )}
             <div ref={messagesEndRef} />
@@ -293,9 +298,9 @@ export default function Chat() {
                     onChange={(e) => {
                       setMessageInput(e.target.value);
                       
-                      // Handle typing indicator
-                      if (currentUser && e.target.value.trim() !== "") {
-                        if (!isTyping) {
+                      // Handle typing indicator - trigger on any text input
+                      if (currentUser) {
+                        if (e.target.value !== "" && !isTyping) {
                           setIsTyping(true);
                           sendTyping(currentUser.username, true);
                         }
@@ -305,18 +310,21 @@ export default function Chat() {
                           clearTimeout(typingTimeoutRef.current);
                         }
                         
-                        // Set new timeout to stop typing indicator (longer timeout for continuous typing)
+                        // Set new timeout to stop typing indicator
                         typingTimeoutRef.current = setTimeout(() => {
                           if (currentUser) {
                             setIsTyping(false);
                             sendTyping(currentUser.username, false);
                           }
-                        }, 2500); // Increased to 2.5 seconds
-                      } else if (isTyping && currentUser) {
-                        setIsTyping(false);
-                        sendTyping(currentUser.username, false);
-                        if (typingTimeoutRef.current) {
-                          clearTimeout(typingTimeoutRef.current);
+                        }, 1500);
+                        
+                        // If input is empty, immediately stop typing indicator
+                        if (e.target.value === "" && isTyping) {
+                          setIsTyping(false);
+                          sendTyping(currentUser.username, false);
+                          if (typingTimeoutRef.current) {
+                            clearTimeout(typingTimeoutRef.current);
+                          }
                         }
                       }
                     }}

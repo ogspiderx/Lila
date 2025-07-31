@@ -32,12 +32,10 @@ export function useWebSocket() {
             setMessages(prev => [...prev, message.data as WebSocketMessage]);
           } else if (message.type === "typing" && message.data) {
             const typingData = message.data as TypingMessage;
-            console.log('Received typing indicator:', typingData);
             setTypingUsers(prev => {
               const updated = new Map(prev);
               if (typingData.isTyping) {
                 updated.set(typingData.sender, true);
-                console.log('Set typing for user:', typingData.sender);
                 // Clear existing timeout for this user
                 const existingTimeout = typingTimeouts.current.get(typingData.sender);
                 if (existingTimeout) {
@@ -45,18 +43,16 @@ export function useWebSocket() {
                 }
                 // Set new timeout to auto-clear typing status
                 const timeout = setTimeout(() => {
-                  console.log('Auto-clearing typing for user:', typingData.sender);
                   setTypingUsers(prev => {
                     const updated = new Map(prev);
                     updated.delete(typingData.sender);
                     return updated;
                   });
                   typingTimeouts.current.delete(typingData.sender);
-                }, 3000);
+                }, 2000);
                 typingTimeouts.current.set(typingData.sender, timeout);
               } else {
                 updated.delete(typingData.sender);
-                console.log('Cleared typing for user:', typingData.sender);
                 // Clear timeout
                 const existingTimeout = typingTimeouts.current.get(typingData.sender);
                 if (existingTimeout) {
@@ -108,7 +104,6 @@ export function useWebSocket() {
 
   const sendTyping = useCallback((sender: string, isTyping: boolean) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
-      console.log('Sending typing indicator:', { sender, isTyping });
       ws.current.send(JSON.stringify({
         type: "typing",
         sender,
