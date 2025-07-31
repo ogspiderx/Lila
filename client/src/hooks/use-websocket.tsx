@@ -12,32 +12,49 @@ export function useWebSocket() {
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
-    ws.current = new WebSocket(wsUrl);
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      ws.current = new WebSocket(wsUrl);
 
-    ws.current.onopen = () => {
-      setIsConnected(true);
-    };
+      ws.current.onopen = () => {
+        console.log("WebSocket connected");
+        setIsConnected(true);
+      };
 
-    ws.current.onmessage = (event) => {
-      try {
-        const message: WebSocketMessage = JSON.parse(event.data);
-        if (message.type === "message" && message.data) {
-          setMessages(prev => [...prev, message.data!]);
+      ws.current.onmessage = (event) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          if (message.type === "message" && message.data) {
+            setMessages(prev => [...prev, message.data!]);
+          }
+        } catch (error) {
+          console.error("Failed to parse WebSocket message:", error);
         }
-      } catch (error) {
-        console.error("Failed to parse WebSocket message:", error);
-      }
+      };
+
+      ws.current.onclose = (event) => {
+        console.log("WebSocket disconnected", event.code, event.reason);
+        setIsConnected(false);
+        
+        // Reconnect after 3 seconds if not a manual close
+        if (event.code !== 1000) {
+          setTimeout(connectWebSocket, 3000);
+        }
+      };
+
+      ws.current.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
     };
 
-    ws.current.onclose = () => {
-      setIsConnected(false);
-    };
+    connectWebSocket();
 
     return () => {
-      ws.current?.close();
+      if (ws.current) {
+        ws.current.close(1000, "Component unmounting");
+      }
     };
   }, []);
 

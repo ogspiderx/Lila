@@ -16,18 +16,27 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ 
+        duration: 0.4, 
+        ease: [0.23, 1, 0.32, 1],
+        scale: { type: "spring", damping: 20, stiffness: 300 }
+      }}
       className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
     >
-      <div
+      <motion.div
+        whileHover={{ 
+          scale: 1.02,
+          y: -2,
+          transition: { duration: 0.2, ease: "easeOut" }
+        }}
         className={`
           ${isCurrentUser 
-            ? "bg-primary text-primary-foreground rounded-br-sm" 
-            : "bg-card text-card-foreground glow-green rounded-bl-sm"
+            ? "bg-primary text-primary-foreground rounded-br-sm hover:shadow-lg hover:shadow-primary/30" 
+            : "bg-card text-card-foreground glow-green rounded-bl-sm hover:glow-green"
           } 
-          rounded-2xl px-4 py-3 max-w-md smooth-transition
+          rounded-2xl px-4 py-3 max-w-md butter-smooth cursor-pointer
         `}
       >
         <div className={`flex items-center space-x-2 mb-1 ${isCurrentUser ? "justify-end" : ""}`}>
@@ -48,7 +57,7 @@ export function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
         <p className={isCurrentUser ? "text-primary-foreground" : "text-card-foreground"}>
           {message.content}
         </p>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

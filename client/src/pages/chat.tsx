@@ -100,13 +100,13 @@ export default function Chat() {
       >
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-primary glow-green animate-glow">
+            <h1 className="text-3xl font-bold text-primary glow-text-green animate-glow tracking-wide">
               Lila
             </h1>
             <div className="flex items-center space-x-2 text-muted-foreground">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-primary animate-pulse' : 'bg-destructive'}`} />
-              <span className="text-sm">
-                {isConnected ? "Connected" : "Disconnected"}
+              <div className={`w-3 h-3 rounded-full transition-all duration-500 ${isConnected ? 'bg-primary animate-pulse-green' : 'bg-destructive animate-bounce-subtle'}`} />
+              <span className="text-sm font-medium">
+                {isConnected ? "Connected" : "Reconnecting..."}
               </span>
             </div>
           </div>

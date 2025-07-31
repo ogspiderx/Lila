@@ -53,7 +53,7 @@ export default function Login() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-center mb-12"
         >
-          <h1 className="text-6xl font-bold text-primary glow-green mb-4 animate-glow">
+          <h1 className="text-7xl font-bold text-primary glow-text-green mb-4 animate-glow tracking-wide">
             Lila
           </h1>
           <p className="text-muted-foreground text-lg font-light">
