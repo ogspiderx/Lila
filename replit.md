@@ -4,21 +4,13 @@
 
 This is a full-stack real-time chat application built with a modern web stack. The application features a React frontend with TypeScript, an Express.js backend, PostgreSQL database with Drizzle ORM, and WebSocket integration for real-time messaging. The UI is built using shadcn/ui components with Tailwind CSS for styling.
 
+**Latest Feature**: Free real-time message translation using Google Translate API without any cost. Users can translate messages to 20+ languages including Spanish, French, German, Japanese, Chinese, Arabic, and more.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (Latest Updates)
-
-### January 31, 2025 - Translation Feature Implementation Complete
-- **Free Translation Service**: Implemented translation feature using MyMemory API (no paid service required)
-- **Hover Translation Buttons**: Added translate button that appears on message hover for seamless user experience
-- **Original Content Preservation**: Click translates content while maintaining ability to undo and restore original
-- **Language Auto-Detection**: Automatically detects message language and translates to appropriate target language
-- **Visual Translation Indicators**: Added "Translated" indicator and translation state management
-- **Multi-Language Support**: Supports wide range of languages with automatic English↔Chinese defaults
-- **Real-time Translation**: Translation works on all messages (both database and WebSocket messages)
-- **User-Friendly Interface**: Intuitive translate/undo buttons with loading states and error handling
 
 ### January 31, 2025 - Migration to Replit Environment Complete
 - **Successfully Migrated**: Project migrated from Replit Agent to standard Replit environment
