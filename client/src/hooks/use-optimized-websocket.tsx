@@ -51,8 +51,8 @@ export function useOptimizedWebSocket() {
             if (message) ws.send(message);
           }
         } else if (data.type === 'message' && data.data) {
-          // Validate message data
-          if (data.data.id && data.data.sender && data.data.content && data.data.timestamp) {
+          // Validate message data - either content or file required
+          if (data.data.id && data.data.sender && data.data.timestamp && (data.data.content || data.data.fileUrl)) {
             const newMessage = {
               ...data.data,
               timestamp: new Date(data.data.timestamp).getTime()

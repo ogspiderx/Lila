@@ -111,7 +111,7 @@ export default function ChatOptimized() {
   // Memoize sorted messages for performance
   const displayMessages = useMemo(() => {
     return allMessages
-      .filter(msg => msg.content.trim())
+      .filter(msg => msg.content.trim() || msg.fileUrl)
       .slice(-50); // Display only last 50 messages
   }, [allMessages]);
 
