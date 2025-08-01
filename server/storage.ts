@@ -138,23 +138,7 @@ export class MemStorage implements IStorage {
       this.users.push(user);
     }
 
-    // Add some sample messages
-    const sampleMessages = [
-      { sender: 'wale', content: 'Welcome to our chat application!' },
-      { sender: 'xiu', content: 'Hello! This is a test message to get started.' },
-      { sender: 'wale', content: 'The real-time messaging is working perfectly.' }
-    ];
-
-    for (const msgData of sampleMessages) {
-      const message: Message = {
-        id: `msg-${this.messageIdCounter++}`,
-        sender: msgData.sender,
-        content: msgData.content,
-        timestamp: new Date(),
-        edited: false
-      };
-      this.messages.push(message);
-    }
+    // No starter messages - let users create their own messages
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -197,7 +181,5 @@ export class MemStorage implements IStorage {
 
 }
 
-// Use in-memory storage for development when DATABASE_URL is not available
-export const storage = process.env.DATABASE_URL 
-  ? new DatabaseStorage() 
-  : new MemStorage();
+// Always use database storage now that we have PostgreSQL configured
+export const storage = new DatabaseStorage();
