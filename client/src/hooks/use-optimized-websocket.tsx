@@ -105,26 +105,28 @@ export function useOptimizedWebSocket() {
             }
           }
         } else if (data.type === 'message_edited' && data.data) {
-          // Handle message edits
+          // Handle message edits - update for ALL users including sender
+          console.log('WebSocket: Received message edit:', data.data);
           setMessages(prev => prev.map(msg => 
             msg.id === data.data.id 
               ? { 
-                  ...data.data, 
-                  timestamp: new Date(data.data.timestamp).getTime(),
-                  edited: data.data.edited 
+                  ...msg,
+                  content: data.data.content,
+                  edited: true,
+                  timestamp: new Date(data.data.timestamp).getTime()
                 }
               : msg
           ));
         } else if (data.type === 'message_deleted') {
-          // Handle message deletions
+          // Handle message deletions - update for ALL users including sender
+          console.log('WebSocket: Received message delete:', data);
           if (data.data) {
             setMessages(prev => prev.map(msg => 
-              msg.id === data.messageId 
+              msg.id === data.messageId || msg.id === data.data.id
                 ? { 
                     ...msg, 
-                    content: data.data.content,
-                    edited: data.data.edited,
-                    timestamp: new Date(data.data.timestamp).getTime()
+                    content: "[This message was deleted]",
+                    edited: false
                   }
                 : msg
             ));
@@ -209,6 +211,7 @@ export function useOptimizedWebSocket() {
   }, [isConnected]);
 
   const editMessage = useCallback((messageId: string, newContent: string) => {
+    console.log('WebSocket: Sending edit message:', messageId, newContent);
     const message = JSON.stringify({
       type: "edit_message",
       messageId,
@@ -217,10 +220,13 @@ export function useOptimizedWebSocket() {
 
     if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
       wsRef.current.send(message);
+    } else {
+      console.error('WebSocket not connected, cannot send edit');
     }
   }, [isConnected]);
 
   const deleteMessage = useCallback((messageId: string) => {
+    console.log('WebSocket: Sending delete message:', messageId);
     const message = JSON.stringify({
       type: "delete_message",
       messageId
@@ -228,6 +234,8 @@ export function useOptimizedWebSocket() {
 
     if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
       wsRef.current.send(message);
+    } else {
+      console.error('WebSocket not connected, cannot send delete');
     }
   }, [isConnected]);
 

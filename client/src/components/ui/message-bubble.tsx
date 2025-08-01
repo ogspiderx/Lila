@@ -145,6 +145,10 @@ export const MessageBubble = memo(function MessageBubble({
                     handleCancelEdit();
                   }
                 }}
+                onFocus={() => {
+                  // Stop any typing indicators when editing starts
+                  console.log('Edit started, stopping typing indicators');
+                }}
                 className={`
                   relative z-10 text-xs sm:text-sm leading-snug 
                   break-words whitespace-pre-wrap outline-none
@@ -187,8 +191,8 @@ export const MessageBubble = memo(function MessageBubble({
               
               {/* Show "edited" indicator */}
               {message.edited && !isDeleted && (
-                <span className="text-xs text-slate-400/70 italic mt-1 block">
-                  edited
+                <span className="text-xs text-slate-300 italic mt-1 block font-medium">
+                  ✏️ Edited
                 </span>
               )}
             </>

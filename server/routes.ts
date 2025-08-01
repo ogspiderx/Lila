@@ -307,7 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           if (updatedMessage) {
-            // Broadcast edit to all authenticated clients
+            // Broadcast edit to ALL authenticated clients including sender
             const editData = JSON.stringify({
               type: 'message_edited',
               data: {
@@ -315,10 +315,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 sender: updatedMessage.sender,
                 content: updatedMessage.content,
                 timestamp: updatedMessage.timestamp,
-                edited: updatedMessage.edited || true
+                edited: true
               }
             });
             
+            console.log('Broadcasting message edit to all clients:', editData);
             for (const [client, clientInfo] of authenticatedSockets) {
               if (client.readyState === WebSocket.OPEN) {
                 client.send(editData);
@@ -336,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const deletedMessage = await storage.deleteMessage(messageData.messageId, userInfo.userId);
           
           if (deletedMessage) {
-            // Broadcast deletion to all authenticated clients
+            // Broadcast deletion to ALL authenticated clients including sender
             const deleteData = JSON.stringify({
               type: 'message_deleted',
               messageId: messageData.messageId,
@@ -349,6 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             });
             
+            console.log('Broadcasting message delete to all clients:', deleteData);
             for (const [client, clientInfo] of authenticatedSockets) {
               if (client.readyState === WebSocket.OPEN) {
                 client.send(deleteData);
