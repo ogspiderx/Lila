@@ -214,7 +214,7 @@ export default function Chat() {
                 >
                   <Sparkles className="w-6 h-6 text-emerald-400" />
                 </motion.div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-wide">
+                <h1 className="app-title text-3xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-wide">
                   Lila
                 </h1>
                 <motion.div

@@ -161,7 +161,7 @@ export default function Login() {
             >
               <Sparkles className="w-8 h-8 text-emerald-400 mr-3" />
             </motion.div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-wide">
+            <h1 className="app-title text-6xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-wide">
               Lila
             </h1>
             <motion.div
@@ -197,7 +197,7 @@ export default function Login() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
                 >
-                  <Label className="text-emerald-200 text-sm font-medium mb-3 block flex items-center">
+                  <Label className="ui-text text-emerald-200 text-sm font-medium mb-3 block flex items-center">
                     <User className="w-4 h-4 mr-2" />
                     Choose Your Identity
                   </Label>
@@ -221,7 +221,7 @@ export default function Login() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <Label className="text-emerald-200 text-sm font-medium mb-3 block flex items-center">
+                  <Label className="ui-text text-emerald-200 text-sm font-medium mb-3 block flex items-center">
                     <Lock className="w-4 h-4 mr-2" />
                     Secret Passphrase
                   </Label>
@@ -268,7 +268,7 @@ export default function Login() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
                     <LogIn className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                    <span>{isLoading ? "Opening the portal..." : "Enter the Enchanted Space"}</span>
+                    <span className="ui-text">{isLoading ? "Opening the portal..." : "Enter the Enchanted Space"}</span>
                     
                     {/* Romantic shine effect */}
                     <motion.div
