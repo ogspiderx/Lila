@@ -106,7 +106,7 @@ export class DatabaseStorage implements IStorage {
       return this.messagesCache.messages;
     }
 
-    const messagesList = await db.select().from(messages).orderBy(desc(messages.timestamp)).limit(50);
+    const messagesList = await db.select().from(messages).orderBy(messages.timestamp).limit(50);
     
     // Update cache
     this.messagesCache = { messages: messagesList, timestamp: Date.now() };
@@ -185,10 +185,10 @@ export class MemStorage implements IStorage {
   }
 
   async getMessages(): Promise<Message[]> {
-    // Return the last 50 messages, sorted by timestamp (newest first)
+    // Return the last 50 messages, sorted by timestamp (oldest first for proper display)
     return this.messages
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 50);
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+      .slice(-50);
   }
 
 

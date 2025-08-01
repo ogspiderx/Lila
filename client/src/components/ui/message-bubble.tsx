@@ -1,7 +1,7 @@
 
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
-import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText } from "lucide-react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,7 @@ export const MessageBubble = memo(function MessageBubble({
 }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [showImageModal, setShowImageModal] = useState(false);
   const isDeleted = message.content === "[This message was deleted]";
 
   const formatTime = (timestamp: Date | number) => {
@@ -93,7 +94,7 @@ export const MessageBubble = memo(function MessageBubble({
             className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
             onLoad={() => setImageLoading(false)}
             onError={() => setImageLoading(false)}
-            onClick={() => window.open(message.fileUrl, '_blank')}
+            onClick={() => setShowImageModal(true)}
           />
         </div>
       );
@@ -263,6 +264,26 @@ export const MessageBubble = memo(function MessageBubble({
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && message.fileUrl && message.fileType?.startsWith('image/') && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-[90vw] max-h-[90vh] p-4">
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute -top-2 -right-2 z-10 w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full flex items-center justify-center text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <img
+              src={message.fileUrl}
+              alt={message.fileName || 'Image'}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 });

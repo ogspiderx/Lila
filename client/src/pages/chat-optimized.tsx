@@ -102,10 +102,8 @@ export default function ChatOptimized() {
         messageMap.set(message.id, normalizedMessage);
       });
 
-      // Sort by timestamp (oldest first) so newest appear at bottom
-      return Array.from(messageMap.values())
-        .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-        .slice(-100); // Keep only last 100 messages for performance
+      // Messages are already sorted by backend, just keep the last 100 for performance
+      return Array.from(messageMap.values()).slice(-100);
     });
   }, [wsMessages]);
 
