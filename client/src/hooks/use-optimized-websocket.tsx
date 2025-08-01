@@ -107,29 +107,37 @@ export function useOptimizedWebSocket() {
         } else if (data.type === 'message_edited' && data.data) {
           // Handle message edits - update for ALL users including sender
           console.log('WebSocket: Received message edit:', data.data);
-          setMessages(prev => prev.map(msg => 
-            msg.id === data.data.id 
-              ? { 
-                  ...msg,
-                  content: data.data.content,
-                  edited: true,
-                  timestamp: new Date(data.data.timestamp).getTime()
-                }
-              : msg
-          ));
+          setMessages(prev => {
+            const updated = prev.map(msg => 
+              msg.id === data.data.id 
+                ? { 
+                    ...msg,
+                    content: data.data.content,
+                    edited: true,
+                    timestamp: new Date(data.data.timestamp).getTime()
+                  }
+                : msg
+            );
+            console.log('Updated messages after edit:', updated);
+            return updated;
+          });
         } else if (data.type === 'message_deleted') {
           // Handle message deletions - update for ALL users including sender
           console.log('WebSocket: Received message delete:', data);
           if (data.data) {
-            setMessages(prev => prev.map(msg => 
-              msg.id === data.messageId || msg.id === data.data.id
-                ? { 
-                    ...msg, 
-                    content: "[This message was deleted]",
-                    edited: false
-                  }
-                : msg
-            ));
+            setMessages(prev => {
+              const updated = prev.map(msg => 
+                msg.id === data.messageId || msg.id === data.data.id
+                  ? { 
+                      ...msg, 
+                      content: "[This message was deleted]",
+                      edited: false
+                    }
+                  : msg
+              );
+              console.log('Updated messages after delete:', updated);
+              return updated;
+            });
           }
         }
       } catch (error) {
@@ -213,17 +221,6 @@ export function useOptimizedWebSocket() {
   const editMessage = useCallback((messageId: string, newContent: string) => {
     console.log('WebSocket: Sending edit message:', messageId, newContent);
     
-    // Optimistic update - immediately update local state for better UX
-    setMessages(prev => prev.map(msg => 
-      msg.id === messageId 
-        ? { 
-            ...msg,
-            content: newContent.trim(),
-            edited: true
-          }
-        : msg
-    ));
-    
     const message = JSON.stringify({
       type: "edit_message",
       messageId,
@@ -240,17 +237,6 @@ export function useOptimizedWebSocket() {
   const deleteMessage = useCallback((messageId: string) => {
     console.log('WebSocket: Sending delete message:', messageId);
     
-    // Optimistic update - immediately update local state for better UX
-    setMessages(prev => prev.map(msg => 
-      msg.id === messageId 
-        ? { 
-            ...msg,
-            content: "[This message was deleted]",
-            edited: false
-          }
-        : msg
-    ));
-    
     const message = JSON.stringify({
       type: "delete_message",
       messageId
@@ -263,6 +249,17 @@ export function useOptimizedWebSocket() {
     }
   }, [isConnected]);
 
+  // Force update function to trigger re-renders
+  const forceUpdate = useCallback((messageId: string, updates: Partial<WebSocketMessage>) => {
+    setMessages(prev => {
+      const updated = prev.map(msg => 
+        msg.id === messageId ? { ...msg, ...updates } : msg
+      );
+      console.log(`Force updating message ${messageId}:`, updates);
+      return updated;
+    });
+  }, []);
+
   return {
     isConnected,
     messages,
@@ -271,6 +268,7 @@ export function useOptimizedWebSocket() {
     sendTyping,
     editMessage,
     deleteMessage,
-    setMessages
+    setMessages,
+    forceUpdate
   };
 }

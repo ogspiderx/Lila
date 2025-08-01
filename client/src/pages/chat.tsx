@@ -32,8 +32,43 @@ export default function Chat() {
     sendTyping, 
     editMessage, 
     deleteMessage, 
-    setMessages 
+    setMessages,
+    forceUpdate
   } = useOptimizedWebSocket();
+  
+  // Handle edit message with immediate local update
+  const handleEditMessage = (messageId: string, newContent: string) => {
+    if (!currentUser) return;
+    
+    console.log('Chat page: Editing message', messageId, 'to:', newContent);
+    
+    // Immediately update local state
+    setAllMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, content: newContent.trim(), edited: true }
+        : msg
+    ));
+    
+    // Send to server
+    editMessage(messageId, newContent);
+  };
+
+  // Handle delete message with immediate local update
+  const handleDeleteMessage = (messageId: string) => {
+    if (!currentUser) return;
+    
+    console.log('Chat page: Deleting message', messageId);
+    
+    // Immediately update local state
+    setAllMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, content: "[This message was deleted]", edited: false }
+        : msg
+    ));
+    
+    // Send to server
+    deleteMessage(messageId);
+  };
   
   const { handleTypingStart, handleTypingStop, cleanup } = useTypingIndicator({
     sendTyping,
@@ -74,42 +109,53 @@ export default function Chat() {
     refetchIntervalInBackground: false,
   });
 
-  // Message processing with proper handling of edits and deletes
-  const sortedMessages = useMemo(() => {
-    if (!existingMessages && wsMessages.length === 0) return [];
-    
-    // Create a Map for efficient lookups and updates
-    const messageMap = new Map<string, Message>();
-    
-    // First, add all existing messages
-    (existingMessages || []).forEach(msg => {
-      messageMap.set(msg.id, {
+  // Unified message state that properly handles all operations
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
+  
+  // Initialize messages from REST API when loaded
+  useEffect(() => {
+    if (existingMessages && existingMessages.length > 0) {
+      console.log('Loading initial messages from REST API:', existingMessages.length);
+      setAllMessages(existingMessages.map(msg => ({
         ...msg,
         timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp)
-      });
-    });
+      })));
+    }
+  }, [existingMessages]);
+  
+  // Sync WebSocket messages with unified state
+  useEffect(() => {
+    if (wsMessages.length === 0) return;
     
-    // Then process WebSocket messages - both new and updates
-    wsMessages.forEach(message => {
-      const normalizedMessage = {
-        ...message,
-        timestamp: new Date(message.timestamp)
-      };
+    console.log('Syncing WebSocket messages:', wsMessages.length);
+    setAllMessages(prev => {
+      const messageMap = new Map<string, Message>();
       
-      // This will either add new messages or update existing ones
-      messageMap.set(message.id, normalizedMessage);
+      // Add existing messages
+      prev.forEach(msg => messageMap.set(msg.id, msg));
+      
+      // Add/update with WebSocket messages
+      wsMessages.forEach(message => {
+        const normalizedMessage = {
+          ...message,
+          timestamp: new Date(message.timestamp)
+        };
+        messageMap.set(message.id, normalizedMessage);
+      });
+      
+      const updated = Array.from(messageMap.values());
+      updated.sort((a, b) => {
+        const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
+        const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
+        return aTime - bTime;
+      });
+      
+      console.log('Updated unified messages:', updated.length);
+      return updated;
     });
-    
-    // Convert back to array and sort
-    const allMessages = Array.from(messageMap.values());
-    allMessages.sort((a, b) => {
-      const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
-      const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
-      return aTime - bTime;
-    });
-    
-    return allMessages;
-  }, [existingMessages, wsMessages]);
+  }, [wsMessages]);
+
+  const sortedMessages = allMessages;
 
   // Initialize message notifications with all sorted messages
   const { unreadCount, initializeAudio, notificationPermission, requestNotificationPermission } = useMessageNotifications(sortedMessages, currentUser, soundEnabled);
@@ -427,14 +473,8 @@ export default function Chat() {
                     key={message.id}
                     message={message}
                     isCurrentUser={message.sender === currentUser.username}
-                    onEditMessage={(messageId, newContent) => {
-                      console.log('Chat page: Editing message', messageId, newContent);
-                      editMessage(messageId, newContent);
-                    }}
-                    onDeleteMessage={(messageId) => {
-                      console.log('Chat page: Deleting message', messageId);
-                      deleteMessage(messageId);
-                    }}
+                    onEditMessage={handleEditMessage}
+                    onDeleteMessage={handleDeleteMessage}
                   />
                 ))}
                 
