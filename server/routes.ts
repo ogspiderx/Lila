@@ -407,6 +407,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
+        // Handle message status updates (delivered/seen)
+        else if (messageData.type === 'message_status') {
+          try {
+            await storage.updateMessageStatus(messageData.messageId, messageData.status, userInfo.userId);
+            
+            // Broadcast status update to all clients
+            const statusData = JSON.stringify({
+              type: 'message_status',
+              messageId: messageData.messageId,
+              status: messageData.status,
+              userId: userInfo.userId
+            });
+
+            Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(statusData);
+              }
+            });
+          } catch (error) {
+            console.error('Failed to update message status:', error);
+          }
+        }
+
 
       } catch (error) {
         console.error('WebSocket message error:', error);

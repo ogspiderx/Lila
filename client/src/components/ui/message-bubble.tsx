@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useState, memo } from "react";
-import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, CheckCheck } from "lucide-react";
+import { useState, memo, useCallback } from "react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, CheckCheck, Hash } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,9 @@ export const MessageBubble = memo(function MessageBubble({
   const [isCopied, setIsCopied] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [copiedId, setCopiedId] = useState(false);
   const isDeleted = message.content === "[This message was deleted]";
 
   const formatTime = (timestamp: Date | number) => {
@@ -34,7 +37,7 @@ export const MessageBubble = memo(function MessageBubble({
 
   const handleCopyMessage = async () => {
     try {
-      const textToCopy = message.content || (message.fileUrl ? message.fileUrl : (message.fileName ? `File: ${message.fileName}` : ""));
+      const textToCopy = message.content || (message.fileName ? `File: ${message.fileName}` : "");
       await navigator.clipboard.writeText(textToCopy);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
@@ -42,6 +45,60 @@ export const MessageBubble = memo(function MessageBubble({
       console.error('Failed to copy message:', error);
     }
   };
+
+  const handleCopyImage = useCallback(async () => {
+    if (!message.fileUrl || !message.fileType?.startsWith('image/')) return;
+    
+    try {
+      const response = await fetch(message.fileUrl);
+      const blob = await response.blob();
+      
+      if (navigator.clipboard && 'write' in navigator.clipboard) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            [blob.type]: blob
+          })
+        ]);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } else {
+        // Fallback: copy image URL
+        await navigator.clipboard.writeText(message.fileUrl);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      }
+    } catch (error) {
+      console.error('Failed to copy image:', error);
+      // Fallback: copy image URL
+      try {
+        await navigator.clipboard.writeText(message.fileUrl);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (fallbackError) {
+        console.error('Failed to copy image URL:', fallbackError);
+      }
+    }
+  }, [message.fileUrl, message.fileType]);
+
+  const handleCopyMessageId = async () => {
+    try {
+      await navigator.clipboard.writeText(message.id);
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy message ID:', error);
+    }
+  };
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setShowContextMenu(true);
+  }, []);
+
+  const handleCloseContextMenu = useCallback(() => {
+    setShowContextMenu(false);
+  }, []);
 
   const handleDownload = () => {
     if (message.fileUrl) {
@@ -74,7 +131,7 @@ export const MessageBubble = memo(function MessageBubble({
   const renderDeliveryStatus = () => {
     if (!isCurrentUser) return null;
 
-    const status = (message as any).deliveryStatus || 'sent';
+    const status = message.deliveryStatus || 'sent';
 
     if (status === 'seen') {
       return <CheckCheck className="w-3 h-3 text-blue-400" />;
@@ -179,6 +236,7 @@ export const MessageBubble = memo(function MessageBubble({
             transition: { duration: 0.2, ease: "easeOut" }
           }}
           whileTap={{ scale: 0.98 }}
+          onContextMenu={handleContextMenu}
           className={`
             relative overflow-hidden group min-w-0 w-full
             ${isCurrentUser 
@@ -222,21 +280,33 @@ export const MessageBubble = memo(function MessageBubble({
 
           {/* Text content */}
           {message.content && (
-            <p className={`
-              relative z-10 text-xs sm:text-sm leading-snug 
-              break-words whitespace-pre-wrap
-              ${isCurrentUser ? "text-white" : "text-slate-50"} 
-              ${isDeleted ? "italic text-slate-400" : ""}
-              drop-shadow-sm
-            `}
-            style={{
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              wordWrap: 'break-word',
-              hyphens: 'auto'
-            }}>
-              {message.content}
-            </p>
+            <div className="flex items-end justify-between gap-2">
+              <p className={`
+                relative z-10 text-xs sm:text-sm leading-snug 
+                break-words whitespace-pre-wrap flex-1
+                ${isCurrentUser ? "text-white" : "text-slate-50"} 
+                ${isDeleted ? "italic text-slate-400" : ""}
+                drop-shadow-sm
+              `}
+              style={{
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                wordWrap: 'break-word',
+                hyphens: 'auto'
+              }}>
+                {message.content}
+              </p>
+              <div className="flex-shrink-0">
+                {renderDeliveryStatus()}
+              </div>
+            </div>
+          )}
+
+          {/* If only file, show delivery status */}
+          {!message.content && message.fileUrl && (
+            <div className="flex justify-end mt-1">
+              {renderDeliveryStatus()}
+            </div>
           )}
         </motion.div>
         </div>
@@ -268,16 +338,115 @@ export const MessageBubble = memo(function MessageBubble({
                   </>
                 )}
               </DropdownMenuItem>
+              
+              {message.fileUrl && message.fileType?.startsWith('image/') && (
+                <DropdownMenuItem onClick={handleCopyImage} className="cursor-pointer">
+                  {isCopied ? (
+                    <>
+                      <Check className="mr-2 h-3 w-3 text-green-500" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Image className="mr-2 h-3 w-3" />
+                      Copy image
+                    </>
+                  )}
+                </DropdownMenuItem>
+              )}
+              
               {message.fileUrl && (
                 <DropdownMenuItem onClick={handleDownload} className="cursor-pointer">
                   <Download className="mr-2 h-3 w-3" />
                   Download file
                 </DropdownMenuItem>
               )}
+              
+              <DropdownMenuItem onClick={handleCopyMessageId} className="cursor-pointer">
+                {copiedId ? (
+                  <>
+                    <Check className="mr-2 h-3 w-3 text-green-500" />
+                    ID Copied!
+                  </>
+                ) : (
+                  <>
+                    <Hash className="mr-2 h-3 w-3" />
+                    Copy message ID
+                  </>
+                )}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Custom Context Menu */}
+      {showContextMenu && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={handleCloseContextMenu}
+        >
+          <div
+            className="absolute bg-slate-800 border border-slate-600 rounded-lg shadow-xl py-1 min-w-[140px] z-50"
+            style={{
+              left: `${Math.min(contextMenuPosition.x, window.innerWidth - 160)}px`,
+              top: `${Math.min(contextMenuPosition.y, window.innerHeight - 200)}px`,
+            }}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCopyMessage();
+                handleCloseContextMenu();
+              }}
+              className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center text-sm text-slate-200"
+            >
+              <Copy className="mr-2 h-3 w-3" />
+              Copy message
+            </button>
+            
+            {message.fileUrl && message.fileType?.startsWith('image/') && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopyImage();
+                  handleCloseContextMenu();
+                }}
+                className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center text-sm text-slate-200"
+              >
+                <Image className="mr-2 h-3 w-3" />
+                Copy image
+              </button>
+            )}
+            
+            {message.fileUrl && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload();
+                  handleCloseContextMenu();
+                }}
+                className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center text-sm text-slate-200"
+              >
+                <Download className="mr-2 h-3 w-3" />
+                Download file
+              </button>
+            )}
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCopyMessageId();
+                handleCloseContextMenu();
+              }}
+              className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center text-sm text-slate-200"
+            >
+              <Hash className="mr-2 h-3 w-3" />
+              Copy message ID
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Image Modal */}
       {showImageModal && message.fileUrl && message.fileType?.startsWith('image/') && (

@@ -19,6 +19,8 @@ export const messages = pgTable("messages", {
   fileName: text("file_name"),
   fileSize: integer("file_size"),
   fileType: text("file_type"),
+  deliveryStatus: text("delivery_status").$type<'sent' | 'delivered' | 'seen'>().default('sent'),
+  seenBy: text("seen_by").array(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -53,6 +55,14 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 export type WebSocketMessage = Omit<Message, 'timestamp'> & { timestamp: number };
 
+// Message delivery status update type
+export type MessageStatusUpdate = {
+  type: 'message_status';
+  messageId: string;
+  status: 'delivered' | 'seen';
+  userId: string;
+};
+
 // Add message seen tracking type
 export type MessageSeenUpdate = {
   type: 'message_seen';
@@ -68,4 +78,4 @@ export type TypingMessage = {
 };
 
 // Combined WebSocket message types
-export type WebSocketChatMessage = WebSocketMessage | TypingMessage | MessageSeenUpdate;
+export type WebSocketChatMessage = WebSocketMessage | TypingMessage | MessageSeenUpdate | MessageStatusUpdate;

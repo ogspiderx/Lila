@@ -8,6 +8,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(): Promise<Message[]>;
+  updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId?: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -81,6 +82,8 @@ export class DatabaseStorage implements IStorage {
       fileSize: insertMessage.fileSize || null,
       fileType: insertMessage.fileType || null,
       edited: false,
+      deliveryStatus: 'sent' as const,
+      seenBy: [],
     };
 
     const [message] = await db
@@ -92,6 +95,33 @@ export class DatabaseStorage implements IStorage {
     this.messagesCache = null;
     
     return message;
+  }
+
+  async updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId?: string): Promise<void> {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
+    const updateData: any = { deliveryStatus: status };
+    
+    if (status === 'seen' && userId) {
+      // Get current message to update seenBy array
+      const [currentMessage] = await db.select().from(messages).where(eq(messages.id, messageId)).limit(1);
+      if (currentMessage) {
+        const seenBy = currentMessage.seenBy || [];
+        if (!seenBy.includes(userId)) {
+          updateData.seenBy = [...seenBy, userId];
+        }
+      }
+    }
+
+    await db
+      .update(messages)
+      .set(updateData)
+      .where(eq(messages.id, messageId));
+
+    // Invalidate cache
+    this.messagesCache = null;
   }
 
   private messagesCache: { messages: Message[], timestamp: number } | null = null;
@@ -180,9 +210,23 @@ export class MemStorage implements IStorage {
       fileName: insertMessage.fileName || null,
       fileSize: insertMessage.fileSize || null,
       fileType: insertMessage.fileType || null,
+      deliveryStatus: 'sent',
+      seenBy: [],
     };
     this.messages.push(message);
     return message;
+  }
+
+  async updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId?: string): Promise<void> {
+    const message = this.messages.find(m => m.id === messageId);
+    if (message) {
+      message.deliveryStatus = status;
+      if (status === 'seen' && userId && message.seenBy) {
+        if (!message.seenBy.includes(userId)) {
+          message.seenBy.push(userId);
+        }
+      }
+    }
   }
 
   async getMessages(): Promise<Message[]> {

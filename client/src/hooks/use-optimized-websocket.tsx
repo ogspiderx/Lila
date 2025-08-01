@@ -69,46 +69,22 @@ export function useOptimizedWebSocket() {
               return prev;
             });
           }
-        } else if (data.type === 'typing') {
-          // Handle typing indicators
-          if (data.sender) {
+        } else if (data.type === "typing") {
+          setTypingUsers(prev => {
+            const newTypingUsers = new Set(prev);
             if (data.isTyping) {
-              setTypingUsers(prev => new Set(Array.from(prev).concat([data.sender])));
-
-              // Clear existing timeout for this user
-              const existingTimeout = typingTimeoutsRef.current.get(data.sender);
-              if (existingTimeout) {
-                clearTimeout(existingTimeout);
-              }
-
-              // Set timeout to remove typing indicator after 3 seconds
-              const timeout = setTimeout(() => {
-                if (mountedRef.current) {
-                  setTypingUsers(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(data.sender);
-                    return newSet;
-                  });
-                }
-                typingTimeoutsRef.current.delete(data.sender);
-              }, 3000);
-
-              typingTimeoutsRef.current.set(data.sender, timeout);
+              newTypingUsers.add(data.sender);
             } else {
-              setTypingUsers(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(data.sender);
-                return newSet;
-              });
-
-              // Clear timeout
-              const existingTimeout = typingTimeoutsRef.current.get(data.sender);
-              if (existingTimeout) {
-                clearTimeout(existingTimeout);
-                typingTimeoutsRef.current.delete(data.sender);
-              }
+              newTypingUsers.delete(data.sender);
             }
-          }
+            return newTypingUsers;
+          });
+        } else if (data.type === "message_status") {
+          setMessages(prev => prev.map(msg => 
+            msg.id === data.messageId 
+              ? { ...msg, deliveryStatus: data.status }
+              : msg
+          ));
         }
       } catch (error) {
         console.error('WebSocket message error:', error);

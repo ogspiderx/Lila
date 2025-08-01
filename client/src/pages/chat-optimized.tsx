@@ -26,12 +26,14 @@ export default function ChatOptimized() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
-  const {
-    isConnected,
-    messages: wsMessages,
-    typingUsers,
-    sendMessage,
-    sendTyping
+  const { 
+    isConnected, 
+    messages: wsMessages, 
+    typingUsers, 
+    sendMessage, 
+    sendTyping,
+    sendMessageStatus,
+    setMessages: setWsMessages 
   } = useOptimizedWebSocket();
 
   const { handleTypingStart, handleTypingStop, cleanup } = useTypingIndicator({
