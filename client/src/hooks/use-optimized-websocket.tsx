@@ -9,6 +9,7 @@ export function useOptimizedWebSocket() {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const messageQueueRef = useRef<string[]>([]);
   const typingTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const mountedRef = useRef(true);
 
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -80,11 +81,13 @@ export function useOptimizedWebSocket() {
               
               // Set timeout to remove typing indicator after 3 seconds
               const timeout = setTimeout(() => {
-                setTypingUsers(prev => {
-                  const newSet = new Set(prev);
-                  newSet.delete(data.sender);
-                  return newSet;
-                });
+                if (mountedRef.current) {
+                  setTypingUsers(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(data.sender);
+                    return newSet;
+                  });
+                }
                 typingTimeoutsRef.current.delete(data.sender);
               }, 3000);
               
@@ -115,18 +118,19 @@ export function useOptimizedWebSocket() {
       setIsConnected(false);
       wsRef.current = null;
       
-      // Only reconnect for specific error codes, avoid infinite loops
-      if (event.code !== 1000 && event.code !== 4000 && event.code !== 4003 && event.code !== 4004) {
+      // Only reconnect if component is still mounted and for specific error codes
+      if (mountedRef.current && event.code !== 1000 && event.code !== 4000 && event.code !== 4003 && event.code !== 4004) {
         reconnectTimeoutRef.current = setTimeout(() => {
-          // Only reconnect if we still have a valid auth token
-          const authToken = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('authToken='))
-            ?.split('=')[1];
-          if (authToken) {
-            connectWebSocket();
+          if (mountedRef.current) {
+            const authToken = document.cookie
+              .split('; ')
+              .find(row => row.startsWith('authToken='))
+              ?.split('=')[1];
+            if (authToken) {
+              connectWebSocket();
+            }
           }
-        }, 5000); // Increased delay to prevent rapid reconnections
+        }, 3000); // Reduced delay for faster reconnection
       }
     };
 
@@ -138,21 +142,24 @@ export function useOptimizedWebSocket() {
   }, []);
 
   useEffect(() => {
+    mountedRef.current = true;
     connectWebSocket();
     
     return () => {
+      mountedRef.current = false;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      // Clear all typing timeouts
-      Array.from(typingTimeoutsRef.current.values()).forEach((timeout) => clearTimeout(timeout));
+      // Clear all typing timeouts for memory cleanup
+      typingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
       typingTimeoutsRef.current.clear();
       
       if (wsRef.current) {
         wsRef.current.close(1000, 'Component unmounting');
+        wsRef.current = null;
       }
     };
-  }, [connectWebSocket]);
+  }, []);
 
   const sendMessage = useCallback((sender: string, content: string) => {
     // Sanitize and validate content
