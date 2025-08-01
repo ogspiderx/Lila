@@ -210,6 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileName: message.fileName,
         fileSize: message.fileSize,
         fileType: message.fileType,
+        deliveryStatus: message.deliveryStatus || 'sent',
       }));
 
       // Secure cache headers
@@ -369,6 +370,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create message in storage
           const message = await storage.createMessage(validatedData);
 
+          // Auto-mark as delivered for all connected users except sender
+          const connectedUsers = Array.from(authenticatedSockets.values());
+          for (const user of connectedUsers) {
+            if (user.userId !== userInfo.userId) {
+              await storage.updateMessageStatus(message.id, 'delivered', user.userId);
+            }
+          }
+
           // Broadcast to authenticated clients only
           const broadcastData = JSON.stringify({
             type: 'message',
@@ -381,6 +390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               fileName: message.fileName,
               fileSize: message.fileSize,
               fileType: message.fileType,
+              deliveryStatus: message.deliveryStatus,
             }
           });
 

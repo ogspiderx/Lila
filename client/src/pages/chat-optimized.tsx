@@ -364,6 +364,30 @@ export default function ChatOptimized() {
     };
   }, [cleanup]);
 
+  // Fetch messages with error handling and caching
+  const { data: initialMessages, isLoading: messagesLoading } = useQuery({
+    queryKey: ["messages"],
+    queryFn: async () => {
+      const response = await fetch('/api/messages', {
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      const messages = await response.json();
+
+      // Ensure delivery status is included
+      return messages.map((msg: any) => ({
+        ...msg,
+        deliveryStatus: msg.deliveryStatus || 'sent'
+      }));
+    },
+    staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: false,
+    retry: 3,
+  });
+
   if (!currentUser) {
     return null;
   }

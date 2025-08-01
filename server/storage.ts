@@ -1,6 +1,6 @@
 import { users, messages, type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -27,10 +27,10 @@ export class DatabaseStorage implements IStorage {
     }
 
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    
+
     // Update cache
     this.userCache.set(id, { user: user || null, timestamp: Date.now() });
-    
+
     return user || undefined;
   }
 
@@ -48,12 +48,12 @@ export class DatabaseStorage implements IStorage {
     }
 
     const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
-    
+
     // Update cache
     if (user) {
       this.userCache.set(user.id, { user, timestamp: Date.now() });
     }
-    
+
     return user || undefined;
   }
 
@@ -90,10 +90,10 @@ export class DatabaseStorage implements IStorage {
       .insert(messages)
       .values(messageData)
       .returning();
-    
+
     // Invalidate messages cache when new message is created
     this.messagesCache = null;
-    
+
     return message;
   }
 
@@ -102,8 +102,13 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Database not initialized");
     }
 
+    if (status === 'seen' && !userId) {
+      console.warn("userId is required when updating status to 'seen'");
+      return;
+    }
+
     const updateData: any = { deliveryStatus: status };
-    
+
     if (status === 'seen' && userId) {
       // Get current message to update seenBy array
       const [currentMessage] = await db.select().from(messages).where(eq(messages.id, messageId)).limit(1);
@@ -138,10 +143,10 @@ export class DatabaseStorage implements IStorage {
     }
 
     const messagesList = await db.select().from(messages).orderBy(messages.timestamp).limit(50);
-    
+
     // Update cache
     this.messagesCache = { messages: messagesList, timestamp: Date.now() };
-    
+
     return messagesList;
   }
 
@@ -162,7 +167,7 @@ export class MemStorage implements IStorage {
 
   private async createTestUsers() {
     const bcrypt = await import('bcrypt');
-    
+
     // Create test users with hashed passwords
     const testUsers = [
       { username: 'wale', password: await bcrypt.hash('password123', 12) },

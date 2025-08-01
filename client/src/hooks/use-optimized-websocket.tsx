@@ -52,34 +52,50 @@ export function useOptimizedWebSocket() {
             const message = messageQueueRef.current.shift();
             if (message) ws.send(message);
           }
-        } else if (data.type === 'message' && data.data) {
-          // Validate message data - either content or file required
-          if (data.data.id && data.data.sender && data.data.timestamp && (data.data.content || data.data.fileUrl)) {
-            const newMessage = {
-              ...data.data,
-              timestamp: new Date(data.data.timestamp).getTime()
-            };
+        } else if (data.type === 'message') {
+          const message = data.data;
 
-            setMessages(prev => {
-              // Use Map for O(1) deduplication
-              const messageMap = new Map(prev.map(m => [m.id, m]));
-              if (!messageMap.has(newMessage.id)) {
-                return [...prev, newMessage];
+          setMessages(prev => {
+            // Check if message already exists to prevent duplicates
+            const exists = prev.some(m => m.id === message.id);
+            if (exists) return prev;
+
+            const newMessages = [...prev, message].sort((a, b) => 
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            );
+            return newMessages;
+          });
+
+          // Auto-mark as seen if message is from another user
+          const username = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('username='))
+            ?.split('=')[1];
+          if (username && message.sender !== username && wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+              type: 'message_status',
+              messageId: message.id,
+              status: 'seen'
+            }));
+          }
+        } else if (data.type === 'typing') {
+          const username = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('username='))
+            ?.split('=')[1];
+          if (username && data.sender !== username) {
+            setTypingUsers(prev => {
+              const updated = new Set(prev);
+              if (data.isTyping) {
+                updated.add(data.sender);
+              } else {
+                updated.delete(data.sender);
               }
-              return prev;
+              return updated;
             });
           }
-        } else if (data.type === "typing") {
-          setTypingUsers(prev => {
-            const newTypingUsers = new Set(prev);
-            if (data.isTyping) {
-              newTypingUsers.add(data.sender);
-            } else {
-              newTypingUsers.delete(data.sender);
-            }
-            return newTypingUsers;
-          });
-        } else if (data.type === "message_status") {
+        } else if (data.type === 'message_status') {
+          // Update message delivery status
           setMessages(prev => prev.map(msg => 
             msg.id === data.messageId 
               ? { ...msg, deliveryStatus: data.status }
