@@ -15,6 +15,10 @@ export class DatabaseStorage implements IStorage {
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   async getUser(id: string): Promise<User | undefined> {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     // Check cache first
     const cached = this.userCache.get(id);
     if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
@@ -30,6 +34,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     // Check cache by username
     const cacheEntries = Array.from(this.userCache.entries());
     for (const [id, cached] of cacheEntries) {
@@ -49,6 +57,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const [user] = await db
       .insert(users)
       .values(insertUser)
@@ -57,6 +69,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     const [message] = await db
       .insert(messages)
       .values(insertMessage)
@@ -72,6 +88,10 @@ export class DatabaseStorage implements IStorage {
   private readonly MESSAGES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes - longer cache
 
   async getMessages(): Promise<Message[]> {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
     // Check cache first for messages
     if (this.messagesCache && (Date.now() - this.messagesCache.timestamp) < this.MESSAGES_CACHE_TTL) {
       return this.messagesCache.messages;
@@ -86,4 +106,92 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// In-memory storage implementation for development
+export class MemStorage implements IStorage {
+  private users: User[] = [];
+  private messages: Message[] = [];
+  private userIdCounter = 1;
+  private messageIdCounter = 1;
+
+  constructor() {
+    // Pre-populate with test users
+    this.createTestUsers();
+  }
+
+  private async createTestUsers() {
+    const bcrypt = await import('bcrypt');
+    
+    // Create test users with hashed passwords
+    const testUsers = [
+      { username: 'wale', password: await bcrypt.hash('password123', 12) },
+      { username: 'xiu', password: await bcrypt.hash('password123', 12) }
+    ];
+
+    for (const userData of testUsers) {
+      const user: User = {
+        id: `user-${this.userIdCounter++}`,
+        username: userData.username,
+        password: userData.password
+      };
+      this.users.push(user);
+    }
+
+    // Add some sample messages
+    const sampleMessages = [
+      { sender: 'wale', content: 'Welcome to our chat application!' },
+      { sender: 'xiu', content: 'Hello! This is a test message to get started.' },
+      { sender: 'wale', content: 'The real-time messaging is working perfectly.' }
+    ];
+
+    for (const msgData of sampleMessages) {
+      const message: Message = {
+        id: `msg-${this.messageIdCounter++}`,
+        sender: msgData.sender,
+        content: msgData.content,
+        timestamp: new Date()
+      };
+      this.messages.push(message);
+    }
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.find(user => user.id === id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.users.find(user => user.username === username);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const user: User = {
+      id: `user-${this.userIdCounter++}`,
+      username: insertUser.username,
+      password: insertUser.password
+    };
+    this.users.push(user);
+    return user;
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const message: Message = {
+      id: `msg-${this.messageIdCounter++}`,
+      sender: insertMessage.sender,
+      content: insertMessage.content,
+      timestamp: new Date()
+    };
+    this.messages.push(message);
+    return message;
+  }
+
+  async getMessages(): Promise<Message[]> {
+    // Return the last 50 messages, sorted by timestamp (newest first)
+    return this.messages
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 50);
+  }
+}
+
+// Use in-memory storage for development when DATABASE_URL is not available
+export const storage = process.env.DATABASE_URL 
+  ? new DatabaseStorage() 
+  : new MemStorage();
