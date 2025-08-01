@@ -314,7 +314,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 id: updatedMessage.id,
                 sender: updatedMessage.sender,
                 content: updatedMessage.content,
-                timestamp: updatedMessage.timestamp
+                timestamp: updatedMessage.timestamp,
+                edited: updatedMessage.edited || true
               }
             });
             
@@ -332,13 +333,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return;
           }
           
-          const deleted = await storage.deleteMessage(messageData.messageId, userInfo.userId);
+          const deletedMessage = await storage.deleteMessage(messageData.messageId, userInfo.userId);
           
-          if (deleted) {
+          if (deletedMessage) {
             // Broadcast deletion to all authenticated clients
             const deleteData = JSON.stringify({
               type: 'message_deleted',
-              messageId: messageData.messageId
+              messageId: messageData.messageId,
+              data: {
+                id: deletedMessage.id,
+                sender: deletedMessage.sender,
+                content: deletedMessage.content,
+                timestamp: deletedMessage.timestamp,
+                edited: deletedMessage.edited
+              }
             });
             
             for (const [client, clientInfo] of authenticatedSockets) {

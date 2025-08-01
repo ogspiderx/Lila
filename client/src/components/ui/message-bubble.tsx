@@ -50,6 +50,19 @@ export const MessageBubble = memo(function MessageBubble({
   const handleEdit = () => {
     setIsEditing(true);
     setEditContent(message.content);
+    // Focus the contentEditable div after a small delay
+    setTimeout(() => {
+      const editDiv = document.querySelector('[data-testid="div-edit-message"]') as HTMLDivElement;
+      if (editDiv) {
+        editDiv.focus();
+        // Select all text
+        const range = document.createRange();
+        range.selectNodeContents(editDiv);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    }, 50);
   };
 
   const handleSaveEdit = () => {
@@ -118,49 +131,66 @@ export const MessageBubble = memo(function MessageBubble({
           {/* Content */}
           {isEditing ? (
             <div className="space-y-2 w-full">
-              <Textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[60px] text-sm resize-none bg-slate-700 border-slate-600 text-slate-100"
-                maxLength={2000}
-                data-testid="textarea-edit-message"
-              />
-              <div className="flex gap-1 justify-end">
-                <Button
-                  size="sm"
-                  onClick={handleSaveEdit}
-                  className="h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  data-testid="button-save-edit"
-                >
-                  <Save className="h-3 w-3" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCancelEdit}
-                  className="h-6 px-2 text-slate-400 hover:text-slate-200"
-                  data-testid="button-cancel-edit"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+              <div 
+                contentEditable
+                suppressContentEditableWarning={true}
+                onInput={(e) => setEditContent((e.target as HTMLDivElement).textContent || '')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSaveEdit();
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancelEdit();
+                  }
+                }}
+                className={`
+                  relative z-10 text-xs sm:text-sm leading-snug 
+                  break-words whitespace-pre-wrap outline-none
+                  ${isCurrentUser ? "text-white" : "text-slate-50"} 
+                  bg-slate-700/50 rounded px-2 py-1 border border-emerald-500/50
+                  focus:border-emerald-400 transition-colors
+                  drop-shadow-sm
+                `}
+                style={{
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  wordWrap: 'break-word',
+                  hyphens: 'auto'
+                }}
+                data-testid="div-edit-message"
+              >
+                {editContent}
+              </div>
+              <div className="flex gap-1 justify-end text-xs text-slate-400">
+                <span>Press Enter to save, Esc to cancel</span>
               </div>
             </div>
           ) : (
-            <p className={`
-              relative z-10 text-xs sm:text-sm leading-snug 
-              break-words whitespace-pre-wrap
-              ${isCurrentUser ? "text-white" : "text-slate-50"} 
-              ${isDeleted ? "italic text-slate-400" : ""}
-              drop-shadow-sm
-            `}
-            style={{
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              wordWrap: 'break-word',
-              hyphens: 'auto'
-            }}>
-              {message.content}
-            </p>
+            <>
+              <p className={`
+                relative z-10 text-xs sm:text-sm leading-snug 
+                break-words whitespace-pre-wrap
+                ${isCurrentUser ? "text-white" : "text-slate-50"} 
+                ${isDeleted ? "italic text-slate-400" : ""}
+                drop-shadow-sm
+              `}
+              style={{
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                wordWrap: 'break-word',
+                hyphens: 'auto'
+              }}>
+                {message.content}
+              </p>
+              
+              {/* Show "edited" indicator */}
+              {message.edited && !isDeleted && (
+                <span className="text-xs text-slate-400/70 italic mt-1 block">
+                  edited
+                </span>
+              )}
+            </>
           )}
         </motion.div>
         </div>

@@ -14,6 +14,7 @@ export const messages = pgTable("messages", {
   sender: text("sender").notNull(),
   content: text("content").notNull(),
   timestamp: timestamp("timestamp", { mode: 'date' }).notNull().defaultNow(),
+  edited: text("edited").$type<boolean>().default(false),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

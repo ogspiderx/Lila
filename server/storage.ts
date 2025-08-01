@@ -9,7 +9,7 @@ export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(): Promise<Message[]>;
   editMessage(messageId: string, newContent: string, userId: string): Promise<Message | null>;
-  deleteMessage(messageId: string, userId: string): Promise<boolean>;
+  deleteMessage(messageId: string, userId: string): Promise<Message | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -134,19 +134,19 @@ export class DatabaseStorage implements IStorage {
     return updatedMessage || null;
   }
 
-  async deleteMessage(messageId: string, userId: string): Promise<boolean> {
+  async deleteMessage(messageId: string, userId: string): Promise<Message | null> {
     if (!db) {  
       throw new Error("Database not initialized");
     }
 
     // First verify the user owns this message
     const [existingMessage] = await db.select().from(messages).where(eq(messages.id, messageId)).limit(1);
-    if (!existingMessage) return false;
+    if (!existingMessage) return null;
     
     // Check if user owns the message
     const user = await this.getUser(userId);
     if (!user || existingMessage.sender !== user.username) {
-      return false;
+      return null;
     }
 
     // Mark as deleted instead of actually deleting
@@ -159,7 +159,7 @@ export class DatabaseStorage implements IStorage {
     // Invalidate cache
     this.messagesCache = null;
     
-    return !!updatedMessage;
+    return updatedMessage || null;
   }
 }
 
@@ -205,7 +205,8 @@ export class MemStorage implements IStorage {
         id: `msg-${this.messageIdCounter++}`,
         sender: msgData.sender,
         content: msgData.content,
-        timestamp: new Date()
+        timestamp: new Date(),
+        edited: false
       };
       this.messages.push(message);
     }
@@ -234,7 +235,8 @@ export class MemStorage implements IStorage {
       id: `msg-${this.messageIdCounter++}`,
       sender: insertMessage.sender,
       content: insertMessage.content,
-      timestamp: new Date()
+      timestamp: new Date(),
+      edited: false
     };
     this.messages.push(message);
     return message;
@@ -259,22 +261,24 @@ export class MemStorage implements IStorage {
 
     // Update the message
     this.messages[messageIndex].content = newContent.trim().substring(0, 2000);
+    this.messages[messageIndex].edited = true;
     return this.messages[messageIndex];
   }
 
-  async deleteMessage(messageId: string, userId: string): Promise<boolean> {
+  async deleteMessage(messageId: string, userId: string): Promise<Message | null> {
     const messageIndex = this.messages.findIndex(m => m.id === messageId);
-    if (messageIndex === -1) return false;
+    if (messageIndex === -1) return null;
 
     // Verify user owns the message
     const user = await this.getUser(userId);
     if (!user || this.messages[messageIndex].sender !== user.username) {
-      return false;
+      return null;
     }
 
     // Mark as deleted instead of removing
     this.messages[messageIndex].content = "[This message was deleted]";
-    return true;
+    this.messages[messageIndex].edited = true;
+    return this.messages[messageIndex];
   }
 }
 

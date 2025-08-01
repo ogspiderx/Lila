@@ -19,7 +19,8 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [, setLocation] = useLocation();
 
   // Check if user is already authenticated
@@ -39,7 +40,7 @@ export default function Login() {
         if (error instanceof Error && error.name === 'AbortError') return;
         // Silently continue - user just needs to login
       }
-      setIsLoading(false);
+      setIsCheckingAuth(false);
     };
 
     checkAuth();
@@ -75,7 +76,7 @@ export default function Login() {
     }
   };
 
-  if (isLoading) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900/20 flex items-center justify-center relative overflow-hidden">
         {/* Loading animation background */}

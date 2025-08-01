@@ -108,16 +108,27 @@ export function useOptimizedWebSocket() {
           // Handle message edits
           setMessages(prev => prev.map(msg => 
             msg.id === data.data.id 
-              ? { ...data.data, timestamp: new Date(data.data.timestamp).getTime() }
+              ? { 
+                  ...data.data, 
+                  timestamp: new Date(data.data.timestamp).getTime(),
+                  edited: data.data.edited 
+                }
               : msg
           ));
         } else if (data.type === 'message_deleted') {
           // Handle message deletions
-          setMessages(prev => prev.map(msg => 
-            msg.id === data.messageId 
-              ? { ...msg, content: "[This message was deleted]" }
-              : msg
-          ));
+          if (data.data) {
+            setMessages(prev => prev.map(msg => 
+              msg.id === data.messageId 
+                ? { 
+                    ...msg, 
+                    content: data.data.content,
+                    edited: data.data.edited,
+                    timestamp: new Date(data.data.timestamp).getTime()
+                  }
+                : msg
+            ));
+          }
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
