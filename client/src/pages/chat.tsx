@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { LogOut, Send, Volume2, VolumeX, Bell, BellOff, Heart, Sparkles, MessageCircle } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
+import { TypingIndicator } from "@/components/ui/typing-indicator";
 
 import { useOptimizedWebSocket } from "@/hooks/use-optimized-websocket";
 import { useMessageNotifications } from "@/hooks/use-message-notifications";
+import { useTypingIndicator } from "@/hooks/use-typing-indicator";
 
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
@@ -22,7 +24,22 @@ export default function Chat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [, setLocation] = useLocation();
   
-  const { isConnected, messages: wsMessages, sendMessage, setMessages } = useOptimizedWebSocket();
+  const { 
+    isConnected, 
+    messages: wsMessages, 
+    typingUsers, 
+    sendMessage, 
+    sendTyping, 
+    editMessage, 
+    deleteMessage, 
+    setMessages 
+  } = useOptimizedWebSocket();
+  
+  const { handleTypingStart, handleTypingStop, cleanup } = useTypingIndicator({
+    sendTyping,
+    debounceMs: 300,
+    stopTypingDelayMs: 3000,
+  });
 
   // Load current user from cookie-based auth with aggressive caching
   const { data: userData, isLoading: userLoading } = useQuery({
@@ -128,8 +145,23 @@ export default function Chat() {
     
     const content = messageInput.trim();
     if (content && content.length <= 2000 && currentUser) {
+      handleTypingStop(); // Stop typing indicator when sending
       sendMessage(currentUser.username, content);
       setMessageInput("");
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    if (value.length <= 2000) {
+      setMessageInput(value);
+      
+      // Handle typing indicators
+      if (value.trim()) {
+        handleTypingStart();
+      } else {
+        handleTypingStop();
+      }
     }
   };
 
@@ -151,6 +183,20 @@ export default function Chat() {
       handleSubmit(e);
     }
   };
+
+  // Cleanup typing indicator when component unmounts or user changes
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
+
+  // Stop typing when input is cleared
+  useEffect(() => {
+    if (!messageInput.trim()) {
+      handleTypingStop();
+    }
+  }, [messageInput, handleTypingStop]);
 
   if (!currentUser) {
     return null;
@@ -374,8 +420,13 @@ export default function Chat() {
                     key={message.id}
                     message={message}
                     isCurrentUser={message.sender === currentUser.username}
+                    onEditMessage={editMessage}
+                    onDeleteMessage={deleteMessage}
                   />
                 ))}
+                
+                {/* Typing Indicator */}
+                <TypingIndicator typingUsers={typingUsers} />
                 
 
               </AnimatePresence>
@@ -405,11 +456,7 @@ export default function Chat() {
                   <Textarea
                     ref={textareaRef}
                     value={messageInput}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 2000) {
-                        setMessageInput(e.target.value);
-                      }
-                    }}
+                    onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     placeholder="Share your thoughts... ✨"
                     rows={1}

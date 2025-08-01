@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { WebSocketMessage } from "@shared/schema";
+import type { WebSocketMessage, TypingMessage } from "@shared/schema";
 
 export function useOptimizedWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<WebSocketMessage[]>([]);
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const messageQueueRef = useRef<string[]>([]);
+  const typingTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -64,6 +66,58 @@ export function useOptimizedWebSocket() {
               return prev;
             });
           }
+        } else if (data.type === 'typing') {
+          // Handle typing indicators
+          if (data.sender) {
+            if (data.isTyping) {
+              setTypingUsers(prev => new Set([...prev, data.sender]));
+              
+              // Clear existing timeout for this user
+              const existingTimeout = typingTimeoutsRef.current.get(data.sender);
+              if (existingTimeout) {
+                clearTimeout(existingTimeout);
+              }
+              
+              // Set timeout to remove typing indicator after 3 seconds
+              const timeout = setTimeout(() => {
+                setTypingUsers(prev => {
+                  const newSet = new Set(prev);
+                  newSet.delete(data.sender);
+                  return newSet;
+                });
+                typingTimeoutsRef.current.delete(data.sender);
+              }, 3000);
+              
+              typingTimeoutsRef.current.set(data.sender, timeout);
+            } else {
+              setTypingUsers(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(data.sender);
+                return newSet;
+              });
+              
+              // Clear timeout
+              const existingTimeout = typingTimeoutsRef.current.get(data.sender);
+              if (existingTimeout) {
+                clearTimeout(existingTimeout);
+                typingTimeoutsRef.current.delete(data.sender);
+              }
+            }
+          }
+        } else if (data.type === 'message_edited' && data.data) {
+          // Handle message edits
+          setMessages(prev => prev.map(msg => 
+            msg.id === data.data.id 
+              ? { ...data.data, timestamp: new Date(data.data.timestamp).getTime() }
+              : msg
+          ));
+        } else if (data.type === 'message_deleted') {
+          // Handle message deletions
+          setMessages(prev => prev.map(msg => 
+            msg.id === data.messageId 
+              ? { ...msg, content: "[This message was deleted]" }
+              : msg
+          ));
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -104,6 +158,10 @@ export function useOptimizedWebSocket() {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
+      // Clear all typing timeouts
+      typingTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      typingTimeoutsRef.current.clear();
+      
       if (wsRef.current) {
         wsRef.current.close(1000, 'Component unmounting');
       }
@@ -128,10 +186,48 @@ export function useOptimizedWebSocket() {
     }
   }, [isConnected]);
 
+  const sendTyping = useCallback((isTyping: boolean) => {
+    const message = JSON.stringify({
+      type: "typing",
+      isTyping
+    });
+
+    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
+      wsRef.current.send(message);
+    }
+  }, [isConnected]);
+
+  const editMessage = useCallback((messageId: string, newContent: string) => {
+    const message = JSON.stringify({
+      type: "edit_message",
+      messageId,
+      newContent
+    });
+
+    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
+      wsRef.current.send(message);
+    }
+  }, [isConnected]);
+
+  const deleteMessage = useCallback((messageId: string) => {
+    const message = JSON.stringify({
+      type: "delete_message",
+      messageId
+    });
+
+    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
+      wsRef.current.send(message);
+    }
+  }, [isConnected]);
+
   return {
     isConnected,
     messages,
+    typingUsers,
     sendMessage,
+    sendTyping,
+    editMessage,
+    deleteMessage,
     setMessages
   };
 }

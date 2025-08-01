@@ -8,6 +8,8 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(): Promise<Message[]>;
+  editMessage(messageId: string, newContent: string, userId: string): Promise<Message | null>;
+  deleteMessage(messageId: string, userId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -104,6 +106,61 @@ export class DatabaseStorage implements IStorage {
     
     return messagesList;
   }
+
+  async editMessage(messageId: string, newContent: string, userId: string): Promise<Message | null> {
+    if (!db) {
+      throw new Error("Database not initialized");
+    }
+
+    // First verify the user owns this message
+    const [existingMessage] = await db.select().from(messages).where(eq(messages.id, messageId)).limit(1);
+    if (!existingMessage) return null;
+    
+    // Check if user owns the message by comparing sender username with user
+    const user = await this.getUser(userId);
+    if (!user || existingMessage.sender !== user.username) {
+      return null;
+    }
+
+    const [updatedMessage] = await db
+      .update(messages)
+      .set({ content: newContent.trim().substring(0, 2000) })
+      .where(eq(messages.id, messageId))
+      .returning();
+
+    // Invalidate cache
+    this.messagesCache = null;
+    
+    return updatedMessage || null;
+  }
+
+  async deleteMessage(messageId: string, userId: string): Promise<boolean> {
+    if (!db) {  
+      throw new Error("Database not initialized");
+    }
+
+    // First verify the user owns this message
+    const [existingMessage] = await db.select().from(messages).where(eq(messages.id, messageId)).limit(1);
+    if (!existingMessage) return false;
+    
+    // Check if user owns the message
+    const user = await this.getUser(userId);
+    if (!user || existingMessage.sender !== user.username) {
+      return false;
+    }
+
+    // Mark as deleted instead of actually deleting
+    const [updatedMessage] = await db
+      .update(messages)
+      .set({ content: "[This message was deleted]" })
+      .where(eq(messages.id, messageId))
+      .returning();
+
+    // Invalidate cache
+    this.messagesCache = null;
+    
+    return !!updatedMessage;
+  }
 }
 
 // In-memory storage implementation for development
@@ -188,6 +245,36 @@ export class MemStorage implements IStorage {
     return this.messages
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, 50);
+  }
+
+  async editMessage(messageId: string, newContent: string, userId: string): Promise<Message | null> {
+    const messageIndex = this.messages.findIndex(m => m.id === messageId);
+    if (messageIndex === -1) return null;
+
+    // Verify user owns the message by checking sender vs username
+    const user = await this.getUser(userId);
+    if (!user || this.messages[messageIndex].sender !== user.username) {
+      return null;
+    }
+
+    // Update the message
+    this.messages[messageIndex].content = newContent.trim().substring(0, 2000);
+    return this.messages[messageIndex];
+  }
+
+  async deleteMessage(messageId: string, userId: string): Promise<boolean> {
+    const messageIndex = this.messages.findIndex(m => m.id === messageId);
+    if (messageIndex === -1) return false;
+
+    // Verify user owns the message
+    const user = await this.getUser(userId);
+    if (!user || this.messages[messageIndex].sender !== user.username) {
+      return false;
+    }
+
+    // Mark as deleted instead of removing
+    this.messages[messageIndex].content = "[This message was deleted]";
+    return true;
   }
 }
 

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
-import { MoreVertical, Copy, Check } from "lucide-react";
+import { MoreVertical, Copy, Check, Edit, Trash2, Save, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,15 +8,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import type { Message, WebSocketMessage } from "@shared/schema";
 
 interface MessageBubbleProps {
   message: Message | WebSocketMessage;
   isCurrentUser: boolean;
+  onEditMessage?: (messageId: string, newContent: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ 
+  message, 
+  isCurrentUser, 
+  onEditMessage, 
+  onDeleteMessage 
+}: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
+  const isDeleted = message.content === "[This message was deleted]";
 
   const formatTime = (timestamp: Date | number) => {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
@@ -33,6 +44,29 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy message:', error);
+    }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditContent(message.content);
+  };
+
+  const handleSaveEdit = () => {
+    if (editContent.trim() && editContent !== message.content && onEditMessage) {
+      onEditMessage(message.id, editContent.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditContent(message.content);
+  };
+
+  const handleDelete = () => {
+    if (onDeleteMessage) {
+      onDeleteMessage(message.id);
     }
   };
 
@@ -82,52 +116,105 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
           `}
         >
           {/* Content */}
-          <p className={`
-            relative z-10 text-xs sm:text-sm leading-snug 
-            break-words whitespace-pre-wrap
-            ${isCurrentUser ? "text-white" : "text-slate-50"} 
-            drop-shadow-sm
-          `}
-          style={{
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            wordWrap: 'break-word',
-            hyphens: 'auto'
-          }}>
-            {message.content}
-          </p>
+          {isEditing ? (
+            <div className="space-y-2 w-full">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[60px] text-sm resize-none bg-slate-700 border-slate-600 text-slate-100"
+                maxLength={2000}
+                data-testid="textarea-edit-message"
+              />
+              <div className="flex gap-1 justify-end">
+                <Button
+                  size="sm"
+                  onClick={handleSaveEdit}
+                  className="h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  data-testid="button-save-edit"
+                >
+                  <Save className="h-3 w-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleCancelEdit}
+                  className="h-6 px-2 text-slate-400 hover:text-slate-200"
+                  data-testid="button-cancel-edit"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className={`
+              relative z-10 text-xs sm:text-sm leading-snug 
+              break-words whitespace-pre-wrap
+              ${isCurrentUser ? "text-white" : "text-slate-50"} 
+              ${isDeleted ? "italic text-slate-400" : ""}
+              drop-shadow-sm
+            `}
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              wordWrap: 'break-word',
+              hyphens: 'auto'
+            }}>
+              {message.content}
+            </p>
+          )}
         </motion.div>
         </div>
 
-        {/* Copy button with 3 dots */}
-        <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
-              >
-                <MoreVertical className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
-              <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
-                {isCopied ? (
+        {/* Actions button with dropdown */}
+        {!isEditing && (
+          <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+                  data-testid="button-message-options"
+                >
+                  <MoreVertical className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
+                <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
+                  {isCopied ? (
+                    <>
+                      <Check className="mr-2 h-3 w-3 text-green-500" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-2 h-3 w-3" />
+                      Copy message
+                    </>
+                  )}
+                </DropdownMenuItem>
+                
+                {/* Edit and Delete options only for current user's messages */}
+                {isCurrentUser && !isDeleted && (
                   <>
-                    <Check className="mr-2 h-3 w-3 text-green-500" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="mr-2 h-3 w-3" />
-                    Copy message
+                    <DropdownMenuItem onClick={handleEdit} className="cursor-pointer" data-testid="button-edit-message">
+                      <Edit className="mr-2 h-3 w-3" />
+                      Edit message
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={handleDelete} 
+                      className="cursor-pointer text-red-400 hover:text-red-300"
+                      data-testid="button-delete-message"
+                    >
+                      <Trash2 className="mr-2 h-3 w-3" />
+                      Delete message
+                    </DropdownMenuItem>
                   </>
                 )}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
     </motion.div>
   );
