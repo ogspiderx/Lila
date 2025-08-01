@@ -409,7 +409,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       } catch (error) {
         console.error('WebSocket message error:', error);
-        ws.close(4006, 'Invalid message format');
+        if (error instanceof z.ZodError) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format', details: error.errors }));
+        } else {
+          ws.close(4006, 'Invalid message format');
+        }
       }
     });
 

@@ -38,12 +38,12 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   fileType: true,
 }).extend({
   content: z.string().max(2000).trim().optional(),
-  fileUrl: z.string().url().optional(),
+  fileUrl: z.string().optional(),
   fileName: z.string().max(255).optional(),
   fileSize: z.number().max(300 * 1024 * 1024).optional(), // 300MB max
   fileType: z.string().max(100).optional(),
 }).refine(
-  (data) => data.content || data.fileUrl,
+  (data) => (data.content && data.content.trim().length > 0) || data.fileUrl,
   { message: "Either content or file must be provided" }
 );
 
