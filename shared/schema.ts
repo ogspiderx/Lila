@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,6 +15,10 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   timestamp: timestamp("timestamp", { mode: 'date' }).notNull().defaultNow(),
   edited: text("edited").$type<boolean>().default(false),
+  fileUrl: text("file_url"),
+  fileName: text("file_name"),
+  fileSize: integer("file_size"),
+  fileType: text("file_type"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -28,9 +32,20 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertMessageSchema = createInsertSchema(messages).pick({
   sender: true,
   content: true,
+  fileUrl: true,
+  fileName: true,
+  fileSize: true,
+  fileType: true,
 }).extend({
-  content: z.string().min(1).max(2000).trim(),
-});
+  content: z.string().max(2000).trim().optional(),
+  fileUrl: z.string().url().optional(),
+  fileName: z.string().max(255).optional(),
+  fileSize: z.number().max(300 * 1024 * 1024).optional(), // 300MB max
+  fileType: z.string().max(100).optional(),
+}).refine(
+  (data) => data.content || data.fileUrl,
+  { message: "Either content or file must be provided" }
+);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
-import { MoreVertical, Copy, Check } from "lucide-react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,12 +32,29 @@ export const MessageBubble = memo(function MessageBubble({
 
   const handleCopyMessage = async () => {
     try {
-      await navigator.clipboard.writeText(message.content);
+      const textToCopy = message.content || (message.fileName ? `File: ${message.fileName}` : "");
+      await navigator.clipboard.writeText(textToCopy);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy message:', error);
     }
+  };
+
+  const getFileIcon = (fileType?: string | null) => {
+    if (!fileType) return <File className="w-4 h-4" />;
+    
+    if (fileType.startsWith('image/')) return <Image className="w-4 h-4" />;
+    if (fileType.startsWith('video/')) return <Video className="w-4 h-4" />;
+    if (fileType.startsWith('audio/')) return <Music className="w-4 h-4" />;
+    return <File className="w-4 h-4" />;
+  };
+
+  const formatFileSize = (bytes?: number | null) => {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
 
@@ -88,21 +105,55 @@ export const MessageBubble = memo(function MessageBubble({
           `}
         >
           {/* Content */}
-          <p className={`
-            relative z-10 text-xs sm:text-sm leading-snug 
-            break-words whitespace-pre-wrap
-            ${isCurrentUser ? "text-white" : "text-slate-50"} 
-            ${isDeleted ? "italic text-slate-400" : ""}
-            drop-shadow-sm
-          `}
-          style={{
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word',
-            wordWrap: 'break-word',
-            hyphens: 'auto'
-          }}>
-            {message.content}
-          </p>
+          {/* File attachment */}
+          {message.fileUrl && (
+            <div className="mb-2">
+              <a
+                href={message.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`
+                  flex items-center space-x-2 p-2 rounded-lg transition-colors
+                  ${isCurrentUser 
+                    ? "bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-100" 
+                    : "bg-slate-600/40 hover:bg-slate-600/60 text-slate-200"
+                  }
+                `}
+              >
+                {getFileIcon(message.fileType)}
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium truncate">
+                    {message.fileName}
+                  </div>
+                  {message.fileSize && (
+                    <div className="text-xs opacity-75">
+                      {formatFileSize(message.fileSize)}
+                    </div>
+                  )}
+                </div>
+                <Download className="w-3 h-3 opacity-60" />
+              </a>
+            </div>
+          )}
+          
+          {/* Text content */}
+          {message.content && (
+            <p className={`
+              relative z-10 text-xs sm:text-sm leading-snug 
+              break-words whitespace-pre-wrap
+              ${isCurrentUser ? "text-white" : "text-slate-50"} 
+              ${isDeleted ? "italic text-slate-400" : ""}
+              drop-shadow-sm
+            `}
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              wordWrap: 'break-word',
+              hyphens: 'auto'
+            }}>
+              {message.content}
+            </p>
+          )}
         </motion.div>
         </div>
 

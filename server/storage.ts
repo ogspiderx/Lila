@@ -73,9 +73,18 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Database not initialized");
     }
 
+    const messageData = {
+      sender: insertMessage.sender,
+      content: insertMessage.content || "",
+      fileUrl: insertMessage.fileUrl || null,
+      fileName: insertMessage.fileName || null,
+      fileSize: insertMessage.fileSize || null,
+      fileType: insertMessage.fileType || null,
+    };
+
     const [message] = await db
       .insert(messages)
-      .values(insertMessage)
+      .values(messageData)
       .returning();
     
     // Invalidate messages cache when new message is created
@@ -163,9 +172,13 @@ export class MemStorage implements IStorage {
     const message: Message = {
       id: `msg-${this.messageIdCounter++}`,
       sender: insertMessage.sender,
-      content: insertMessage.content,
+      content: insertMessage.content || "",
       timestamp: new Date(),
-      edited: false
+      edited: false,
+      fileUrl: insertMessage.fileUrl || null,
+      fileName: insertMessage.fileName || null,
+      fileSize: insertMessage.fileSize || null,
+      fileType: insertMessage.fileType || null,
     };
     this.messages.push(message);
     return message;

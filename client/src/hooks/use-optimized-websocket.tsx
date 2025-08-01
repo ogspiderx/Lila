@@ -161,14 +161,18 @@ export function useOptimizedWebSocket() {
     };
   }, []);
 
-  const sendMessage = useCallback((sender: string, content: string) => {
-    // Sanitize and validate content
+  const sendMessage = useCallback((sender: string, content: string, fileData?: { fileUrl: string; fileName: string; fileSize: number; fileType: string } | null) => {
+    // Validate that either content or file is provided
     const sanitizedContent = content.trim().substring(0, 1000);
-    if (!sanitizedContent) return;
+    if (!sanitizedContent && !fileData) return;
     
     const message = JSON.stringify({
       type: "message",
-      content: sanitizedContent
+      content: sanitizedContent,
+      fileUrl: fileData?.fileUrl,
+      fileName: fileData?.fileName,
+      fileSize: fileData?.fileSize,
+      fileType: fileData?.fileType,
     });
 
     if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {

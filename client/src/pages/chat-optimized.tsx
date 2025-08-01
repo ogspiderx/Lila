@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, Send } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { LogOut, Send, Paperclip, X } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { TypingIndicator } from "@/components/ui/typing-indicator";
 
@@ -16,8 +17,12 @@ import type { Message } from "@shared/schema";
 export default function ChatOptimized() {
   const [messageInput, setMessageInput] = useState("");
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
   const {
@@ -110,16 +115,82 @@ export default function ChatOptimized() {
       .slice(-50); // Display only last 50 messages
   }, [allMessages]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (300MB limit)
+      if (file.size > 300 * 1024 * 1024) {
+        alert("File size must be less than 300MB");
+        return;
+      }
+      setSelectedFile(file);
+    }
+  }, []);
+
+  const handleRemoveFile = useCallback(() => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
+
+  const uploadFile = useCallback(async (file: File): Promise<{ fileUrl: string; fileName: string; fileSize: number; fileType: string } | null> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('File upload error:', error);
+      return null;
+    }
+  }, []);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     const content = messageInput.trim();
-    if (content && content.length <= 1000 && currentUser) {
-      handleTypingStop();
-      sendMessage(currentUser.username, content);
+    if ((!content && !selectedFile) || !currentUser) return;
+
+    if (content && content.length > 1000) return;
+
+    setIsUploading(true);
+    handleTypingStop();
+
+    try {
+      let fileData = null;
+      
+      // Upload file if selected
+      if (selectedFile) {
+        fileData = await uploadFile(selectedFile);
+        if (!fileData) {
+          alert("File upload failed. Please try again.");
+          return;
+        }
+      }
+
+      // Send message (sendMessage needs to be updated to handle file data)
+      sendMessage(currentUser.username, content || "", fileData);
+
       setMessageInput("");
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } finally {
+      setIsUploading(false);
     }
-  }, [messageInput, currentUser, handleTypingStop, sendMessage]);
+  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFile]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -206,7 +277,7 @@ export default function ChatOptimized() {
 
       {/* Messages area with minimal styling */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide">
           {displayMessages.map((message) => (
             <MessageBubble
               key={message.id}
@@ -223,9 +294,55 @@ export default function ChatOptimized() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Minimal input form */}
+        {/* Input form with file upload */}
         <form onSubmit={handleSubmit} className="border-t border-slate-700 p-4">
+          {/* File preview */}
+          {selectedFile && (
+            <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Paperclip className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-300 truncate max-w-xs">
+                    {selectedFile.name}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveFile}
+                  className="text-slate-400 hover:text-white p-1"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="flex space-x-2">
+            <div className="flex items-end space-x-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileSelect}
+                className="hidden"
+                accept="*/*"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={!isConnected || isUploading}
+                className="text-slate-400 hover:text-white hover:bg-slate-700 p-2"
+              >
+                <Paperclip className="w-4 h-4" />
+              </Button>
+            </div>
+            
             <Textarea
               ref={textareaRef}
               value={messageInput}
@@ -233,18 +350,25 @@ export default function ChatOptimized() {
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
-              disabled={!isConnected}
+              disabled={!isConnected || isUploading}
             />
             <Button
               type="submit"
-              disabled={!messageInput.trim() || !isConnected}
+              disabled={(!messageInput.trim() && !selectedFile) || !isConnected || isUploading}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-4"
             >
-              <Send className="w-4 h-4" />
+              {isUploading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </Button>
           </div>
-          <div className="mt-2 text-xs text-slate-400">
-            {messageInput.length}/1000 characters
+          <div className="mt-2 text-xs text-slate-400 flex justify-between">
+            <span>{messageInput.length}/1000 characters</span>
+            {selectedFile && (
+              <span>File: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)</span>
+            )}
           </div>
         </form>
       </div>

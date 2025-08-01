@@ -6,6 +6,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import crypto from "crypto";
+import multer from "multer";
+import path from "path";
+import fs from "fs-extra";
 import { storage } from "./storage";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
@@ -24,6 +27,30 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-for-replit-environm
 const SALT_ROUNDS = 12;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  await fs.ensureDir(uploadsDir);
+
+  // Configure multer for file uploads with security
+  const upload = multer({
+    dest: uploadsDir,
+    limits: {
+      fileSize: 300 * 1024 * 1024, // 300MB limit
+      files: 1, // Only one file at a time
+    },
+    fileFilter: (req, file, cb) => {
+      // Block dangerous file types
+      const dangerousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.jar'];
+      const fileExt = path.extname(file.originalname).toLowerCase();
+      
+      if (dangerousExtensions.includes(fileExt)) {
+        return cb(new Error('File type not allowed for security reasons'));
+      }
+      
+      cb(null, true);
+    },
+  });
+
   // Add cookie parser middleware
   app.use(cookieParser());
   
@@ -177,7 +204,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: message.id,
         sender: message.sender,
         content: message.content.substring(0, 1000), // Limit content length
-        timestamp: message.timestamp
+        timestamp: message.timestamp,
+        fileUrl: message.fileUrl,
+        fileName: message.fileName,
+        fileSize: message.fileSize,
+        fileType: message.fileType,
       }));
       
       // Secure cache headers
@@ -187,6 +218,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Failed to fetch messages:", error);
       res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Secure file upload endpoint
+  app.post("/api/upload", requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const file = req.file;
+      const fileExt = path.extname(file.originalname);
+      const safeName = `${crypto.randomUUID()}${fileExt}`;
+      const newPath = path.join(uploadsDir, safeName);
+      
+      // Move file to secure location with safe name
+      await fs.move(file.path, newPath);
+      
+      // Generate secure file URL
+      const fileUrl = `/api/files/${safeName}`;
+      
+      res.json({
+        fileUrl,
+        fileName: file.originalname,
+        fileSize: file.size,
+        fileType: file.mimetype || 'application/octet-stream',
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      
+      // Clean up file if it exists
+      if (req.file?.path) {
+        try {
+          await fs.remove(req.file.path);
+        } catch (cleanupError) {
+          console.error("Failed to clean up file:", cleanupError);
+        }
+      }
+      
+      res.status(500).json({ message: "File upload failed" });
+    }
+  });
+
+  // Serve uploaded files securely
+  app.get("/api/files/:filename", requireAuth, async (req, res) => {
+    try {
+      const filename = req.params.filename;
+      
+      // Validate filename format (UUID + extension)
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-zA-Z0-9]+$/i.test(filename)) {
+        return res.status(400).json({ message: "Invalid filename" });
+      }
+      
+      const filePath = path.join(uploadsDir, filename);
+      
+      // Check if file exists
+      const exists = await fs.pathExists(filePath);
+      if (!exists) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      
+      // Serve file with security headers
+      res.set({
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Cache-Control': 'private, max-age=3600',
+      });
+      
+      res.sendFile(filePath);
+    } catch (error) {
+      console.error("File serve error:", error);
+      res.status(500).json({ message: "Failed to serve file" });
     }
   });
 
@@ -248,14 +351,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         if (messageData.type === 'message') {
-          // Validate message content
-          const { content } = messageSchema.parse({ content: messageData.content });
+          // Validate message content and file data
+          const messageInput = {
+            content: messageData.content || "",
+            fileUrl: messageData.fileUrl,
+            fileName: messageData.fileName,
+            fileSize: messageData.fileSize,
+            fileType: messageData.fileType,
+          };
           
-          // Ensure sender matches authenticated user
-          const message = await storage.createMessage({ 
-            sender: userInfo.username, 
-            content: content.trim()
+          const validatedData = insertMessageSchema.parse({
+            sender: userInfo.username,
+            ...messageInput
           });
+          
+          // Create message in storage
+          const message = await storage.createMessage(validatedData);
           
           // Broadcast to authenticated clients only
           const broadcastData = JSON.stringify({
@@ -264,7 +375,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: message.id,
               sender: message.sender,
               content: message.content,
-              timestamp: message.timestamp
+              timestamp: message.timestamp,
+              fileUrl: message.fileUrl,
+              fileName: message.fileName,
+              fileSize: message.fileSize,
+              fileType: message.fileType,
             }
           });
           

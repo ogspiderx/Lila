@@ -73,28 +73,37 @@
     min-height: 100vh;
   }
 
-  html {
-    scroll-behavior: smooth;
+  /* Hide scrollbars */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   
-  /* Animated background particles */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-      radial-gradient(circle at 20% 20%, hsla(142, 80%, 50%, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, hsla(142, 80%, 40%, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 40% 70%, hsla(142, 75%, 45%, 0.05) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
-    animation: float 20s ease-in-out infinite;
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
+}
 
+html {
+  scroll-behavior: smooth;
+}
+
+/* Animated background particles */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 20%, hsla(142, 80%, 50%, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, hsla(142, 80%, 40%, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 70%, hsla(142, 75%, 45%, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: float 20s ease-in-out infinite;
 }
 
 @layer utilities {
