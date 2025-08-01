@@ -3,37 +3,55 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(222, 84%, 4.9%);
-  --foreground: hsl(210, 40%, 98%);
-  --muted: hsl(217, 32.6%, 17.5%);
-  --muted-foreground: hsl(215, 20.2%, 65.1%);
-  --popover: hsl(222, 84%, 4.9%);
-  --popover-foreground: hsl(210, 40%, 98%);
-  --card: hsl(222, 84%, 4.9%);
-  --card-foreground: hsl(210, 40%, 98%);
-  --border: hsl(217, 32.6%, 17.5%);
-  --input: hsl(217, 32.6%, 17.5%);
-  --primary: hsl(142, 76%, 36%);
-  --primary-foreground: hsl(355, 7%, 97%);
-  --secondary: hsl(217, 32.6%, 17.5%);
-  --secondary-foreground: hsl(210, 40%, 98%);
-  --accent: hsl(45, 93%, 47%);
-  --accent-foreground: hsl(222, 84%, 4.9%);
-  --destructive: hsl(0, 72%, 51%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --ring: hsl(142, 76%, 36%);
-  --radius: 0.75rem;
+  /* Romantic Dark Theme with Green Accents */
+  --background: hsl(220, 25%, 8%);
+  --foreground: hsl(210, 45%, 98%);
+  --muted: hsl(217, 20%, 15%);
+  --muted-foreground: hsl(215, 25%, 70%);
+  --popover: hsl(220, 25%, 10%);
+  --popover-foreground: hsl(210, 45%, 98%);
+  --card: hsl(220, 25%, 10%);
+  --card-foreground: hsl(210, 45%, 98%);
+  --border: hsl(217, 20%, 18%);
+  --input: hsl(217, 20%, 15%);
+  --primary: hsl(142, 80%, 45%);
+  --primary-foreground: hsl(220, 25%, 8%);
+  --secondary: hsl(217, 20%, 15%);
+  --secondary-foreground: hsl(210, 45%, 98%);
+  --accent: hsl(142, 80%, 50%);
+  --accent-foreground: hsl(220, 25%, 8%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 45%, 98%);
+  --ring: hsl(142, 80%, 45%);
+  --radius: 1rem;
   
-  --primary-green: hsl(142, 76%, 36%);
-  --primary-light: hsl(142, 76%, 42%);
-  --accent-yellow: hsl(45, 93%, 47%);
-  --accent-orange: hsl(25, 95%, 53%);
-  --surface-1: hsl(217, 32.6%, 17.5%);
-  --surface-2: hsl(215, 27.9%, 16.9%);
-  --surface-3: hsl(215, 25%, 27%);
-  --text-primary: hsl(210, 40%, 98%);
-  --text-secondary: hsl(215, 20.2%, 65.1%);
-  --text-accent: hsl(142, 76%, 52%);
+  /* Romantic Color Palette */
+  --emerald-50: hsl(142, 80%, 95%);
+  --emerald-100: hsl(142, 75%, 85%);
+  --emerald-400: hsl(142, 80%, 50%);
+  --emerald-500: hsl(142, 80%, 45%);
+  --emerald-600: hsl(142, 75%, 40%);
+  --emerald-700: hsl(142, 70%, 35%);
+  --emerald-800: hsl(142, 65%, 25%);
+  --emerald-900: hsl(142, 60%, 15%);
+  
+  /* Surface Colors */
+  --surface-primary: hsl(220, 25%, 8%);
+  --surface-secondary: hsl(220, 20%, 12%);
+  --surface-tertiary: hsl(220, 18%, 16%);
+  --surface-glass: hsla(220, 25%, 12%, 0.8);
+  --surface-overlay: hsla(220, 25%, 5%, 0.9);
+  
+  /* Text Colors */
+  --text-primary: hsl(210, 45%, 98%);
+  --text-secondary: hsl(215, 25%, 75%);
+  --text-muted: hsl(215, 20%, 60%);
+  --text-accent: hsl(142, 80%, 55%);
+  
+  /* Glass Effects */
+  --glass-bg: hsla(220, 25%, 12%, 0.6);
+  --glass-border: hsla(142, 80%, 50%, 0.2);
+  --glass-backdrop: blur(20px);
 }
 
 @layer base {
@@ -42,85 +60,208 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground overflow-x-hidden;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    @apply font-sans antialiased overflow-x-hidden;
+    font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background: radial-gradient(ellipse at top, hsl(220, 25%, 10%) 0%, var(--surface-primary) 50%);
+    color: var(--text-primary);
+    min-height: 100vh;
   }
 
   html {
     scroll-behavior: smooth;
   }
+  
+  /* Animated background particles */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 20%, hsla(142, 80%, 50%, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, hsla(142, 80%, 40%, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 40% 70%, hsla(142, 75%, 45%, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+    animation: float 20s ease-in-out infinite;
+  }
 
 
 }
 
+@layer utilities {
+  /* Keyframes for animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-10px) rotate(1deg); }
+    66% { transform: translateY(5px) rotate(-1deg); }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsla(142, 80%, 50%, 0.3); }
+    50% { box-shadow: 0 0 30px hsla(142, 80%, 50%, 0.5), 0 0 40px hsla(142, 80%, 50%, 0.2); }
+  }
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  
+  @keyframes bounce-in {
+    0% { transform: scale(0.3) translateY(50px); opacity: 0; }
+    50% { transform: scale(1.05) translateY(-10px); }
+    70% { transform: scale(0.95) translateY(0px); }
+    100% { transform: scale(1) translateY(0px); opacity: 1; }
+  }
+  
+  @keyframes slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
 @layer components {
-  /* Input and form field styling */
+  /* Glass morphism effects */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-backdrop);
+    border: 1px solid var(--glass-border);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-overlay {
+    background: var(--surface-overlay);
+    backdrop-filter: blur(30px);
+  }
+
+  /* Enhanced input fields */
   .input-field {
-    background: var(--surface-1) !important;
+    background: var(--surface-secondary) !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--border) !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
   }
 
   .input-field:focus {
-    border-color: var(--primary-green) !important;
-    box-shadow: 0 0 0 2px hsla(142, 76%, 36%, 0.15) !important;
-    background: var(--surface-2) !important;
-  }
-
-  .input-field::placeholder {
-    color: var(--text-secondary) !important;
-  }
-
-  /* Select dropdown styling */
-  .select-trigger {
-    background: var(--surface-1) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border) !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .select-trigger:hover {
-    background: var(--surface-2) !important;
-    border-color: var(--primary-light) !important;
-  }
-
-  .select-content {
-    background: var(--surface-2) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  }
-
-  .select-item {
-    color: var(--text-primary) !important;
-    transition: all 0.15s ease;
-  }
-
-  .select-item:hover {
-    background: hsla(142, 76%, 36%, 0.15) !important;
-    color: var(--text-accent) !important;
-  }
-
-  .glow-green {
+    border-color: var(--emerald-500) !important;
     box-shadow: 
-      0 0 20px hsla(142, 76%, 36%, 0.4),
-      0 0 40px hsla(142, 76%, 36%, 0.2),
-      inset 0 1px 2px hsla(142, 76%, 52%, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .glow-green:hover {
-    box-shadow: 
-      0 0 25px hsla(142, 76%, 36%, 0.5),
-      0 0 50px hsla(142, 76%, 36%, 0.25),
-      inset 0 1px 2px hsla(142, 76%, 52%, 0.15);
+      0 0 0 3px hsla(142, 80%, 50%, 0.15),
+      0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    background: var(--surface-tertiary) !important;
     transform: translateY(-1px);
   }
   
+  .input-field:focus::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(142, 80%, 50%, 0.1), transparent);
+    animation: shimmer 2s ease-in-out;
+  }
+
+  .input-field::placeholder {
+    color: var(--text-muted) !important;
+  }
+
+  /* Romantic button styles */
+  .btn-romantic {
+    background: linear-gradient(135deg, var(--emerald-600), var(--emerald-500));
+    border: 1px solid var(--emerald-400);
+    box-shadow: 
+      0 4px 15px hsla(142, 80%, 45%, 0.25),
+      inset 0 1px 0 hsla(142, 80%, 60%, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-romantic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-romantic:hover::before {
+    left: 100%;
+  }
+  
+  .btn-romantic:hover {
+    background: linear-gradient(135deg, var(--emerald-500), var(--emerald-400));
+    box-shadow: 
+      0 6px 20px hsla(142, 80%, 45%, 0.4),
+      0 0 25px hsla(142, 80%, 50%, 0.3),
+      inset 0 1px 0 hsla(142, 80%, 60%, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .btn-romantic:active {
+    transform: translateY(0px);
+    box-shadow: 
+      0 2px 10px hsla(142, 80%, 45%, 0.3),
+      inset 0 1px 0 hsla(142, 80%, 60%, 0.2);
+  }
+
+  /* Message bubble animations */
+  .message-bubble {
+    animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  .message-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  /* Floating elements */
+  .floating-element {
+    backdrop-filter: blur(20px);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Glow effects */
+  .glow-emerald {
+    box-shadow: 
+      0 0 20px hsla(142, 80%, 50%, 0.4),
+      0 0 40px hsla(142, 80%, 50%, 0.2);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  
+  .glow-emerald-hover:hover {
+    box-shadow: 
+      0 0 25px hsla(142, 80%, 50%, 0.6),
+      0 0 50px hsla(142, 80%, 50%, 0.3),
+      0 0 75px hsla(142, 80%, 50%, 0.1);
+  }
+
+  /* Smooth transitions */
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .smooth-hover:hover {
+    transform: translateY(-2px);
+  }
+
   .glow-yellow {
     box-shadow: 
       0 0 15px hsla(45, 93%, 47%, 0.4),

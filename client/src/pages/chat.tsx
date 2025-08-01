@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, Send, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
+import { LogOut, Send, Volume2, VolumeX, Bell, BellOff, Heart, Sparkles, MessageCircle } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
 
 import { useOptimizedWebSocket } from "@/hooks/use-optimized-websocket";
@@ -71,7 +71,7 @@ export default function Chat() {
         // Normalize timestamp for consistent sorting
         const normalizedMessage = {
           ...message,
-          timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)
+          timestamp: new Date(message.timestamp)
         };
         allMessages.push(normalizedMessage);
       }
@@ -157,97 +157,214 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-      {/* Chat Header - Fixed */}
+    <div className="h-screen flex flex-col overflow-hidden relative">
+      {/* Animated background with romantic particles */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900/20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--emerald-500)_0%,_transparent_45%)] opacity-10"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--emerald-600)_0%,_transparent_50%)] opacity-8"></div>
+      </div>
+      
+      {/* Floating hearts animation */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -20, 0],
+              x: [0, Math.random() * 10 - 5, 0],
+              rotate: [0, Math.random() * 10 - 5, 0],
+              opacity: [0.1, 0.3, 0.1],
+            }}
+            transition={{
+              duration: 4 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          >
+            <Heart className="w-3 h-3 text-emerald-400/20" />
+          </motion.div>
+        ))}
+      </div>
+      {/* Romantic Chat Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex-shrink-0 floating-element border-b border-border/30 px-4 sm:px-6 py-3 relative overflow-hidden"
+        transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+        className="flex-shrink-0 glass-card border-b border-emerald-500/20 px-4 sm:px-6 py-4 relative overflow-hidden z-20"
       >
-        {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 opacity-50" />
+        {/* Romantic gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-emerald-400/10" />
         
         <div className="flex items-center justify-between max-w-full relative z-10">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="relative">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary glow-text-green animate-glow tracking-wide">
-                Lila
-              </h1>
-              <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary opacity-60 rounded-full" />
-            </div>
+          <div className="flex items-center space-x-4">
+            <motion.div 
+              className="relative"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <div className="flex items-center space-x-3">
+                <motion.div
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                >
+                  <Sparkles className="w-6 h-6 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-wide">
+                  Lila
+                </h1>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Heart className="w-5 h-5 text-emerald-400 fill-current" />
+                </motion.div>
+              </div>
+              <motion.div 
+                className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500 rounded-full"
+                animate={{ opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </motion.div>
             
-            <div className="flex items-center space-x-2 text-muted-foreground">
-              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-500 shadow-lg ${isConnected ? 'bg-primary animate-pulse-green shadow-primary/50' : 'bg-destructive animate-bounce-subtle shadow-destructive/50'}`} />
-              <span className="text-xs sm:text-sm font-medium hidden sm:inline">
+            <motion.div 
+              className="flex items-center space-x-3 glass-card px-3 py-2 rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <motion.div 
+                className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-400'}`}
+                animate={isConnected ? { 
+                  boxShadow: ['0 0 0 0 rgba(52, 211, 153, 0.7)', '0 0 0 10px rgba(52, 211, 153, 0)'] 
+                } : { 
+                  scale: [1, 1.2, 1] 
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span className="text-xs font-medium text-emerald-300 hidden sm:inline">
                 {isConnected ? "Connected" : "Reconnecting..."}
               </span>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="flex items-center space-x-2 bg-card/50 rounded-full px-3 py-1.5 border border-border/30">
-              <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
-              <span className="text-accent font-medium text-sm sm:text-base">{currentUser.username}</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
-              title={soundEnabled ? "Disable sound notifications" : "Enable sound notifications"}
+          <div className="flex items-center space-x-3">
+            <motion.div 
+              className="glass-card rounded-full px-4 py-2 border border-emerald-500/30"
+              whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(52, 211, 153, 0.3)" }}
             >
-              {soundEnabled ? (
-                <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />
-              ) : (
-                <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleNotificationToggle}
-              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
-              title={
-                notificationPermission === 'granted' 
-                  ? "Desktop notifications enabled" 
-                  : notificationPermission === 'denied'
-                  ? "Desktop notifications blocked - check browser settings"
-                  : "Enable desktop notifications"
-              }
-            >
-              {notificationPermission === 'granted' ? (
-                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
-              ) : (
-                <BellOff className="h-4 w-4 sm:h-5 sm:w-5" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
-            >
-              <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
+              <div className="flex items-center space-x-2">
+                <motion.div 
+                  className="w-2 h-2 bg-emerald-400 rounded-full"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <span className="text-emerald-300 font-medium text-sm">{currentUser.username}</span>
+              </div>
+            </motion.div>
+            <motion.div className="flex items-center space-x-1">
+              <motion.button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className="p-2 rounded-full glass-card text-emerald-300 hover:text-emerald-200 transition-all duration-300"
+                whileHover={{ scale: 1.1, boxShadow: "0 0 15px rgba(52, 211, 153, 0.4)" }}
+                whileTap={{ scale: 0.95 }}
+                title={soundEnabled ? "Disable sound notifications" : "Enable sound notifications"}
+              >
+                {soundEnabled ? (
+                  <Volume2 className="h-4 w-4" />
+                ) : (
+                  <VolumeX className="h-4 w-4" />
+                )}
+              </motion.button>
+
+              <motion.button
+                onClick={handleNotificationToggle}
+                className="p-2 rounded-full glass-card text-emerald-300 hover:text-emerald-200 transition-all duration-300"
+                whileHover={{ scale: 1.1, boxShadow: "0 0 15px rgba(52, 211, 153, 0.4)" }}
+                whileTap={{ scale: 0.95 }}
+                title={
+                  notificationPermission === 'granted' 
+                    ? "Desktop notifications enabled" 
+                    : notificationPermission === 'denied'
+                    ? "Desktop notifications blocked - check browser settings"
+                    : "Enable desktop notifications"
+                }
+              >
+                {notificationPermission === 'granted' ? (
+                  <Bell className="h-4 w-4 text-emerald-400" />
+                ) : (
+                  <BellOff className="h-4 w-4" />
+                )}
+              </motion.button>
+
+              <motion.button
+                onClick={handleLogout}
+                className="p-2 rounded-full glass-card text-red-400 hover:text-red-300 transition-all duration-300"
+                whileHover={{ scale: 1.1, boxShadow: "0 0 15px rgba(248, 113, 113, 0.4)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <LogOut className="h-4 w-4" />
+              </motion.button>
+            </motion.div>
           </div>
         </div>
       </motion.header>
 
-      {/* Messages Area - Flexible */}
-      <main className="flex-1 flex flex-col min-h-0">
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3 scroll-smooth messages-container overflow-x-hidden">
+      {/* Romantic Messages Area */}
+      <main className="flex-1 flex flex-col min-h-0 relative z-10">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4 scroll-smooth messages-container overflow-x-hidden">
           <div className="max-w-4xl mx-auto w-full min-w-0">
             {sortedMessages.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="flex items-center justify-center h-full min-h-[200px]"
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.8, type: "spring", bounce: 0.6 }}
+                className="flex items-center justify-center h-full min-h-[300px]"
               >
-                <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 text-center border border-border/50">
-                  <h3 className="text-primary font-semibold mb-2 text-sm sm:text-base">Welcome to Lila!</h3>
-                  <p className="text-muted-foreground text-xs sm:text-sm">Your private chat space is ready</p>
+                <div className="glass-card rounded-2xl p-8 text-center border border-emerald-500/30 relative overflow-hidden">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-4 right-4"
+                  >
+                    <Sparkles className="w-6 h-6 text-emerald-400/50" />
+                  </motion.div>
+                  
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  >
+                    <MessageCircle className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
+                  </motion.div>
+                  
+                  <motion.h3 
+                    className="text-emerald-300 font-semibold mb-3 text-lg"
+                    animate={{ opacity: [0.7, 1, 0.7] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    Welcome to Lila! ✨
+                  </motion.h3>
+                  <p className="text-emerald-200/70 text-sm">Your enchanted chat space awaits your first message</p>
+                  
+                  <motion.div
+                    className="mt-4 flex justify-center space-x-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1 }}
+                  >
+                    {[...Array(3)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="w-2 h-2 bg-emerald-400 rounded-full"
+                        animate={{ scale: [1, 1.5, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                      />
+                    ))}
+                  </motion.div>
                 </div>
               </motion.div>
             ) : (
@@ -267,56 +384,96 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* Message Input - Fixed at bottom */}
+        {/* Romantic Message Input */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex-shrink-0 floating-element border-t border-border/30 p-4 sm:p-6 relative overflow-hidden"
+          transition={{ duration: 0.8, delay: 0.3, type: "spring", bounce: 0.4 }}
+          className="flex-shrink-0 glass-card border-t border-emerald-500/20 p-4 sm:p-6 relative overflow-hidden z-20"
         >
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/3 via-transparent to-transparent opacity-50" />
+          {/* Romantic gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-transparent to-transparent" />
           
           <div className="max-w-4xl mx-auto relative z-10">
-            <form onSubmit={handleSubmit} className="flex items-end gap-3">
+            <form onSubmit={handleSubmit} className="flex items-end gap-4">
               <div className="flex-1 relative">
-                <div className="relative">
+                <motion.div 
+                  className="relative"
+                  whileFocus={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <Textarea
                     ref={textareaRef}
                     value={messageInput}
                     onChange={(e) => {
-                      // Limit input to 2000 characters
                       if (e.target.value.length <= 2000) {
                         setMessageInput(e.target.value);
                       }
-                      
-
                     }}
                     onKeyDown={handleKeyDown}
-                    placeholder="Type your message..."
+                    placeholder="Share your thoughts... ✨"
                     rows={1}
-                    className="resize-none input-field rounded-xl smooth-transition min-h-[44px] max-h-[120px] py-3 px-4 pr-12 text-sm sm:text-base leading-relaxed shadow-lg border-2 border-transparent focus:border-primary/30"
+                    className="resize-none glass-card rounded-2xl min-h-[50px] max-h-[120px] py-4 px-5 pr-16 text-sm sm:text-base leading-relaxed border border-emerald-500/30 bg-slate-800/50 text-white placeholder-emerald-200/50 focus:border-emerald-400 focus:shadow-lg focus:shadow-emerald-500/20 transition-all duration-300"
                   />
                   
-                  {/* Character counter for longer messages */}
-                  {messageInput.length > 100 && (
-                    <div className="absolute bottom-2 right-3 text-xs text-muted-foreground">
-                      {messageInput.length}/2000
-                    </div>
-                  )}
-                </div>
+                  {/* Character counter */}
+                  <AnimatePresence>
+                    {messageInput.length > 100 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="absolute bottom-3 right-4 text-xs text-emerald-300/70 bg-slate-800/80 px-2 py-1 rounded-full"
+                      >
+                        {messageInput.length}/2000
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  
+                  {/* Magic sparkle when typing */}
+                  <AnimatePresence>
+                    {messageInput.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        className="absolute top-3 right-4"
+                      >
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Sparkles className="w-4 h-4 text-emerald-400" />
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
               
-              <Button
+              <motion.button
                 type="submit"
                 disabled={!messageInput.trim() || !isConnected || messageInput.length > 2000}
-                className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground h-[44px] w-[44px] sm:h-[48px] sm:w-[48px] rounded-xl glow-green hover:from-primary/90 hover:to-primary smooth-transition disabled:opacity-50 flex-shrink-0 shadow-lg hover:shadow-primary/30 relative overflow-hidden group"
+                className="btn-romantic h-[50px] w-[50px] rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center group relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                animate={!messageInput.trim() ? {} : { boxShadow: ["0 0 0 0 rgba(52, 211, 153, 0.7)", "0 0 0 20px rgba(52, 211, 153, 0)"] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <Send className="h-4 w-4 sm:h-5 sm:w-5 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <motion.div
+                  animate={messageInput.trim() ? { rotate: [0, 5, -5, 0] } : {}}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Send className="h-5 w-5 text-white relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </motion.div>
                 
-                {/* Button shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] duration-700" />
-              </Button>
+                {/* Romantic shine effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -skew-x-12"
+                  animate={{ x: ["-100%", "200%"] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </motion.button>
             </form>
           </div>
         </motion.div>
