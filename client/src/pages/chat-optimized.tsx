@@ -93,15 +93,16 @@ export default function ChatOptimized() {
       // Add existing messages
       prev.forEach(msg => messageMap.set(msg.id, msg));
       
-      // Add WebSocket messages
+      // Add WebSocket messages with proper timestamp handling
       wsMessages.forEach(message => {
         const normalizedMessage = {
           ...message,
-          timestamp: new Date(message.timestamp)
+          timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)
         };
         messageMap.set(message.id, normalizedMessage);
       });
 
+      // Sort by timestamp (oldest first) so newest appear at bottom
       return Array.from(messageMap.values())
         .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
         .slice(-100); // Keep only last 100 messages for performance
@@ -134,27 +135,110 @@ export default function ChatOptimized() {
     }
   }, []);
 
-  const uploadFile = useCallback(async (file: File): Promise<{ fileUrl: string; fileName: string; fileSize: number; fileType: string } | null> => {
+  const compressImage = useCallback(async (file: File, quality: number = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions (max 1920x1080)
+        let { width, height } = img;
+        const maxWidth = 1920;
+        const maxHeight = 1080;
+        
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  }, []);
+
+  
+
+  const uploadFileWithProgress = useCallback(async (file: File): Promise<{ fileUrl: string; fileName: string; fileSize: number; fileType: string } | null> => {
+    let fileToUpload = file;
+    
+    // Compress images
+    if (file.type.startsWith('image/') && file.size > 500 * 1024) { // 500KB threshold
+      try {
+        setUploadProgress(10);
+        fileToUpload = await compressImage(file);
+        setUploadProgress(20);
+      } catch (error) {
+        console.error('Image compression failed:', error);
+      }
+    }
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', fileToUpload);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
+      setUploadProgress(30);
+      
+      const xhr = new XMLHttpRequest();
+      
+      return new Promise((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const progress = Math.round((e.loaded / e.total) * 70) + 30; // 30-100%
+            setUploadProgress(progress);
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            try {
+              const result = JSON.parse(xhr.responseText);
+              setUploadProgress(100);
+              resolve(result);
+            } catch (error) {
+              reject(new Error('Invalid response'));
+            }
+          } else {
+            reject(new Error('Upload failed'));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Upload failed'));
+        });
+
+        xhr.open('POST', '/api/upload');
+        xhr.withCredentials = true;
+        xhr.send(formData);
       });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      return await response.json();
     } catch (error) {
       console.error('File upload error:', error);
       return null;
     }
-  }, []);
+  }, [compressImage]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,6 +249,7 @@ export default function ChatOptimized() {
     if (content && content.length > 1000) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
     handleTypingStop();
 
     try {
@@ -172,25 +257,27 @@ export default function ChatOptimized() {
       
       // Upload file if selected
       if (selectedFile) {
-        fileData = await uploadFile(selectedFile);
+        fileData = await uploadFileWithProgress(selectedFile);
         if (!fileData) {
           alert("File upload failed. Please try again.");
           return;
         }
       }
 
-      // Send message (sendMessage needs to be updated to handle file data)
+      // Send message
       sendMessage(currentUser.username, content || "", fileData);
 
       setMessageInput("");
       setSelectedFile(null);
+      setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
-  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFile]);
+  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFileWithProgress]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -299,7 +386,7 @@ export default function ChatOptimized() {
           {/* File preview */}
           {selectedFile && (
             <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <Paperclip className="w-4 h-4 text-slate-400" />
                   <span className="text-sm text-slate-300 truncate max-w-xs">
@@ -309,16 +396,35 @@ export default function ChatOptimized() {
                     ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
                   </span>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRemoveFile}
-                  className="text-slate-400 hover:text-white p-1"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+                {!isUploading && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveFile}
+                    className="text-slate-400 hover:text-white p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
+              
+              {/* Upload progress bar */}
+              {isUploading && uploadProgress > 0 && (
+                <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
+                  <div 
+                    className="bg-emerald-500 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              )}
+              
+              {isUploading && (
+                <div className="text-xs text-slate-400 text-center">
+                  {uploadProgress < 20 ? 'Compressing...' : 
+                   uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Finalizing...'}
+                </div>
+              )}
             </div>
           )}
 

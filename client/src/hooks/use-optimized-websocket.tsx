@@ -17,16 +17,16 @@ export function useOptimizedWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
     const ws = new WebSocket(`${protocol}//${host}/ws`);
-    
+
     ws.onopen = () => {
       console.log('WebSocket connected');
-      
+
       // Authenticate with JWT token
       const authToken = document.cookie
         .split('; ')
         .find(row => row.startsWith('authToken='))
         ?.split('=')[1];
-      
+
       if (authToken) {
         ws.send(JSON.stringify({
           type: 'auth',
@@ -40,11 +40,11 @@ export function useOptimizedWebSocket() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        
+
         if (data.type === 'auth' && data.success) {
           console.log('WebSocket authenticated');
           setIsConnected(true);
-          
+
           // Send queued messages after authentication
           while (messageQueueRef.current.length > 0) {
             const message = messageQueueRef.current.shift();
@@ -57,7 +57,7 @@ export function useOptimizedWebSocket() {
               ...data.data,
               timestamp: new Date(data.data.timestamp).getTime()
             };
-            
+
             setMessages(prev => {
               // Use Map for O(1) deduplication
               const messageMap = new Map(prev.map(m => [m.id, m]));
@@ -72,13 +72,13 @@ export function useOptimizedWebSocket() {
           if (data.sender) {
             if (data.isTyping) {
               setTypingUsers(prev => new Set(Array.from(prev).concat([data.sender])));
-              
+
               // Clear existing timeout for this user
               const existingTimeout = typingTimeoutsRef.current.get(data.sender);
               if (existingTimeout) {
                 clearTimeout(existingTimeout);
               }
-              
+
               // Set timeout to remove typing indicator after 3 seconds
               const timeout = setTimeout(() => {
                 if (mountedRef.current) {
@@ -90,7 +90,7 @@ export function useOptimizedWebSocket() {
                 }
                 typingTimeoutsRef.current.delete(data.sender);
               }, 3000);
-              
+
               typingTimeoutsRef.current.set(data.sender, timeout);
             } else {
               setTypingUsers(prev => {
@@ -98,7 +98,7 @@ export function useOptimizedWebSocket() {
                 newSet.delete(data.sender);
                 return newSet;
               });
-              
+
               // Clear timeout
               const existingTimeout = typingTimeoutsRef.current.get(data.sender);
               if (existingTimeout) {
@@ -117,7 +117,7 @@ export function useOptimizedWebSocket() {
       console.log('WebSocket disconnected, code:', event.code);
       setIsConnected(false);
       wsRef.current = null;
-      
+
       // Only reconnect if component is still mounted and for specific error codes
       if (mountedRef.current && event.code !== 1000 && event.code !== 4000 && event.code !== 4003 && event.code !== 4004) {
         reconnectTimeoutRef.current = setTimeout(() => {
@@ -144,7 +144,7 @@ export function useOptimizedWebSocket() {
   useEffect(() => {
     mountedRef.current = true;
     connectWebSocket();
-    
+
     return () => {
       mountedRef.current = false;
       if (reconnectTimeoutRef.current) {
@@ -153,7 +153,7 @@ export function useOptimizedWebSocket() {
       // Clear all typing timeouts for memory cleanup
       typingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
       typingTimeoutsRef.current.clear();
-      
+
       if (wsRef.current) {
         wsRef.current.close(1000, 'Component unmounting');
         wsRef.current = null;
@@ -165,7 +165,7 @@ export function useOptimizedWebSocket() {
     // Validate that either content or file is provided
     const sanitizedContent = content.trim().substring(0, 1000);
     if (!sanitizedContent && !fileData) return;
-    
+
     const message = JSON.stringify({
       type: "message",
       content: sanitizedContent,
@@ -173,6 +173,7 @@ export function useOptimizedWebSocket() {
       fileName: fileData?.fileName,
       fileSize: fileData?.fileSize,
       fileType: fileData?.fileType,
+      timestamp: new Date().toISOString(),
     });
 
     if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {

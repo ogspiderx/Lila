@@ -1,6 +1,7 @@
+
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
-import { MoreVertical, Copy, Check, Download, File, Image, Video, Music } from "lucide-react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ export const MessageBubble = memo(function MessageBubble({
   isCurrentUser
 }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
   const isDeleted = message.content === "[This message was deleted]";
 
   const formatTime = (timestamp: Date | number) => {
@@ -41,12 +43,24 @@ export const MessageBubble = memo(function MessageBubble({
     }
   };
 
+  const handleDownload = () => {
+    if (message.fileUrl) {
+      const link = document.createElement('a');
+      link.href = message.fileUrl;
+      link.download = message.fileName || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const getFileIcon = (fileType?: string | null) => {
     if (!fileType) return <File className="w-4 h-4" />;
     
     if (fileType.startsWith('image/')) return <Image className="w-4 h-4" />;
     if (fileType.startsWith('video/')) return <Video className="w-4 h-4" />;
     if (fileType.startsWith('audio/')) return <Music className="w-4 h-4" />;
+    if (fileType.includes('pdf') || fileType.includes('document')) return <FileText className="w-4 h-4" />;
     return <File className="w-4 h-4" />;
   };
 
@@ -57,7 +71,66 @@ export const MessageBubble = memo(function MessageBubble({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const isPreviewable = (fileType?: string | null) => {
+    if (!fileType) return false;
+    return fileType.startsWith('image/') || fileType.startsWith('video/') || fileType.startsWith('audio/');
+  };
 
+  const renderFilePreview = () => {
+    if (!message.fileUrl || !message.fileType) return null;
+
+    if (message.fileType.startsWith('image/')) {
+      return (
+        <div className="mb-2 relative max-w-xs">
+          {imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-700/50 rounded-lg">
+              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          )}
+          <img
+            src={message.fileUrl}
+            alt={message.fileName || 'Image'}
+            className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+            onLoad={() => setImageLoading(false)}
+            onError={() => setImageLoading(false)}
+            onClick={() => window.open(message.fileUrl, '_blank')}
+          />
+        </div>
+      );
+    }
+
+    if (message.fileType.startsWith('video/')) {
+      return (
+        <div className="mb-2 max-w-xs">
+          <video
+            controls
+            className="rounded-lg max-w-full h-auto"
+            preload="metadata"
+          >
+            <source src={message.fileUrl} type={message.fileType} />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    }
+
+    if (message.fileType.startsWith('audio/')) {
+      return (
+        <div className="mb-2">
+          <audio
+            controls
+            className="w-full max-w-xs"
+            preload="metadata"
+          >
+            <source src={message.fileUrl} type={message.fileType} />
+            Your browser does not support the audio tag.
+          </audio>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <motion.div
@@ -104,22 +177,19 @@ export const MessageBubble = memo(function MessageBubble({
             backdrop-blur-sm
           `}
         >
-          {/* Content */}
-          {/* File attachment */}
-          {message.fileUrl && (
+          {/* File preview for previewable content */}
+          {message.fileUrl && isPreviewable(message.fileType) && renderFilePreview()}
+          
+          {/* File attachment for non-previewable files */}
+          {message.fileUrl && !isPreviewable(message.fileType) && (
             <div className="mb-2">
-              <a
-                href={message.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`
-                  flex items-center space-x-2 p-2 rounded-lg transition-colors
-                  ${isCurrentUser 
-                    ? "bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-100" 
-                    : "bg-slate-600/40 hover:bg-slate-600/60 text-slate-200"
-                  }
-                `}
-              >
+              <div className={`
+                flex items-center space-x-2 p-2 rounded-lg transition-colors cursor-pointer
+                ${isCurrentUser 
+                  ? "bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-100" 
+                  : "bg-slate-600/40 hover:bg-slate-600/60 text-slate-200"
+                }
+              `}>
                 {getFileIcon(message.fileType)}
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium truncate">
@@ -131,8 +201,7 @@ export const MessageBubble = memo(function MessageBubble({
                     </div>
                   )}
                 </div>
-                <Download className="w-3 h-3 opacity-60" />
-              </a>
+              </div>
             </div>
           )}
           
@@ -184,6 +253,12 @@ export const MessageBubble = memo(function MessageBubble({
                   </>
                 )}
               </DropdownMenuItem>
+              {message.fileUrl && (
+                <DropdownMenuItem onClick={handleDownload} className="cursor-pointer">
+                  <Download className="mr-2 h-3 w-3" />
+                  Download file
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
