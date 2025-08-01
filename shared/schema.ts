@@ -28,7 +28,7 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   sender: true,
   content: true,
 }).extend({
-  content: z.string().min(1).max(1000).trim(),
+  content: z.string().min(1).max(2000).trim(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
