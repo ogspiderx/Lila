@@ -70,7 +70,7 @@ export function useOptimizedWebSocket() {
           // Handle typing indicators
           if (data.sender) {
             if (data.isTyping) {
-              setTypingUsers(prev => new Set([...prev, data.sender]));
+              setTypingUsers(prev => new Set(Array.from(prev).concat([data.sender])));
               
               // Clear existing timeout for this user
               const existingTimeout = typingTimeoutsRef.current.get(data.sender);
@@ -172,7 +172,7 @@ export function useOptimizedWebSocket() {
         clearTimeout(reconnectTimeoutRef.current);
       }
       // Clear all typing timeouts
-      typingTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      Array.from(typingTimeoutsRef.current.values()).forEach((timeout) => clearTimeout(timeout));
       typingTimeoutsRef.current.clear();
       
       if (wsRef.current) {
@@ -212,6 +212,18 @@ export function useOptimizedWebSocket() {
 
   const editMessage = useCallback((messageId: string, newContent: string) => {
     console.log('WebSocket: Sending edit message:', messageId, newContent);
+    
+    // Optimistic update - immediately update local state for better UX
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { 
+            ...msg,
+            content: newContent.trim(),
+            edited: true
+          }
+        : msg
+    ));
+    
     const message = JSON.stringify({
       type: "edit_message",
       messageId,
@@ -227,6 +239,18 @@ export function useOptimizedWebSocket() {
 
   const deleteMessage = useCallback((messageId: string) => {
     console.log('WebSocket: Sending delete message:', messageId);
+    
+    // Optimistic update - immediately update local state for better UX
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { 
+            ...msg,
+            content: "[This message was deleted]",
+            edited: false
+          }
+        : msg
+    ));
+    
     const message = JSON.stringify({
       type: "delete_message",
       messageId

@@ -111,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", [
     body('username').isLength({ min: 3, max: 50 }).matches(/^[a-zA-Z0-9_]+$/),
     body('password').isLength({ min: 8, max: 128 }),
-  ], async (req, res) => {
+  ], async (req: any, res: any) => {
     try {
       // Check validation results
       const errors = validationResult(req);
@@ -268,11 +268,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
           
-          for (const [client, clientInfo] of authenticatedSockets) {
+          Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
             if (client.readyState === WebSocket.OPEN) {
               client.send(broadcastData);
             }
-          }
+          });
         }
         
         // Handle typing indicators
@@ -284,11 +284,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           
           // Broadcast to all other authenticated clients (not sender)
-          for (const [client, clientInfo] of authenticatedSockets) {
+          Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
               client.send(typingData);
             }
-          }
+          });
         }
         
         // Handle message editing
@@ -320,11 +320,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             
             console.log('Broadcasting message edit to all clients:', editData);
-            for (const [client, clientInfo] of authenticatedSockets) {
+            Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
               if (client.readyState === WebSocket.OPEN) {
                 client.send(editData);
               }
-            }
+            });
           }
         }
         
@@ -351,11 +351,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             
             console.log('Broadcasting message delete to all clients:', deleteData);
-            for (const [client, clientInfo] of authenticatedSockets) {
+            Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
               if (client.readyState === WebSocket.OPEN) {
                 client.send(deleteData);
               }
-            }
+            });
           }
         }
       } catch (error) {

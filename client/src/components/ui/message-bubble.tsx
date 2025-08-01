@@ -50,19 +50,6 @@ export const MessageBubble = memo(function MessageBubble({
   const handleEdit = () => {
     setIsEditing(true);
     setEditContent(message.content);
-    // Focus the contentEditable div after a small delay
-    setTimeout(() => {
-      const editDiv = document.querySelector('[data-testid="div-edit-message"]') as HTMLDivElement;
-      if (editDiv) {
-        editDiv.focus();
-        // Select all text
-        const range = document.createRange();
-        range.selectNodeContents(editDiv);
-        const selection = window.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-      }
-    }, 50);
   };
 
   const handleSaveEdit = () => {
@@ -132,10 +119,9 @@ export const MessageBubble = memo(function MessageBubble({
           {/* Content */}
           {isEditing ? (
             <div className="space-y-2 w-full">
-              <div 
-                contentEditable
-                suppressContentEditableWarning={true}
-                onInput={(e) => setEditContent((e.target as HTMLDivElement).textContent || '')}
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -150,23 +136,15 @@ export const MessageBubble = memo(function MessageBubble({
                   console.log('Edit started, stopping typing indicators');
                 }}
                 className={`
-                  relative z-10 text-xs sm:text-sm leading-snug 
-                  break-words whitespace-pre-wrap outline-none
+                  text-xs sm:text-sm leading-snug resize-none
                   ${isCurrentUser ? "text-white" : "text-slate-50"} 
-                  bg-slate-700/50 rounded px-2 py-1 border border-emerald-500/50
+                  bg-slate-700/50 border border-emerald-500/50
                   focus:border-emerald-400 transition-colors
-                  drop-shadow-sm
+                  drop-shadow-sm min-h-[2.5rem]
                 `}
-                style={{
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                  wordWrap: 'break-word',
-                  hyphens: 'auto'
-                }}
-                data-testid="div-edit-message"
-              >
-                {editContent}
-              </div>
+                autoFocus
+                data-testid="textarea-edit-message"
+              />
               <div className="flex gap-1 justify-end text-xs text-slate-400">
                 <span>Press Enter to save, Esc to cancel</span>
               </div>
