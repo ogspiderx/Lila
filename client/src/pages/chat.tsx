@@ -127,9 +127,7 @@ export default function Chat() {
     e.preventDefault();
     
     const content = messageInput.trim();
-    if (content && currentUser) {
-
-      
+    if (content && content.length <= 2000 && currentUser) {
       sendMessage(currentUser.username, content);
       setMessageInput("");
     }
@@ -287,7 +285,10 @@ export default function Chat() {
                     ref={textareaRef}
                     value={messageInput}
                     onChange={(e) => {
-                      setMessageInput(e.target.value);
+                      // Limit input to 2000 characters
+                      if (e.target.value.length <= 2000) {
+                        setMessageInput(e.target.value);
+                      }
                       
 
                     }}
@@ -300,7 +301,7 @@ export default function Chat() {
                   {/* Character counter for longer messages */}
                   {messageInput.length > 100 && (
                     <div className="absolute bottom-2 right-3 text-xs text-muted-foreground">
-                      {messageInput.length}/500
+                      {messageInput.length}/2000
                     </div>
                   )}
                 </div>
@@ -308,7 +309,7 @@ export default function Chat() {
               
               <Button
                 type="submit"
-                disabled={!messageInput.trim() || !isConnected}
+                disabled={!messageInput.trim() || !isConnected || messageInput.length > 2000}
                 className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground h-[44px] w-[44px] sm:h-[48px] sm:w-[48px] rounded-xl glow-green hover:from-primary/90 hover:to-primary smooth-transition disabled:opacity-50 flex-shrink-0 shadow-lg hover:shadow-primary/30 relative overflow-hidden group"
               >
                 <Send className="h-4 w-4 sm:h-5 sm:w-5 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
