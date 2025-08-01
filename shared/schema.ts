@@ -45,18 +45,5 @@ export type TypingMessage = {
   isTyping: boolean;
 };
 
-// Edit message type
-export type EditMessage = {
-  type: 'edit_message';
-  messageId: string;
-  newContent: string;
-};
-
-// Delete message type
-export type DeleteMessage = {
-  type: 'delete_message';
-  messageId: string;
-};
-
 // Combined WebSocket message types
-export type WebSocketChatMessage = WebSocketMessage | TypingMessage | EditMessage | DeleteMessage;
+export type WebSocketChatMessage = WebSocketMessage | TypingMessage;

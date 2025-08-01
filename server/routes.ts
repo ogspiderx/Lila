@@ -291,73 +291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        // Handle message editing
-        else if (messageData.type === 'edit_message') {
-          if (!messageData.messageId || !messageData.newContent) {
-            return;
-          }
-          
-          // Validate new content
-          const { content } = messageSchema.parse({ content: messageData.newContent });
-          
-          const updatedMessage = await storage.editMessage(
-            messageData.messageId, 
-            content.trim(), 
-            userInfo.userId
-          );
-          
-          if (updatedMessage) {
-            // Broadcast edit to ALL authenticated clients including sender
-            const editData = JSON.stringify({
-              type: 'message_edited',
-              data: {
-                id: updatedMessage.id,
-                sender: updatedMessage.sender,
-                content: updatedMessage.content,
-                timestamp: updatedMessage.timestamp,
-                edited: true
-              }
-            });
-            
-            console.log('Broadcasting message edit to all clients:', editData);
-            Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
-              if (client.readyState === WebSocket.OPEN) {
-                client.send(editData);
-              }
-            });
-          }
-        }
-        
-        // Handle message deletion
-        else if (messageData.type === 'delete_message') {
-          if (!messageData.messageId) {
-            return;
-          }
-          
-          const deletedMessage = await storage.deleteMessage(messageData.messageId, userInfo.userId);
-          
-          if (deletedMessage) {
-            // Broadcast deletion to ALL authenticated clients including sender
-            const deleteData = JSON.stringify({
-              type: 'message_deleted',
-              messageId: messageData.messageId,
-              data: {
-                id: deletedMessage.id,
-                sender: deletedMessage.sender,
-                content: deletedMessage.content,
-                timestamp: deletedMessage.timestamp,
-                edited: deletedMessage.edited
-              }
-            });
-            
-            console.log('Broadcasting message delete to all clients:', deleteData);
-            Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
-              if (client.readyState === WebSocket.OPEN) {
-                client.send(deleteData);
-              }
-            });
-          }
-        }
+
       } catch (error) {
         console.error('WebSocket message error:', error);
         ws.close(4006, 'Invalid message format');

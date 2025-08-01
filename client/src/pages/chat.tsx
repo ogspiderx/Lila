@@ -29,46 +29,10 @@ export default function Chat() {
     messages: wsMessages, 
     typingUsers, 
     sendMessage, 
-    sendTyping, 
-    editMessage, 
-    deleteMessage, 
-    setMessages,
-    forceUpdate
+    sendTyping
   } = useOptimizedWebSocket();
   
-  // Handle edit message with immediate local update
-  const handleEditMessage = (messageId: string, newContent: string) => {
-    if (!currentUser) return;
-    
-    console.log('Chat page: Editing message', messageId, 'to:', newContent);
-    
-    // Immediately update local state
-    setAllMessages(prev => prev.map(msg => 
-      msg.id === messageId 
-        ? { ...msg, content: newContent.trim(), edited: true }
-        : msg
-    ));
-    
-    // Send to server
-    editMessage(messageId, newContent);
-  };
 
-  // Handle delete message with immediate local update
-  const handleDeleteMessage = (messageId: string) => {
-    if (!currentUser) return;
-    
-    console.log('Chat page: Deleting message', messageId);
-    
-    // Immediately update local state
-    setAllMessages(prev => prev.map(msg => 
-      msg.id === messageId 
-        ? { ...msg, content: "[This message was deleted]", edited: false }
-        : msg
-    ));
-    
-    // Send to server
-    deleteMessage(messageId);
-  };
   
   const { handleTypingStart, handleTypingStop, cleanup } = useTypingIndicator({
     sendTyping,
@@ -473,8 +437,6 @@ export default function Chat() {
                     key={message.id}
                     message={message}
                     isCurrentUser={message.sender === currentUser.username}
-                    onEditMessage={handleEditMessage}
-                    onDeleteMessage={handleDeleteMessage}
                   />
                 ))}
                 

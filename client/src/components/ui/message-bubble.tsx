@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
-import { MoreVertical, Copy, Check, Edit, Trash2, Save, X } from "lucide-react";
+import { MoreVertical, Copy, Check } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,25 +8,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import type { Message, WebSocketMessage } from "@shared/schema";
 
 interface MessageBubbleProps {
   message: Message | WebSocketMessage;
   isCurrentUser: boolean;
-  onEditMessage?: (messageId: string, newContent: string) => void;
-  onDeleteMessage?: (messageId: string) => void;
 }
 
 export const MessageBubble = memo(function MessageBubble({ 
   message, 
-  isCurrentUser, 
-  onEditMessage, 
-  onDeleteMessage 
+  isCurrentUser
 }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(message.content);
   const isDeleted = message.content === "[This message was deleted]";
 
   const formatTime = (timestamp: Date | number) => {
@@ -47,29 +40,7 @@ export const MessageBubble = memo(function MessageBubble({
     }
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-    setEditContent(message.content);
-  };
 
-  const handleSaveEdit = () => {
-    if (editContent.trim() && editContent !== message.content && onEditMessage) {
-      console.log('Editing message:', message.id, 'new content:', editContent.trim());
-      onEditMessage(message.id, editContent.trim());
-    }
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditContent(message.content);
-  };
-
-  const handleDelete = () => {
-    if (onDeleteMessage) {
-      onDeleteMessage(message.id);
-    }
-  };
 
   return (
     <motion.div
@@ -117,117 +88,54 @@ export const MessageBubble = memo(function MessageBubble({
           `}
         >
           {/* Content */}
-          {isEditing ? (
-            <div className="space-y-2 w-full">
-              <Textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSaveEdit();
-                  } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    handleCancelEdit();
-                  }
-                }}
-                onFocus={() => {
-                  // Stop any typing indicators when editing starts
-                  console.log('Edit started, stopping typing indicators');
-                }}
-                className={`
-                  text-xs sm:text-sm leading-snug resize-none
-                  ${isCurrentUser ? "text-white" : "text-slate-50"} 
-                  bg-slate-700/50 border border-emerald-500/50
-                  focus:border-emerald-400 transition-colors
-                  drop-shadow-sm min-h-[2.5rem]
-                `}
-                autoFocus
-                data-testid="textarea-edit-message"
-              />
-              <div className="flex gap-1 justify-end text-xs text-slate-400">
-                <span>Press Enter to save, Esc to cancel</span>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p className={`
-                relative z-10 text-xs sm:text-sm leading-snug 
-                break-words whitespace-pre-wrap
-                ${isCurrentUser ? "text-white" : "text-slate-50"} 
-                ${isDeleted ? "italic text-slate-400" : ""}
-                drop-shadow-sm
-              `}
-              style={{
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                wordWrap: 'break-word',
-                hyphens: 'auto'
-              }}>
-                {message.content}
-              </p>
-              
-              {/* Show "edited" indicator */}
-              {message.edited && !isDeleted && (
-                <span className="text-xs text-slate-300 italic mt-1 block font-medium">
-                  ✏️ Edited
-                </span>
-              )}
-            </>
-          )}
+          <p className={`
+            relative z-10 text-xs sm:text-sm leading-snug 
+            break-words whitespace-pre-wrap
+            ${isCurrentUser ? "text-white" : "text-slate-50"} 
+            ${isDeleted ? "italic text-slate-400" : ""}
+            drop-shadow-sm
+          `}
+          style={{
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            wordWrap: 'break-word',
+            hyphens: 'auto'
+          }}>
+            {message.content}
+          </p>
         </motion.div>
         </div>
 
         {/* Actions button with dropdown */}
-        {!isEditing && (
-          <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
-                  data-testid="button-message-options"
-                >
-                  <MoreVertical className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
-                <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
-                  {isCopied ? (
-                    <>
-                      <Check className="mr-2 h-3 w-3 text-green-500" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="mr-2 h-3 w-3" />
-                      Copy message
-                    </>
-                  )}
-                </DropdownMenuItem>
-                
-                {/* Edit and Delete options only for current user's messages */}
-                {isCurrentUser && !isDeleted && (
+        <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+                data-testid="button-message-options"
+              >
+                <MoreVertical className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
+              <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
+                {isCopied ? (
                   <>
-                    <DropdownMenuItem onClick={handleEdit} className="cursor-pointer" data-testid="button-edit-message">
-                      <Edit className="mr-2 h-3 w-3" />
-                      Edit message
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={handleDelete} 
-                      className="cursor-pointer text-red-400 hover:text-red-300"
-                      data-testid="button-delete-message"
-                    >
-                      <Trash2 className="mr-2 h-3 w-3" />
-                      Delete message
-                    </DropdownMenuItem>
+                    <Check className="mr-2 h-3 w-3 text-green-500" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 h-3 w-3" />
+                    Copy message
                   </>
                 )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </motion.div>
   );

@@ -104,41 +104,6 @@ export function useOptimizedWebSocket() {
               }
             }
           }
-        } else if (data.type === 'message_edited' && data.data) {
-          // Handle message edits - update for ALL users including sender
-          console.log('WebSocket: Received message edit:', data.data);
-          setMessages(prev => {
-            const updated = prev.map(msg => 
-              msg.id === data.data.id 
-                ? { 
-                    ...msg,
-                    content: data.data.content,
-                    edited: true,
-                    timestamp: new Date(data.data.timestamp).getTime()
-                  }
-                : msg
-            );
-            console.log('Updated messages after edit:', updated);
-            return updated;
-          });
-        } else if (data.type === 'message_deleted') {
-          // Handle message deletions - update for ALL users including sender
-          console.log('WebSocket: Received message delete:', data);
-          if (data.data) {
-            setMessages(prev => {
-              const updated = prev.map(msg => 
-                msg.id === data.messageId || msg.id === data.data.id
-                  ? { 
-                      ...msg, 
-                      content: "[This message was deleted]",
-                      edited: false
-                    }
-                  : msg
-              );
-              console.log('Updated messages after delete:', updated);
-              return updated;
-            });
-          }
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -218,47 +183,7 @@ export function useOptimizedWebSocket() {
     }
   }, [isConnected]);
 
-  const editMessage = useCallback((messageId: string, newContent: string) => {
-    console.log('WebSocket: Sending edit message:', messageId, newContent);
-    
-    const message = JSON.stringify({
-      type: "edit_message",
-      messageId,
-      newContent
-    });
 
-    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
-      wsRef.current.send(message);
-    } else {
-      console.error('WebSocket not connected, cannot send edit');
-    }
-  }, [isConnected]);
-
-  const deleteMessage = useCallback((messageId: string) => {
-    console.log('WebSocket: Sending delete message:', messageId);
-    
-    const message = JSON.stringify({
-      type: "delete_message",
-      messageId
-    });
-
-    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
-      wsRef.current.send(message);
-    } else {
-      console.error('WebSocket not connected, cannot send delete');
-    }
-  }, [isConnected]);
-
-  // Force update function to trigger re-renders
-  const forceUpdate = useCallback((messageId: string, updates: Partial<WebSocketMessage>) => {
-    setMessages(prev => {
-      const updated = prev.map(msg => 
-        msg.id === messageId ? { ...msg, ...updates } : msg
-      );
-      console.log(`Force updating message ${messageId}:`, updates);
-      return updated;
-    });
-  }, []);
 
   return {
     isConnected,
@@ -266,9 +191,6 @@ export function useOptimizedWebSocket() {
     typingUsers,
     sendMessage,
     sendTyping,
-    editMessage,
-    deleteMessage,
-    setMessages,
-    forceUpdate
+    setMessages
   };
 }
