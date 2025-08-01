@@ -67,6 +67,7 @@ export const MessageBubble = memo(function MessageBubble({
 
   const handleSaveEdit = () => {
     if (editContent.trim() && editContent !== message.content && onEditMessage) {
+      console.log('Editing message:', message.id, 'new content:', editContent.trim());
       onEditMessage(message.id, editContent.trim());
     }
     setIsEditing(false);

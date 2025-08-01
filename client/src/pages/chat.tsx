@@ -420,8 +420,14 @@ export default function Chat() {
                     key={message.id}
                     message={message}
                     isCurrentUser={message.sender === currentUser.username}
-                    onEditMessage={editMessage}
-                    onDeleteMessage={deleteMessage}
+                    onEditMessage={(messageId, newContent) => {
+                      console.log('Chat page: Editing message', messageId, newContent);
+                      editMessage(messageId, newContent);
+                    }}
+                    onDeleteMessage={(messageId) => {
+                      console.log('Chat page: Deleting message', messageId);
+                      deleteMessage(messageId);
+                    }}
                   />
                 ))}
                 
