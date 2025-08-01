@@ -20,6 +20,7 @@ export default function ChatOptimized() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [lastSeenMessageId, setLastSeenMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,6 +114,24 @@ export default function ChatOptimized() {
       .filter(msg => msg.content.trim() || msg.fileUrl)
       .slice(-50); // Display only last 50 messages
   }, [allMessages]);
+
+  // Find the index of the last seen message to show divider
+  const lastSeenIndex = useMemo(() => {
+    if (!lastSeenMessageId) return -1;
+    return displayMessages.findIndex(msg => msg.id === lastSeenMessageId);
+  }, [displayMessages, lastSeenMessageId]);
+
+  // Mark messages as seen when they come into view
+  const markMessagesAsSeen = useCallback(() => {
+    if (displayMessages.length > 0 && currentUser) {
+      const latestMessage = displayMessages[displayMessages.length - 1];
+      if (latestMessage.sender !== currentUser.username && latestMessage.id !== lastSeenMessageId) {
+        setLastSeenMessageId(latestMessage.id);
+        // Here you would typically send a WebSocket message to mark as seen
+        // sendMessageSeen(latestMessage.id, currentUser.username);
+      }
+    }
+  }, [displayMessages, currentUser, lastSeenMessageId]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -271,11 +290,14 @@ export default function ChatOptimized() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+      
+      // Scroll to bottom after sending
+      setTimeout(() => scrollToBottom(true), 100);
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFileWithProgress]);
+  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFileWithProgress, scrollToBottom]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -310,18 +332,28 @@ export default function ChatOptimized() {
   }, [handleSubmit]);
 
   // Auto-scroll with performance optimization
-  const scrollToBottom = useCallback(() => {
+  const scrollToBottom = useCallback((smooth = false) => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ 
-        behavior: "auto",
+        behavior: smooth ? "smooth" : "auto",
         block: "end"
       });
     }
   }, []);
 
+  // Auto-scroll on new messages and mark as seen
   useEffect(() => {
-    scrollToBottom();
-  }, [displayMessages, scrollToBottom]);
+    scrollToBottom(false);
+    markMessagesAsSeen();
+  }, [displayMessages, scrollToBottom, markMessagesAsSeen]);
+
+  // Auto-scroll to bottom on page load/reload
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollToBottom(false);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [scrollToBottom]);
 
   useEffect(() => {
     return () => {
@@ -363,12 +395,22 @@ export default function ChatOptimized() {
       {/* Messages area with minimal styling */}
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide">
-          {displayMessages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              isCurrentUser={message.sender === currentUser.username}
-            />
+          {displayMessages.map((message, index) => (
+            <div key={message.id}>
+              {/* Show unseen message divider */}
+              {lastSeenIndex >= 0 && index === lastSeenIndex + 1 && index < displayMessages.length && (
+                <div className="flex items-center my-4">
+                  <div className="flex-1 h-px bg-red-500/30"></div>
+                  <span className="px-3 text-xs text-red-400 bg-slate-900">New messages</span>
+                  <div className="flex-1 h-px bg-red-500/30"></div>
+                </div>
+              )}
+              
+              <MessageBubble
+                message={message}
+                isCurrentUser={message.sender === currentUser.username}
+              />
+            </div>
           ))}
           
           {/* Typing indicator */}

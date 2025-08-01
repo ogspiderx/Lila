@@ -1,7 +1,7 @@
 
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
-import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X } from "lucide-react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, CheckCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +35,7 @@ export const MessageBubble = memo(function MessageBubble({
 
   const handleCopyMessage = async () => {
     try {
-      const textToCopy = message.content || (message.fileName ? `File: ${message.fileName}` : "");
+      const textToCopy = message.content || (message.fileUrl ? message.fileUrl : (message.fileName ? `File: ${message.fileName}` : ""));
       await navigator.clipboard.writeText(textToCopy);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
@@ -70,6 +70,20 @@ export const MessageBubble = memo(function MessageBubble({
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const renderDeliveryStatus = () => {
+    if (!isCurrentUser) return null;
+    
+    const status = (message as any).deliveryStatus || 'sent';
+    
+    if (status === 'seen') {
+      return <CheckCheck className="w-3 h-3 text-blue-400" />;
+    } else if (status === 'delivered') {
+      return <CheckCheck className="w-3 h-3 text-slate-400" />;
+    } else {
+      return <Check className="w-3 h-3 text-slate-400" />;
+    }
   };
 
   const isPreviewable = (fileType?: string | null) => {
@@ -156,6 +170,7 @@ export const MessageBubble = memo(function MessageBubble({
           <span className="text-slate-400 text-[10px]">
             {formatTime(message.timestamp)}
           </span>
+          {renderDeliveryStatus()}
         </div>
         
         {/* Message bubble */}
@@ -269,12 +284,6 @@ export const MessageBubble = memo(function MessageBubble({
       {showImageModal && message.fileUrl && message.fileType?.startsWith('image/') && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowImageModal(false)}>
           <div className="relative max-w-[90vw] max-h-[90vh] p-4">
-            <button
-              onClick={() => setShowImageModal(false)}
-              className="absolute -top-2 -right-2 z-10 w-8 h-8 bg-slate-800 hover:bg-slate-700 rounded-full flex items-center justify-center text-white transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
             <img
               src={message.fileUrl}
               alt={message.fileName || 'Image'}
