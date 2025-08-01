@@ -52,11 +52,11 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
       <div className={`flex ${isCurrentUser ? "flex-row-reverse" : "flex-row"} items-end space-x-2 ${isCurrentUser ? "space-x-reverse" : ""} max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] min-w-0`}>
         <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} min-w-0 flex-1`}>
         {/* Sender and timestamp */}
-        <div className={`flex items-center space-x-1.5 mb-0.5 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
-          <span className={`text-[10px] font-medium ${isCurrentUser ? "text-emerald-400" : "text-amber-400"}`}>
+        <div className={`flex items-center space-x-2 mb-1 ${isCurrentUser ? "flex-row-reverse space-x-reverse" : ""}`}>
+          <span className={`text-xs font-semibold ${isCurrentUser ? "text-rose-400" : "text-peach-400"}`}>
             {message.sender}
           </span>
-          <span className="text-slate-400 text-[10px]">
+          <span className="text-rose-300/70 text-xs">
             {formatTime(message.timestamp)}
           </span>
         </div>
@@ -64,29 +64,28 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
         {/* Message bubble */}
         <motion.div
           whileHover={{ 
-            scale: 1.01,
-            transition: { duration: 0.2, ease: "easeOut" }
+            scale: 1.02,
+            y: -2,
+            transition: { duration: 0.3, ease: "easeOut" }
           }}
           whileTap={{ scale: 0.98 }}
           className={`
-            relative overflow-hidden group min-w-0 w-full
+            relative overflow-hidden group min-w-0 w-full message-slide-in
             ${isCurrentUser 
-              ? "bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white rounded-tr-sm" 
-              : "bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-slate-50 border border-slate-500/40 rounded-tl-sm"
+              ? "message-bubble-own rounded-tr-md" 
+              : "message-bubble-other rounded-tl-md"
             } 
-            rounded-lg px-3 py-2 sm:px-3 sm:py-2 
-            transition-all duration-300 ease-out
-            shadow-sm hover:shadow-lg
-            ${isCurrentUser ? "shadow-emerald-500/30 hover:shadow-emerald-500/40" : "shadow-slate-900/40 hover:shadow-slate-900/60"}
+            rounded-2xl px-4 py-3 sm:px-5 sm:py-4 
+            transition-all duration-400 ease-out message-hover-effect
             backdrop-blur-sm
           `}
         >
           {/* Content */}
           <p className={`
-            relative z-10 text-xs sm:text-sm leading-snug 
+            relative z-10 text-sm sm:text-base leading-relaxed 
             break-words whitespace-pre-wrap
-            ${isCurrentUser ? "text-white" : "text-slate-50"} 
-            drop-shadow-sm
+            ${isCurrentUser ? "text-white" : "text-rose-800"} 
+            drop-shadow-sm font-medium
           `}
           style={{
             wordBreak: 'break-word',
@@ -100,27 +99,27 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
         </div>
 
         {/* Copy button with 3 dots */}
-        <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0">
+        <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-300 flex-shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+                className="h-7 w-7 p-0 rounded-full hover:bg-rose-100/20 text-rose-400 hover:text-rose-500 glow-rose"
               >
-                <MoreVertical className="h-3 w-3" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
-              <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
+            <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="glass-card border-rose-200/50 min-w-[140px]">
+              <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer text-rose-600 hover:bg-rose-100/30 focus:bg-rose-100/30 rounded-lg">
                 {isCopied ? (
                   <>
-                    <Check className="mr-2 h-3 w-3 text-green-500" />
+                    <Check className="mr-2 h-4 w-4 text-peach-500" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="mr-2 h-3 w-3" />
+                    <Copy className="mr-2 h-4 w-4" />
                     Copy message
                   </>
                 )}

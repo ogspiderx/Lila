@@ -88,15 +88,15 @@ export default function Welcome() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen romantic-gradient flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Main Welcome Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          <Card className="bg-slate-800/90 border-slate-700 shadow-2xl backdrop-blur-sm">
+          <Card className="glass-card border-rose-200/50 shadow-2xl">
             <CardHeader className="text-center pb-4">
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -104,8 +104,8 @@ export default function Welcome() {
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="flex flex-col items-center space-y-4"
               >
-                <Avatar className="h-20 w-20 bg-gradient-to-br from-emerald-400 to-emerald-600 border-4 border-emerald-400/30">
-                  <AvatarFallback className="text-2xl font-bold text-white bg-transparent">
+                <Avatar className="h-24 w-24 bg-gradient-to-br from-rose-400 to-rose-600 border-4 border-rose-400/40 glow-rose">
+                  <AvatarFallback className="text-3xl font-bold text-white bg-transparent font-display">
                     {user.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -114,8 +114,8 @@ export default function Welcome() {
                   <motion.h1
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="text-3xl font-bold text-white"
+                    transition={{ delay: 0.3, duration: 0.6 }}
+                    className="text-4xl font-display font-bold text-rose-600 glow-text-rose"
                   >
                     {getGreeting()}, {user.username}!
                   </motion.h1>
@@ -123,8 +123,8 @@ export default function Welcome() {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    className="text-slate-300 text-lg"
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                    className="text-rose-500 text-xl font-medium"
                   >
                     {getPersonalizedMessage()}
                   </motion.p>
@@ -138,10 +138,10 @@ export default function Welcome() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5, duration: 0.5 }}
-                className="flex items-center justify-center space-x-2 text-slate-400 bg-slate-700/50 rounded-lg p-3"
+                className="flex items-center justify-center space-x-3 text-rose-400 bg-rose-50/50 rounded-xl p-4 border border-rose-200/30"
               >
                 <Clock className="h-5 w-5" />
-                <span className="text-sm font-medium">
+                <span className="text-base font-semibold">
                   {currentTime.toLocaleString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
