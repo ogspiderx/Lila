@@ -19,8 +19,6 @@ export const messages = pgTable("messages", {
   fileName: text("file_name"),
   fileSize: integer("file_size"),
   fileType: text("file_type"),
-  deliveryStatus: text("delivery_status").$type<'sent' | 'delivered' | 'seen'>().default('sent'),
-  seenBy: text("seen_by").array().default(sql`'{}'::text[]`),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

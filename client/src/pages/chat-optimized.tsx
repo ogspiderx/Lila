@@ -73,7 +73,7 @@ export default function ChatOptimized() {
 
   // Unified message state optimized for performance
   const [allMessages, setAllMessages] = useState<Message[]>([]);
-  
+
   // Initialize messages from REST API
   useEffect(() => {
     if (existingMessages && existingMessages.length > 0) {
@@ -83,17 +83,17 @@ export default function ChatOptimized() {
       })));
     }
   }, [existingMessages]);
-  
+
   // Sync WebSocket messages with optimized performance
   useEffect(() => {
     if (wsMessages.length === 0) return;
-    
+
     setAllMessages(prev => {
       const messageMap = new Map<string, Message>();
-      
+
       // Add existing messages
       prev.forEach(msg => messageMap.set(msg.id, msg));
-      
+
       // Add WebSocket messages with proper timestamp handling
       wsMessages.forEach(message => {
         const normalizedMessage = {
@@ -157,24 +157,24 @@ export default function ChatOptimized() {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
         // Calculate new dimensions (max 1920x1080)
         let { width, height } = img;
         const maxWidth = 1920;
         const maxHeight = 1080;
-        
+
         if (width > maxWidth || height > maxHeight) {
           const ratio = Math.min(maxWidth / width, maxHeight / height);
           width *= ratio;
           height *= ratio;
         }
-        
+
         canvas.width = width;
         canvas.height = height;
-        
+
         ctx?.drawImage(img, 0, 0, width, height);
-        
+
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -191,13 +191,13 @@ export default function ChatOptimized() {
           quality
         );
       };
-      
+
       img.onerror = () => resolve(file);
       img.src = URL.createObjectURL(file);
     });
   }, []);
 
-  
+
 
   // Auto-scroll with performance optimization
   const scrollToBottom = useCallback((smooth = false) => {
@@ -211,7 +211,7 @@ export default function ChatOptimized() {
 
   const uploadFileWithProgress = useCallback(async (file: File): Promise<{ fileUrl: string; fileName: string; fileSize: number; fileType: string } | null> => {
     let fileToUpload = file;
-    
+
     // Compress images
     if (file.type.startsWith('image/') && file.size > 500 * 1024) { // 500KB threshold
       try {
@@ -228,9 +228,9 @@ export default function ChatOptimized() {
 
     try {
       setUploadProgress(30);
-      
+
       const xhr = new XMLHttpRequest();
-      
+
       return new Promise((resolve, reject) => {
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
@@ -269,7 +269,7 @@ export default function ChatOptimized() {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const content = messageInput.trim();
     if ((!content && !selectedFile) || !currentUser) return;
 
@@ -281,7 +281,7 @@ export default function ChatOptimized() {
 
     try {
       let fileData = null;
-      
+
       // Upload file if selected
       if (selectedFile) {
         fileData = await uploadFileWithProgress(selectedFile);
@@ -300,7 +300,7 @@ export default function ChatOptimized() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      
+
       // Scroll to bottom after sending
       setTimeout(() => scrollToBottom(true), 100);
     } finally {
@@ -313,7 +313,7 @@ export default function ChatOptimized() {
     const value = e.target.value;
     if (value.length <= 1000) {
       setMessageInput(value);
-      
+
       if (value.trim()) {
         handleTypingStart();
       } else {
@@ -341,13 +341,14 @@ export default function ChatOptimized() {
     }
   }, [handleSubmit]);
 
-  // Auto-scroll on new messages and mark as seen
+  // Auto-scroll on new messages
   useEffect(() => {
-    scrollToBottom(false);
-    markMessagesAsSeen();
-  }, [displayMessages, scrollToBottom, markMessagesAsSeen]);
+    if (displayMessages.length > 0) {
+      scrollToBottom(true);
+    }
+  }, [displayMessages, scrollToBottom]);
 
-  // Auto-scroll to bottom on page load/reload
+  // Auto-scroll on page load/refresh
   useEffect(() => {
     const timer = setTimeout(() => {
       scrollToBottom(false);
@@ -378,7 +379,7 @@ export default function ChatOptimized() {
             </div>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <span className="text-slate-300 text-sm">{currentUser.username}</span>
           <Button
@@ -405,19 +406,19 @@ export default function ChatOptimized() {
                   <div className="flex-1 h-px bg-red-500/30"></div>
                 </div>
               )}
-              
+
               <MessageBubble
                 message={message}
                 isCurrentUser={message.sender === currentUser.username}
               />
             </div>
           ))}
-          
+
           {/* Typing indicator */}
           {typingUsers.size > 0 && (
             <TypingIndicator typingUsers={new Set(Array.from(typingUsers).filter(user => user !== currentUser.username))} />
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -448,7 +449,7 @@ export default function ChatOptimized() {
                   </Button>
                 )}
               </div>
-              
+
               {/* Upload progress bar */}
               {isUploading && uploadProgress > 0 && (
                 <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
@@ -458,7 +459,7 @@ export default function ChatOptimized() {
                   />
                 </div>
               )}
-              
+
               {isUploading && (
                 <div className="text-xs text-slate-400 text-center">
                   {uploadProgress < 20 ? 'Compressing...' : 
@@ -488,7 +489,7 @@ export default function ChatOptimized() {
                 <Paperclip className="w-4 h-4" />
               </Button>
             </div>
-            
+
             <Textarea
               ref={textareaRef}
               value={messageInput}

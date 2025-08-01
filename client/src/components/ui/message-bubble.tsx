@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { useState, memo } from "react";
 import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, CheckCheck } from "lucide-react";
@@ -57,7 +56,7 @@ export const MessageBubble = memo(function MessageBubble({
 
   const getFileIcon = (fileType?: string | null) => {
     if (!fileType) return <File className="w-4 h-4" />;
-    
+
     if (fileType.startsWith('image/')) return <Image className="w-4 h-4" />;
     if (fileType.startsWith('video/')) return <Video className="w-4 h-4" />;
     if (fileType.startsWith('audio/')) return <Music className="w-4 h-4" />;
@@ -74,9 +73,9 @@ export const MessageBubble = memo(function MessageBubble({
 
   const renderDeliveryStatus = () => {
     if (!isCurrentUser) return null;
-    
+
     const status = (message as any).deliveryStatus || 'sent';
-    
+
     if (status === 'seen') {
       return <CheckCheck className="w-3 h-3 text-blue-400" />;
     } else if (status === 'delivered') {
@@ -170,9 +169,9 @@ export const MessageBubble = memo(function MessageBubble({
           <span className="text-slate-400 text-[10px]">
             {formatTime(message.timestamp)}
           </span>
-          {renderDeliveryStatus()}
+          
         </div>
-        
+
         {/* Message bubble */}
         <motion.div
           whileHover={{ 
@@ -195,7 +194,7 @@ export const MessageBubble = memo(function MessageBubble({
         >
           {/* File preview for previewable content */}
           {message.fileUrl && isPreviewable(message.fileType) && renderFilePreview()}
-          
+
           {/* File attachment for non-previewable files */}
           {message.fileUrl && !isPreviewable(message.fileType) && (
             <div className="mb-2">
@@ -220,7 +219,7 @@ export const MessageBubble = memo(function MessageBubble({
               </div>
             </div>
           )}
-          
+
           {/* Text content */}
           {message.content && (
             <p className={`

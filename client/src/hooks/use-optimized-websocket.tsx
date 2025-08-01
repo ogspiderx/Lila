@@ -16,7 +16,9 @@ export function useOptimizedWebSocket() {
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    const ws = new WebSocket(`${protocol}//${host}/ws`);
+    const wsUrl = `${protocol}//${host}/ws`;
+    console.log('Connecting to WebSocket:', wsUrl);
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
       console.log('WebSocket connected');

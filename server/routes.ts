@@ -42,18 +42,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Block dangerous file types
       const dangerousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.jar'];
       const fileExt = path.extname(file.originalname).toLowerCase();
-      
+
       if (dangerousExtensions.includes(fileExt)) {
         return cb(new Error('File type not allowed for security reasons'));
       }
-      
+
       cb(null, true);
     },
   });
 
   // Add cookie parser middleware
   app.use(cookieParser());
-  
+
   // Add caching middleware for auth endpoints
   const authCache = new Map<string, { user: any, timestamp: number }>();
   const AUTH_CACHE_TTL = 5 * 60 * 1000; // 5 minutes - longer auth cache
@@ -65,10 +65,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!token) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string, iat: number };
       const user = await storage.getUser(decoded.userId);
-      
+
       if (!user) {
         res.clearCookie('authToken', {
           httpOnly: false,
@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return res.status(401).json({ message: "Invalid session" });
       }
-      
+
       req.user = user;
       next();
     } catch (error) {
@@ -94,15 +94,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!token) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string, iat: number };
-      
+
       // Check cache first
       const cached = authCache.get(decoded.userId);
       if (cached && (Date.now() - cached.timestamp) < AUTH_CACHE_TTL) {
         return res.json(cached.user);
       }
-      
+
       const user = await storage.getUser(decoded.userId);
       if (!user) {
         authCache.delete(decoded.userId);
@@ -114,10 +114,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return res.status(401).json({ message: "Invalid session" });
       }
-      
+
       const userResponse = { user: { id: user.id, username: user.username } };
       authCache.set(decoded.userId, { user: userResponse, timestamp: Date.now() });
-      
+
       // Secure cache headers
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { username, password } = loginSchema.parse(req.body);
-      
+
       const user = await storage.getUserByUsername(username.toLowerCase());
       if (!user) {
         // Timing attack protection - hash a dummy password
@@ -198,19 +198,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/messages", requireAuth, async (req, res) => {
     try {
       const messages = await storage.getMessages();
-      
+
       // Sanitize messages before sending
       const sanitizedMessages = messages.map(message => ({
         id: message.id,
         sender: message.sender,
         content: message.content.substring(0, 1000), // Limit content length
         timestamp: message.timestamp,
+        edited: message.edited || false,
         fileUrl: message.fileUrl,
         fileName: message.fileName,
         fileSize: message.fileSize,
         fileType: message.fileType,
       }));
-      
+
       // Secure cache headers
       res.set('Cache-Control', 'private, max-age=60'); // 1 minute cache only
       res.set('X-Content-Type-Options', 'nosniff');
@@ -232,13 +233,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileExt = path.extname(file.originalname);
       const safeName = `${crypto.randomUUID()}${fileExt}`;
       const newPath = path.join(uploadsDir, safeName);
-      
+
       // Move file to secure location with safe name
       await fs.move(file.path, newPath);
-      
+
       // Generate secure file URL
       const fileUrl = `/api/files/${safeName}`;
-      
+
       res.json({
         fileUrl,
         fileName: file.originalname,
@@ -247,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("File upload error:", error);
-      
+
       // Clean up file if it exists
       if (req.file?.path) {
         try {
@@ -256,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Failed to clean up file:", cleanupError);
         }
       }
-      
+
       res.status(500).json({ message: "File upload failed" });
     }
   });
@@ -265,27 +266,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/files/:filename", requireAuth, async (req, res) => {
     try {
       const filename = req.params.filename;
-      
+
       // Validate filename format (UUID + extension)
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-zA-Z0-9]+$/i.test(filename)) {
         return res.status(400).json({ message: "Invalid filename" });
       }
-      
+
       const filePath = path.join(uploadsDir, filename);
-      
+
       // Check if file exists
       const exists = await fs.pathExists(filePath);
       if (!exists) {
         return res.status(404).json({ message: "File not found" });
       }
-      
+
       // Serve file with security headers
       res.set({
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'Cache-Control': 'private, max-age=3600',
       });
-      
+
       res.sendFile(filePath);
     } catch (error) {
       console.error("File serve error:", error);
@@ -300,7 +301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Secure WebSocket handling with authentication
   const authenticatedSockets = new Map<WebSocket, { userId: string, username: string }>();
-  
+
   wss.on('connection', (ws: WebSocket, req) => {
     let isAuthenticated = false;
     let userInfo: { userId: string, username: string } | null = null;
@@ -321,14 +322,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const messageData = JSON.parse(data.toString());
-        
+
         // Handle authentication
         if (messageData.type === 'auth' && !isAuthenticated) {
           try {
             const token = messageData.token;
             const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
             const user = await storage.getUser(decoded.userId);
-            
+
             if (user) {
               isAuthenticated = true;
               userInfo = { userId: user.id, username: user.username };
@@ -349,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ws.close(4005, 'Not authenticated');
           return;
         }
-        
+
         if (messageData.type === 'message') {
           // Validate message content and file data
           const messageInput = {
@@ -359,15 +360,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileSize: messageData.fileSize,
             fileType: messageData.fileType,
           };
-          
+
           const validatedData = insertMessageSchema.parse({
             sender: userInfo.username,
             ...messageInput
           });
-          
+
           // Create message in storage
           const message = await storage.createMessage(validatedData);
-          
+
           // Broadcast to authenticated clients only
           const broadcastData = JSON.stringify({
             type: 'message',
@@ -382,14 +383,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               fileType: message.fileType,
             }
           });
-          
+
           Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
             if (client.readyState === WebSocket.OPEN) {
               client.send(broadcastData);
             }
           });
         }
-        
+
         // Handle typing indicators
         else if (messageData.type === 'typing') {
           const typingData = JSON.stringify({
@@ -397,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sender: userInfo.username,
             isTyping: messageData.isTyping
           });
-          
+
           // Broadcast to all other authenticated clients (not sender)
           Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
@@ -405,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
         }
-        
+
 
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -421,7 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       authenticatedSockets.delete(ws);
       clearTimeout(authTimeout);
     });
-    
+
     ws.on('error', (error) => {
       console.error('WebSocket error:', error);
       authenticatedSockets.delete(ws);

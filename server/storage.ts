@@ -80,6 +80,7 @@ export class DatabaseStorage implements IStorage {
       fileName: insertMessage.fileName || null,
       fileSize: insertMessage.fileSize || null,
       fileType: insertMessage.fileType || null,
+      edited: false,
     };
 
     const [message] = await db
