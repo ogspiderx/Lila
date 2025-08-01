@@ -74,27 +74,34 @@ export default function Chat() {
     refetchIntervalInBackground: false,
   });
 
-  // Ultra-optimized message processing with useMemo
+  // Message processing with proper handling of edits and deletes
   const sortedMessages = useMemo(() => {
     if (!existingMessages && wsMessages.length === 0) return [];
     
-    // Use Set for O(1) lookup of existing IDs
-    const existingIds = new Set(existingMessages?.map(m => m.id) || []);
-    const allMessages = [...(existingMessages || [])];
+    // Create a Map for efficient lookups and updates
+    const messageMap = new Map<string, Message>();
     
-    // Only add WebSocket messages that don't exist
-    wsMessages.forEach(message => {
-      if (!existingIds.has(message.id)) {
-        // Normalize timestamp for consistent sorting
-        const normalizedMessage = {
-          ...message,
-          timestamp: new Date(message.timestamp)
-        };
-        allMessages.push(normalizedMessage);
-      }
+    // First, add all existing messages
+    (existingMessages || []).forEach(msg => {
+      messageMap.set(msg.id, {
+        ...msg,
+        timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp)
+      });
     });
     
-    // Sort once at the end
+    // Then process WebSocket messages - both new and updates
+    wsMessages.forEach(message => {
+      const normalizedMessage = {
+        ...message,
+        timestamp: new Date(message.timestamp)
+      };
+      
+      // This will either add new messages or update existing ones
+      messageMap.set(message.id, normalizedMessage);
+    });
+    
+    // Convert back to array and sort
+    const allMessages = Array.from(messageMap.values());
     allMessages.sort((a, b) => {
       const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
       const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
