@@ -1,0 +1,30 @@
+chunk-WERSD76P.js?v=6767bfb0:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+client:536 WebSocket connection to 'wss://6ee31eee-d6da-418c-800d-0496fd2704f1-00-2cdqrc5mmp2wu.pike.replit.dev/?token=yCRyf2FragS_' failed: 
+setupWebSocket @ client:536
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=yCRyf2FragS_' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
+use-optimized-websocket.tsx:177 WebSocket connection to 'wss://6ee31eee-d6da-418c-800d-0496fd2704f1-00-2cdqrc5mmp2wu.pike.replit.dev/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ use-optimized-websocket.tsx:177
+use-optimized-websocket.tsx:159 WebSocket error: Event
+ws.onerror @ use-optimized-websocket.tsx:159
+use-optimized-websocket.tsx:139 WebSocket disconnected, code: 1006
+user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
+The deferred DOM Node could not be resolved to a valid node.
+login.tsx:31  GET https://6ee31eee-d6da-418c-800d-0496fd2704f1-00-2cdqrc5mmp2wu.pike.replit.dev/api/auth/user 429 (Too Many Requests)
+checkAuth @ login.tsx:31
+(anonymous) @ login.tsx:46
+commitHookEffectListMount @ chunk-WERSD76P.js?v=6767bfb0:16915
+commitPassiveMountOnFiber @ chunk-WERSD76P.js?v=6767bfb0:18156
+commitPassiveMountEffects_complete @ chunk-WERSD76P.js?v=6767bfb0:18129
+commitPassiveMountEffects_begin @ chunk-WERSD76P.js?v=6767bfb0:18119
+commitPassiveMountEffects @ chunk-WERSD76P.js?v=6767bfb0:18109
+flushPassiveEffectsImpl @ chunk-WERSD76P.js?v=6767bfb0:19490
+flushPassiveEffects @ chunk-WERSD76P.js?v=6767bfb0:19447
+commitRootImpl @ chunk-WERSD76P.js?v=6767bfb0:19416
+commitRoot @ chunk-WERSD76P.js?v=6767bfb0:19277
+performSyncWorkOnRoot @ chunk-WERSD76P.js?v=6767bfb0:18895
+flushSyncCallbacks @ chunk-WERSD76P.js?v=6767bfb0:9119
+(anonymous) @ chunk-WERSD76P.js?v=6767bfb0:18627

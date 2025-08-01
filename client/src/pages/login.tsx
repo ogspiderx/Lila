@@ -23,9 +23,11 @@ export default function Login() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [, setLocation] = useLocation();
 
-  // Check if user is already authenticated
+  // Check if user is already authenticated - with timeout and error handling
   useEffect(() => {
     const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+    
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/auth/user", {
@@ -37,15 +39,24 @@ export default function Login() {
           return;
         }
       } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') return;
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('Auth check timed out or cancelled');
+        }
         // Silently continue - user just needs to login
+      } finally {
+        clearTimeout(timeoutId);
+        setIsCheckingAuth(false);
       }
-      setIsCheckingAuth(false);
     };
 
-    checkAuth();
+    // Add small delay to prevent immediate API call
+    const delayId = setTimeout(checkAuth, 100);
     
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+      clearTimeout(delayId);
+    };
   }, [setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
