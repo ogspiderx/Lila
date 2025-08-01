@@ -71,7 +71,7 @@ export default function Chat() {
         // Normalize timestamp for consistent sorting
         const normalizedMessage = {
           ...message,
-          timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(Number(message.timestamp))
+          timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)
         };
         allMessages.push(normalizedMessage);
       }
@@ -79,8 +79,8 @@ export default function Chat() {
     
     // Sort once at the end
     allMessages.sort((a, b) => {
-      const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : Number(a.timestamp);
-      const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : Number(b.timestamp);
+      const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
+      const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
       return aTime - bTime;
     });
     
@@ -157,57 +157,57 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-screen flex flex-col romantic-gradient overflow-hidden">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       {/* Chat Header - Fixed */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex-shrink-0 floating-element border-b border-rose-200/40 px-4 sm:px-6 py-4 relative overflow-hidden"
+        transition={{ duration: 0.5 }}
+        className="flex-shrink-0 floating-element border-b border-border/30 px-4 sm:px-6 py-3 relative overflow-hidden"
       >
         {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-rose-100/20 via-peach-50/20 to-lavender-100/20 opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 opacity-50" />
         
         <div className="flex items-center justify-between max-w-full relative z-10">
-          <div className="flex items-center space-x-4 sm:space-x-6">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="relative">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-rose-500 glow-text-rose tracking-wide">
-                Rosé
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary glow-text-green animate-glow tracking-wide">
+                Lila
               </h1>
-              <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-rose-400 via-peach-300 to-rose-400 opacity-70 rounded-full" />
+              <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary opacity-60 rounded-full" />
             </div>
             
-            <div className="flex items-center space-x-3 text-rose-400">
-              <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-500 shadow-lg ${isConnected ? 'bg-rose-400 animate-pulse glow-rose shadow-rose-400/50' : 'bg-destructive animate-bounce shadow-destructive/50'}`} />
-              <span className="text-sm sm:text-base font-medium hidden sm:inline">
+            <div className="flex items-center space-x-2 text-muted-foreground">
+              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-500 shadow-lg ${isConnected ? 'bg-primary animate-pulse-green shadow-primary/50' : 'bg-destructive animate-bounce-subtle shadow-destructive/50'}`} />
+              <span className="text-xs sm:text-sm font-medium hidden sm:inline">
                 {isConnected ? "Connected" : "Reconnecting..."}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3 sm:space-x-5">
-            <div className="flex items-center space-x-3 bg-rose-50/70 rounded-full px-4 py-2 border border-rose-200/50 backdrop-blur-sm">
-              <div className="w-2.5 h-2.5 bg-peach-400 rounded-full animate-pulse glow-peach" />
-              <span className="text-rose-600 font-semibold text-sm sm:text-base">{currentUser.username}</span>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-2 bg-card/50 rounded-full px-3 py-1.5 border border-border/30">
+              <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+              <span className="text-accent font-medium text-sm sm:text-base">{currentUser.username}</span>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="h-10 w-10 sm:h-12 sm:w-12 text-rose-400 hover:text-rose-500 smooth-transition hover:bg-rose-100/30 rounded-full glow-rose"
+              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
               title={soundEnabled ? "Disable sound notifications" : "Enable sound notifications"}
             >
               {soundEnabled ? (
-                <Volume2 className="h-5 w-5 sm:h-6 sm:w-6" />
+                <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />
               ) : (
-                <VolumeX className="h-5 w-5 sm:h-6 sm:w-6" />
+                <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleNotificationToggle}
-              className="h-10 w-10 sm:h-12 sm:w-12 text-rose-400 hover:text-rose-500 smooth-transition hover:bg-rose-100/30 rounded-full glow-rose"
+              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
               title={
                 notificationPermission === 'granted' 
                   ? "Desktop notifications enabled" 
@@ -217,19 +217,18 @@ export default function Chat() {
               }
             >
               {notificationPermission === 'granted' ? (
-                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-rose-400" />
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
               ) : (
-                <BellOff className="h-5 w-5 sm:h-6 sm:w-6" />
+                <BellOff className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleLogout}
-              className="h-10 w-10 sm:h-12 sm:w-12 text-rose-400 hover:text-rose-600 smooth-transition hover:bg-rose-100/20 rounded-full"
-              title="Leave conversation"
+              className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground hover:text-primary smooth-transition hover:bg-primary/10 rounded-full"
             >
-              <LogOut className="h-5 w-5 sm:h-6 sm:w-6" />
+              <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
@@ -246,9 +245,9 @@ export default function Chat() {
                 transition={{ duration: 0.5 }}
                 className="flex items-center justify-center h-full min-h-[200px]"
               >
-                <div className="glass-card rounded-2xl p-8 text-center border border-rose-200/50">
-                  <h3 className="text-rose-500 font-display font-semibold mb-3 text-lg sm:text-xl">Welcome to Rosé!</h3>
-                  <p className="text-rose-400 text-sm sm:text-base">Your intimate conversation space awaits</p>
+                <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 text-center border border-border/50">
+                  <h3 className="text-primary font-semibold mb-2 text-sm sm:text-base">Welcome to Lila!</h3>
+                  <p className="text-muted-foreground text-xs sm:text-sm">Your private chat space is ready</p>
                 </div>
               </motion.div>
             ) : (
@@ -276,7 +275,7 @@ export default function Chat() {
           className="flex-shrink-0 floating-element border-t border-border/30 p-4 sm:p-6 relative overflow-hidden"
         >
           {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-rose-100/20 via-peach-50/10 to-transparent opacity-70" />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/3 via-transparent to-transparent opacity-50" />
           
           <div className="max-w-4xl mx-auto relative z-10">
             <form onSubmit={handleSubmit} className="flex items-end gap-3">
@@ -296,12 +295,12 @@ export default function Chat() {
                     onKeyDown={handleKeyDown}
                     placeholder="Type your message..."
                     rows={1}
-                    className="resize-none input-field rounded-2xl smooth-transition min-h-[48px] max-h-[130px] py-4 px-5 pr-14 text-sm sm:text-base leading-relaxed shadow-lg border-2 border-rose-200/30 focus:border-rose-400/50"
+                    className="resize-none input-field rounded-xl smooth-transition min-h-[44px] max-h-[120px] py-3 px-4 pr-12 text-sm sm:text-base leading-relaxed shadow-lg border-2 border-transparent focus:border-primary/30"
                   />
                   
                   {/* Character counter for longer messages */}
                   {messageInput.length > 100 && (
-                    <div className="absolute bottom-3 right-4 text-xs text-rose-400 font-medium">
+                    <div className="absolute bottom-2 right-3 text-xs text-muted-foreground">
                       {messageInput.length}/2000
                     </div>
                   )}
@@ -311,9 +310,9 @@ export default function Chat() {
               <Button
                 type="submit"
                 disabled={!messageInput.trim() || !isConnected || messageInput.length > 2000}
-                className="btn-primary h-[48px] w-[48px] sm:h-[52px] sm:w-[52px] rounded-2xl glow-rose smooth-transition disabled:opacity-50 flex-shrink-0 shadow-lg hover:shadow-rose-400/40 relative overflow-hidden group"
+                className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground h-[44px] w-[44px] sm:h-[48px] sm:w-[48px] rounded-xl glow-green hover:from-primary/90 hover:to-primary smooth-transition disabled:opacity-50 flex-shrink-0 shadow-lg hover:shadow-primary/30 relative overflow-hidden group"
               >
-                <Send className="h-5 w-5 sm:h-6 sm:w-6 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <Send className="h-4 w-4 sm:h-5 sm:w-5 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 
                 {/* Button shine effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] duration-700" />

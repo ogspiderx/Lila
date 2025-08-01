@@ -84,25 +84,25 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen romantic-gradient flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-sm sm:max-w-md"
       >
         {/* App Branding */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="text-center mb-10 sm:mb-14"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-center mb-8 sm:mb-12"
         >
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold text-rose-500 glow-text-rose mb-3 sm:mb-5 tracking-wide">
-            Rosé
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-primary glow-text-green animate-glow tracking-wide mb-2 sm:mb-4">
+            Lila
           </h1>
-          <p className="text-rose-400 text-lg sm:text-xl font-medium romantic-text">
-            Where hearts connect intimately
+          <p className="text-muted-foreground text-base sm:text-lg font-light">
+            Private chat for two
           </p>
         </motion.div>
 
@@ -110,10 +110,10 @@ export default function Login() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Card className="glass-card shadow-2xl relative overflow-hidden">
-            <CardContent className="p-8 sm:p-10 relative z-10">
+          <Card className="gradient-border shadow-2xl relative">
+            <CardContent className="p-6 sm:p-8 relative z-10">
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
                   <Label
@@ -123,8 +123,8 @@ export default function Login() {
                     Username
                   </Label>
                   <Select value={username} onValueChange={setUsername}>
-                    <SelectTrigger className="w-full select-trigger rounded-xl smooth-transition h-12">
-                      <SelectValue placeholder="Choose your identity" />
+                    <SelectTrigger className="w-full select-trigger rounded-lg smooth-transition h-11">
+                      <SelectValue placeholder="Select your identity" />
                     </SelectTrigger>
                     <SelectContent className="select-content">
                       <SelectItem value="Wale" className="select-item">
@@ -150,17 +150,17 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password..."
-                    className="w-full input-field rounded-xl smooth-transition h-12"
+                    className="w-full input-field rounded-lg smooth-transition h-11"
                   />
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isLoading || !username || !password}
-                  className="w-full btn-primary font-semibold py-3 sm:py-4 rounded-2xl glow-rose smooth-transition disabled:opacity-50 h-12 sm:h-14 text-lg"
+                  className="w-full bg-primary text-primary-foreground font-semibold py-2.5 sm:py-3 rounded-lg glow-green hover:bg-primary/90 smooth-transition disabled:opacity-50 h-11 sm:h-12"
                 >
-                  <LogIn className="mr-3 h-5 w-5" />
-                  {isLoading ? "Entering..." : "Begin Conversation"}
+                  <LogIn className="mr-2 h-4 w-4" />
+                  {isLoading ? "Entering..." : "Enter Chat"}
                 </Button>
               </form>
 
