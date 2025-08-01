@@ -35,7 +35,6 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
-  trustProxy: true,
 });
 app.use('/api/', limiter);
 
@@ -46,7 +45,6 @@ const authLimiter = rateLimit({
   message: "Too many authentication attempts, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
-  trustProxy: true,
 });
 app.use('/api/auth/login', authLimiter);
 
