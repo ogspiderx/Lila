@@ -199,6 +199,16 @@ export default function ChatOptimized() {
 
   
 
+  // Auto-scroll with performance optimization
+  const scrollToBottom = useCallback((smooth = false) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: smooth ? "smooth" : "auto",
+        block: "end"
+      });
+    }
+  }, []);
+
   const uploadFileWithProgress = useCallback(async (file: File): Promise<{ fileUrl: string; fileName: string; fileSize: number; fileType: string } | null> => {
     let fileToUpload = file;
     
@@ -330,16 +340,6 @@ export default function ChatOptimized() {
       handleSubmit(e);
     }
   }, [handleSubmit]);
-
-  // Auto-scroll with performance optimization
-  const scrollToBottom = useCallback((smooth = false) => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ 
-        behavior: smooth ? "smooth" : "auto",
-        block: "end"
-      });
-    }
-  }, []);
 
   // Auto-scroll on new messages and mark as seen
   useEffect(() => {
