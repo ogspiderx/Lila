@@ -359,6 +359,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileName: messageData.fileName,
             fileSize: messageData.fileSize,
             fileType: messageData.fileType,
+            replyToId: messageData.replyToId,
+            replyToMessage: messageData.replyToMessage,
+            replyToSender: messageData.replyToSender,
           };
 
           const validatedData = insertMessageSchema.parse({

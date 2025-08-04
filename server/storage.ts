@@ -70,6 +70,11 @@ export class MemStorage implements IStorage {
       fileName: insertMessage.fileName || null,
       fileSize: insertMessage.fileSize || null,
       fileType: insertMessage.fileType || null,
+      deliveryStatus: 'sent',
+      seenBy: [],
+      replyToId: insertMessage.replyToId || null,
+      replyToMessage: insertMessage.replyToMessage || null,
+      replyToSender: insertMessage.replyToSender || null,
     };
     this.messages.push(message);
     return message;

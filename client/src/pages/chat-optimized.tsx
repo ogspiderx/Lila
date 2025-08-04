@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { LogOut, Send, Paperclip, X } from "lucide-react";
+import { LogOut, Send, Paperclip, X, Reply } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { TypingIndicator } from "@/components/ui/typing-indicator";
 
@@ -21,6 +21,7 @@ export default function ChatOptimized() {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const [lastSeenMessageId, setLastSeenMessageId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -270,6 +271,15 @@ export default function ChatOptimized() {
     }
   }, [compressImage]);
 
+  const handleReply = useCallback((message: Message) => {
+    setReplyingTo(message);
+    textareaRef.current?.focus();
+  }, []);
+
+  const handleCancelReply = useCallback(() => {
+    setReplyingTo(null);
+  }, []);
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -294,11 +304,21 @@ export default function ChatOptimized() {
         }
       }
 
-      // Send message
-      sendMessage(currentUser.username, content || "", fileData);
+      // Send message with reply data if replying
+      sendMessage(
+        currentUser.username, 
+        content || "", 
+        fileData,
+        replyingTo ? {
+          replyToId: replyingTo.id,
+          replyToMessage: replyingTo.content || replyingTo.fileName || "File",
+          replyToSender: replyingTo.sender
+        } : undefined
+      );
 
       setMessageInput("");
       setSelectedFile(null);
+      setReplyingTo(null);
       setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -310,7 +330,7 @@ export default function ChatOptimized() {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFileWithProgress, scrollToBottom]);
+  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFileWithProgress, scrollToBottom, replyingTo]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -365,29 +385,9 @@ export default function ChatOptimized() {
     };
   }, [cleanup]);
 
-  // Fetch messages with error handling and caching
-  const { data: initialMessages, isLoading: messagesLoading } = useQuery({
-    queryKey: ["messages"],
-    queryFn: async () => {
-      const response = await fetch('/api/messages', {
-        credentials: 'include',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      });
-      if (!response.ok) throw new Error('Failed to fetch messages');
-      const messages = await response.json();
 
-      // Ensure delivery status is included
-      return messages.map((msg: any) => ({
-        ...msg,
-        deliveryStatus: msg.deliveryStatus || 'sent'
-      }));
-    },
-    staleTime: 30000, // 30 seconds
-    refetchOnWindowFocus: false,
-    retry: 3,
-  });
+
+
 
   if (!currentUser) {
     return null;
@@ -428,6 +428,7 @@ export default function ChatOptimized() {
               key={message.id}
               message={message}
               isCurrentUser={message.sender === currentUser.username}
+              onReply={handleReply}
             />
           ))}
 
@@ -441,6 +442,29 @@ export default function ChatOptimized() {
 
         {/* Input form with file upload */}
         <form onSubmit={handleSubmit} className="border-t border-slate-700 p-4">
+          {/* Reply preview */}
+          {replyingTo && (
+            <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Reply className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm text-emerald-400">Replying to {replyingTo.sender}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelReply}
+                  className="text-slate-400 hover:text-white p-1"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="text-sm text-slate-300 truncate">
+                {replyingTo.content || replyingTo.fileName || "File"}
+              </div>
+            </div>
+          )}
           {/* File preview */}
           {selectedFile && (
             <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">

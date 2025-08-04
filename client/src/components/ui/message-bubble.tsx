@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, memo, useCallback } from "react";
-import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, Hash } from "lucide-react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, Hash, Reply } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,11 +13,13 @@ import type { Message, WebSocketMessage } from "@shared/schema";
 interface MessageBubbleProps {
   message: Message | WebSocketMessage;
   isCurrentUser: boolean;
+  onReply?: (message: Message | WebSocketMessage) => void;
 }
 
 export const MessageBubble = memo(function MessageBubble({ 
   message, 
-  isCurrentUser
+  isCurrentUser,
+  onReply
 }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -266,6 +268,22 @@ export const MessageBubble = memo(function MessageBubble({
             </div>
           )}
 
+          {/* Reply preview */}
+          {(message as any).replyToMessage && (
+            <div className={`mb-2 p-2 rounded border-l-2 ${
+              isCurrentUser 
+                ? "bg-emerald-400/10 border-emerald-300/50 text-emerald-100" 
+                : "bg-slate-500/20 border-slate-400/50 text-slate-300"
+            }`}>
+              <div className="text-xs opacity-75 mb-1">
+                Replying to {(message as any).replyToSender}
+              </div>
+              <div className="text-xs truncate">
+                {(message as any).replyToMessage}
+              </div>
+            </div>
+          )}
+
           {/* Text content */}
           {message.content && (
             <p className={`
@@ -301,6 +319,13 @@ export const MessageBubble = memo(function MessageBubble({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align={isCurrentUser ? "end" : "start"} className="min-w-[120px]">
+              {onReply && (
+                <DropdownMenuItem onClick={() => onReply(message)} className="cursor-pointer">
+                  <Reply className="mr-2 h-3 w-3" />
+                  Reply
+                </DropdownMenuItem>
+              )}
+              
               <DropdownMenuItem onClick={handleCopyMessage} className="cursor-pointer">
                 {isCopied ? (
                   <>
@@ -369,6 +394,20 @@ export const MessageBubble = memo(function MessageBubble({
               top: `${Math.min(contextMenuPosition.y, window.innerHeight - 200)}px`,
             }}
           >
+            {onReply && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReply(message);
+                  handleCloseContextMenu();
+                }}
+                className="w-full px-3 py-2 text-left hover:bg-slate-700 flex items-center text-sm text-slate-200"
+              >
+                <Reply className="mr-2 h-3 w-3" />
+                Reply
+              </button>
+            )}
+            
             <button
               onClick={(e) => {
                 e.stopPropagation();

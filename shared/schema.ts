@@ -17,6 +17,11 @@ export type Message = {
   fileName: string | null;
   fileSize: number | null;
   fileType: string | null;
+  deliveryStatus: 'sent' | 'delivered' | 'seen';
+  seenBy: string[];
+  replyToId: string | null;
+  replyToMessage: string | null;
+  replyToSender: string | null;
 };
 
 export const insertUserSchema = z.object({
@@ -31,6 +36,9 @@ export const insertMessageSchema = z.object({
   fileName: z.string().max(255).optional(),
   fileSize: z.number().max(300 * 1024 * 1024).optional(), // 300MB max
   fileType: z.string().max(100).optional(),
+  replyToId: z.string().optional(),
+  replyToMessage: z.string().max(500).optional(),
+  replyToSender: z.string().optional(),
 }).refine(
   (data) => (data.content && data.content.trim().length > 0) || data.fileUrl,
   { message: "Either content or file must be provided" }
@@ -47,5 +55,20 @@ export type TypingMessage = {
   isTyping: boolean;
 };
 
+// Message delivery status update type
+export type MessageStatusUpdate = {
+  type: 'message_status';
+  messageId: string;
+  status: 'delivered' | 'seen';
+  userId: string;
+};
+
+// Add message seen tracking type
+export type MessageSeenUpdate = {
+  type: 'message_seen';
+  messageId: string;
+  seenBy: string;
+};
+
 // Combined WebSocket message types
-export type WebSocketChatMessage = WebSocketMessage | TypingMessage;
+export type WebSocketChatMessage = WebSocketMessage | TypingMessage | MessageSeenUpdate | MessageStatusUpdate;
