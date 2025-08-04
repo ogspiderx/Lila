@@ -269,17 +269,17 @@ export const MessageBubble = memo(function MessageBubble({
           )}
 
           {/* Reply preview */}
-          {(message as any).replyToMessage && (
+          {message.replyToMessage && (
             <div className={`mb-2 p-2 rounded border-l-2 ${
               isCurrentUser 
                 ? "bg-emerald-400/10 border-emerald-300/50 text-emerald-100" 
                 : "bg-slate-500/20 border-slate-400/50 text-slate-300"
             }`}>
               <div className="text-xs opacity-75 mb-1">
-                Replying to {(message as any).replyToSender}
+                Replying to {message.replyToSender}
               </div>
               <div className="text-xs truncate">
-                {(message as any).replyToMessage}
+                {message.replyToMessage}
               </div>
             </div>
           )}

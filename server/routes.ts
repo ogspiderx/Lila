@@ -384,6 +384,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               fileName: message.fileName,
               fileSize: message.fileSize,
               fileType: message.fileType,
+              replyToId: message.replyToId,
+              replyToMessage: message.replyToMessage,
+              replyToSender: message.replyToSender,
             }
           });
 
@@ -410,7 +413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
-        
+
 
 
       } catch (error) {

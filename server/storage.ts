@@ -80,7 +80,7 @@ export class MemStorage implements IStorage {
     return message;
   }
 
-  
+
 
   async getMessages(): Promise<Message[]> {
     // Return the last 50 messages, sorted by timestamp (oldest first for proper display)
