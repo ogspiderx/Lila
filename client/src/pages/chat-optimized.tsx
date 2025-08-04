@@ -311,7 +311,7 @@ export default function ChatOptimized() {
         fileData,
         replyingTo ? {
           replyToId: replyingTo.id,
-          replyToMessage: replyingTo.content || replyingTo.fileName || "File",
+          replyToMessage: (replyingTo.content || replyingTo.fileName || "File").substring(0, 500),
           replyToSender: replyingTo.sender
         } : undefined
       );
@@ -461,7 +461,10 @@ export default function ChatOptimized() {
                 </Button>
               </div>
               <div className="text-sm text-slate-300 truncate">
-                {replyingTo.content || replyingTo.fileName || "File"}
+                {(replyingTo.content || replyingTo.fileName || "File").length > 100 
+                  ? `${(replyingTo.content || replyingTo.fileName || "File").substring(0, 100)}...`
+                  : (replyingTo.content || replyingTo.fileName || "File")
+                }
               </div>
             </div>
           )}

@@ -279,7 +279,10 @@ export const MessageBubble = memo(function MessageBubble({
                 Replying to {message.replyToSender}
               </div>
               <div className="text-xs truncate">
-                {message.replyToMessage}
+                {message.replyToMessage && message.replyToMessage.length > 100 
+                  ? `${message.replyToMessage.substring(0, 100)}...`
+                  : message.replyToMessage
+                }
               </div>
             </div>
           )}
