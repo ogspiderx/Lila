@@ -20,7 +20,7 @@ export default function ChatOptimized() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [lastSeenMessageId, setLastSeenMessageId] = useState<string | null>(null);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -422,22 +422,12 @@ export default function ChatOptimized() {
       {/* Messages area with minimal styling */}
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide">
-          {displayMessages.map((message, index) => (
-            <div key={message.id}>
-              {/* Show unseen message divider */}
-              {lastSeenIndex >= 0 && index === lastSeenIndex + 1 && index < displayMessages.length && (
-                <div className="flex items-center my-4">
-                  <div className="flex-1 h-px bg-red-500/30"></div>
-                  <span className="px-3 text-xs text-red-400 bg-slate-900">New messages</span>
-                  <div className="flex-1 h-px bg-red-500/30"></div>
-                </div>
-              )}
-
-              <MessageBubble
-                message={message}
-                isCurrentUser={message.sender === currentUser.username}
-              />
-            </div>
+          {displayMessages.map((message) => (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              isCurrentUser={message.sender === currentUser.username}
+            />
           ))}
 
           {/* Typing indicator */}

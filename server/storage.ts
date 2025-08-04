@@ -6,7 +6,6 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(): Promise<Message[]>;
-  updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId?: string): Promise<void>;
 }
 
 // In-memory storage implementation - resets when server restarts
@@ -71,24 +70,12 @@ export class MemStorage implements IStorage {
       fileName: insertMessage.fileName || null,
       fileSize: insertMessage.fileSize || null,
       fileType: insertMessage.fileType || null,
-      deliveryStatus: 'sent',
-      seenBy: [],
     };
     this.messages.push(message);
     return message;
   }
 
-  async updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId?: string): Promise<void> {
-    const message = this.messages.find(m => m.id === messageId);
-    if (message) {
-      message.deliveryStatus = status;
-      if (status === 'seen' && userId && message.seenBy) {
-        if (!message.seenBy.includes(userId)) {
-          message.seenBy.push(userId);
-        }
-      }
-    }
-  }
+  
 
   async getMessages(): Promise<Message[]> {
     // Return the last 50 messages, sorted by timestamp (oldest first for proper display)

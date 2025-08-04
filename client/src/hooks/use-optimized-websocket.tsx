@@ -66,18 +66,7 @@ export function useOptimizedWebSocket() {
             return newMessages;
           });
 
-          // Auto-mark as seen if message is from another user
-          const username = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('username='))
-            ?.split('=')[1];
-          if (username && message.sender !== username && wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({
-              type: 'message_status',
-              messageId: message.id,
-              status: 'seen'
-            }));
-          }
+          
         } else if (data.type === 'typing') {
           const username = document.cookie
             .split('; ')
@@ -94,14 +83,7 @@ export function useOptimizedWebSocket() {
               return updated;
             });
           }
-        } else if (data.type === 'message_status') {
-          // Update message delivery status
-          setMessages(prev => prev.map(msg => 
-            msg.id === data.messageId 
-              ? { ...msg, deliveryStatus: data.status }
-              : msg
-          ));
-        }
+        
       } catch (error) {
         console.error('WebSocket message error:', error);
       }

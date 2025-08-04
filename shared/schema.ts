@@ -17,8 +17,6 @@ export type Message = {
   fileName: string | null;
   fileSize: number | null;
   fileType: string | null;
-  deliveryStatus: 'sent' | 'delivered' | 'seen';
-  seenBy: string[];
 };
 
 export const insertUserSchema = z.object({
@@ -42,21 +40,6 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type WebSocketMessage = Omit<Message, 'timestamp'> & { timestamp: number };
 
-// Message delivery status update type
-export type MessageStatusUpdate = {
-  type: 'message_status';
-  messageId: string;
-  status: 'delivered' | 'seen';
-  userId: string;
-};
-
-// Add message seen tracking type
-export type MessageSeenUpdate = {
-  type: 'message_seen';
-  messageId: string;
-  seenBy: string;
-};
-
 // Typing indicator message type
 export type TypingMessage = {
   type: 'typing';
@@ -65,4 +48,4 @@ export type TypingMessage = {
 };
 
 // Combined WebSocket message types
-export type WebSocketChatMessage = WebSocketMessage | TypingMessage | MessageSeenUpdate | MessageStatusUpdate;
+export type WebSocketChatMessage = WebSocketMessage | TypingMessage;

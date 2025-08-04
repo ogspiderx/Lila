@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, memo, useCallback } from "react";
-import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, CheckCheck, Hash } from "lucide-react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, Hash } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,19 +128,7 @@ export const MessageBubble = memo(function MessageBubble({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const renderDeliveryStatus = () => {
-    if (!isCurrentUser) return null;
-
-    const status = message.deliveryStatus || 'sent';
-
-    if (status === 'seen') {
-      return <CheckCheck className="w-3 h-3 text-blue-400" />;
-    } else if (status === 'delivered') {
-      return <CheckCheck className="w-3 h-3 text-slate-400" />;
-    } else {
-      return <Check className="w-3 h-3 text-slate-400" />;
-    }
-  };
+  
 
   const isPreviewable = (fileType?: string | null) => {
     if (!fileType) return false;
@@ -280,33 +268,21 @@ export const MessageBubble = memo(function MessageBubble({
 
           {/* Text content */}
           {message.content && (
-            <div className="flex items-end justify-between gap-2">
-              <p className={`
-                relative z-10 text-xs sm:text-sm leading-snug 
-                break-words whitespace-pre-wrap flex-1
-                ${isCurrentUser ? "text-white" : "text-slate-50"} 
-                ${isDeleted ? "italic text-slate-400" : ""}
-                drop-shadow-sm
-              `}
-              style={{
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-                wordWrap: 'break-word',
-                hyphens: 'auto'
-              }}>
-                {message.content}
-              </p>
-              <div className="flex-shrink-0">
-                {renderDeliveryStatus()}
-              </div>
-            </div>
-          )}
-
-          {/* If only file, show delivery status */}
-          {!message.content && message.fileUrl && (
-            <div className="flex justify-end mt-1">
-              {renderDeliveryStatus()}
-            </div>
+            <p className={`
+              relative z-10 text-xs sm:text-sm leading-snug 
+              break-words whitespace-pre-wrap
+              ${isCurrentUser ? "text-white" : "text-slate-50"} 
+              ${isDeleted ? "italic text-slate-400" : ""}
+              drop-shadow-sm
+            `}
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              wordWrap: 'break-word',
+              hyphens: 'auto'
+            }}>
+              {message.content}
+            </p>
           )}
         </motion.div>
         </div>
