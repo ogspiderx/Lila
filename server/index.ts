@@ -89,10 +89,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Setup test users with hashed passwords
-  const { setupTestUsers } = await import("./setup-users");
-  await setupTestUsers();
-  
+  // No need to setup test users - MemStorage creates them automatically
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

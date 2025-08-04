@@ -16,7 +16,7 @@ The application follows a monorepo structure, separating client, server, and sha
 
 *   **Frontend**: React with TypeScript, Vite as build tool.
 *   **Backend**: Express.js server with TypeScript.
-*   **Database**: PostgreSQL with Drizzle ORM for type-safe operations.
+*   **Storage**: In-memory storage for temporary message storage. All data resets when server restarts.
 *   **Real-time Communication**: WebSockets for instant message delivery.
 *   **Styling**: Tailwind CSS with shadcn/ui component library.
 *   **State Management**: TanStack Query for server state management.
@@ -44,10 +44,9 @@ The application follows a monorepo structure, separating client, server, and sha
     *   Express.js
     *   TypeScript
     *   Vite
-*   **Database & ORM**:
-    *   Drizzle ORM
-    *   @neondatabase/serverless (for PostgreSQL connection)
-    *   drizzle-zod
+*   **Storage**:
+    *   In-memory storage implementation
+    *   No database dependencies required
 *   **UI & Styling**:
     *   Tailwind CSS
     *   shadcn/ui

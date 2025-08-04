@@ -1,6 +1,4 @@
-import { users, messages, type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -11,149 +9,7 @@ export interface IStorage {
   updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId?: string): Promise<void>;
 }
 
-export class DatabaseStorage implements IStorage {
-  private userCache = new Map<string, { user: User | null, timestamp: number }>();
-  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-  async getUser(id: string): Promise<User | undefined> {
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
-
-    // Check cache first
-    const cached = this.userCache.get(id);
-    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
-      return cached.user || undefined;
-    }
-
-    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
-
-    // Update cache
-    this.userCache.set(id, { user: user || null, timestamp: Date.now() });
-
-    return user || undefined;
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
-
-    // Check cache by username
-    const cacheEntries = Array.from(this.userCache.entries());
-    for (const [id, cached] of cacheEntries) {
-      if (cached.user?.username === username && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
-        return cached.user || undefined;
-      }
-    }
-
-    const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
-
-    // Update cache
-    if (user) {
-      this.userCache.set(user.id, { user, timestamp: Date.now() });
-    }
-
-    return user || undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
-
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
-  }
-
-  async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
-
-    const messageData = {
-      sender: insertMessage.sender,
-      content: insertMessage.content || "",
-      fileUrl: insertMessage.fileUrl || null,
-      fileName: insertMessage.fileName || null,
-      fileSize: insertMessage.fileSize || null,
-      fileType: insertMessage.fileType || null,
-      edited: false,
-      deliveryStatus: 'sent' as const,
-      seenBy: [],
-    };
-
-    const [message] = await db
-      .insert(messages)
-      .values(messageData)
-      .returning();
-
-    // Invalidate messages cache when new message is created
-    this.messagesCache = null;
-
-    return message;
-  }
-
-  async updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId?: string): Promise<void> {
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
-
-    if (status === 'seen' && !userId) {
-      console.warn("userId is required when updating status to 'seen'");
-      return;
-    }
-
-    const updateData: any = { deliveryStatus: status };
-
-    if (status === 'seen' && userId) {
-      // Get current message to update seenBy array
-      const [currentMessage] = await db.select().from(messages).where(eq(messages.id, messageId)).limit(1);
-      if (currentMessage) {
-        const seenBy = currentMessage.seenBy || [];
-        if (!seenBy.includes(userId)) {
-          updateData.seenBy = [...seenBy, userId];
-        }
-      }
-    }
-
-    await db
-      .update(messages)
-      .set(updateData)
-      .where(eq(messages.id, messageId));
-
-    // Invalidate cache
-    this.messagesCache = null;
-  }
-
-  private messagesCache: { messages: Message[], timestamp: number } | null = null;
-  private readonly MESSAGES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes - longer cache
-
-  async getMessages(): Promise<Message[]> {
-    if (!db) {
-      throw new Error("Database not initialized");
-    }
-
-    // Check cache first for messages
-    if (this.messagesCache && (Date.now() - this.messagesCache.timestamp) < this.MESSAGES_CACHE_TTL) {
-      return this.messagesCache.messages;
-    }
-
-    const messagesList = await db.select().from(messages).orderBy(messages.timestamp).limit(50);
-
-    // Update cache
-    this.messagesCache = { messages: messagesList, timestamp: Date.now() };
-
-    return messagesList;
-  }
-
-
-}
-
-// In-memory storage implementation for development
+// In-memory storage implementation - resets when server restarts
 export class MemStorage implements IStorage {
   private users: User[] = [];
   private messages: Message[] = [];
@@ -183,7 +39,7 @@ export class MemStorage implements IStorage {
       this.users.push(user);
     }
 
-    // No starter messages - let users create their own messages
+    console.log('Created test users: wale and xiu with password: password123');
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -240,9 +96,7 @@ export class MemStorage implements IStorage {
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
       .slice(-50);
   }
-
-
 }
 
-// Always use database storage now that we have PostgreSQL configured
-export const storage = new DatabaseStorage();
+// Use in-memory storage - everything resets when server restarts
+export const storage = new MemStorage();

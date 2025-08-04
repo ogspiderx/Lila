@@ -1,44 +1,33 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
+// Type definitions for in-memory storage (no database tables needed)
+export type User = {
+  id: string;
+  username: string;
+  password: string;
+};
 
-export const messages = pgTable("messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  sender: text("sender").notNull(),
-  content: text("content").notNull(),
-  timestamp: timestamp("timestamp", { mode: 'date' }).notNull().defaultNow(),
-  edited: text("edited").$type<boolean>().default(false),
-  fileUrl: text("file_url"),
-  fileName: text("file_name"),
-  fileSize: integer("file_size"),
-  fileType: text("file_type"),
-  deliveryStatus: text("delivery_status").$type<'sent' | 'delivered' | 'seen'>().default('sent'),
-  seenBy: text("seen_by").array(),
-});
+export type Message = {
+  id: string;
+  sender: string;
+  content: string;
+  timestamp: Date;
+  edited: boolean;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  fileType: string | null;
+  deliveryStatus: 'sent' | 'delivered' | 'seen';
+  seenBy: string[];
+};
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-}).extend({
+export const insertUserSchema = z.object({
   username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, "Username must contain only letters, numbers, and underscores"),
   password: z.string().min(8).max(128),
 });
 
-export const insertMessageSchema = createInsertSchema(messages).pick({
-  sender: true,
-  content: true,
-  fileUrl: true,
-  fileName: true,
-  fileSize: true,
-  fileType: true,
-}).extend({
+export const insertMessageSchema = z.object({
+  sender: z.string(),
   content: z.string().max(2000).trim().optional(),
   fileUrl: z.string().optional(),
   fileName: z.string().max(255).optional(),
@@ -50,9 +39,7 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
 );
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
-export type Message = typeof messages.$inferSelect;
 export type WebSocketMessage = Omit<Message, 'timestamp'> & { timestamp: number };
 
 // Message delivery status update type
