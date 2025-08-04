@@ -305,8 +305,22 @@ export const MessageBubble = memo(function MessageBubble({
         </motion.div>
         </div>
 
-        {/* Actions button with dropdown */}
-        <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0">
+        {/* Actions buttons with dropdown */}
+        <div className="opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 flex-shrink-0 flex items-center space-x-1">
+          {/* Standalone Reply Button */}
+          {onReply && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onReply(message)}
+              className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+              data-testid="button-reply"
+            >
+              <Reply className="h-3 w-3" />
+            </Button>
+          )}
+          
+          {/* More options dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
