@@ -26,6 +26,7 @@ export default function ChatOptimized() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [, setLocation] = useLocation();
 
   const { 
@@ -280,6 +281,25 @@ export default function ChatOptimized() {
     setReplyingTo(null);
   }, []);
 
+  const scrollToMessage = useCallback((messageId: string) => {
+    const messageElement = messageRefs.current.get(messageId);
+    if (messageElement) {
+      messageElement.scrollIntoView({ 
+        behavior: "smooth", 
+        block: "center" 
+      });
+      
+      // Add a highlight effect
+      messageElement.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+      messageElement.style.borderRadius = '8px';
+      messageElement.style.transition = 'background-color 0.3s ease';
+      
+      setTimeout(() => {
+        messageElement.style.backgroundColor = '';
+      }, 2000);
+    }
+  }, []);
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -424,12 +444,23 @@ export default function ChatOptimized() {
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide">
           {displayMessages.map((message) => (
-            <MessageBubble
+            <div
               key={message.id}
-              message={message}
-              isCurrentUser={message.sender === currentUser.username}
-              onReply={handleReply}
-            />
+              ref={(el) => {
+                if (el) {
+                  messageRefs.current.set(message.id, el);
+                } else {
+                  messageRefs.current.delete(message.id);
+                }
+              }}
+            >
+              <MessageBubble
+                message={message}
+                isCurrentUser={message.sender === currentUser.username}
+                onReply={handleReply}
+                onScrollToMessage={scrollToMessage}
+              />
+            </div>
           ))}
 
           {/* Typing indicator */}

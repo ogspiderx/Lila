@@ -14,12 +14,14 @@ interface MessageBubbleProps {
   message: Message | WebSocketMessage;
   isCurrentUser: boolean;
   onReply?: (message: Message | WebSocketMessage) => void;
+  onScrollToMessage?: (messageId: string) => void;
 }
 
 export const MessageBubble = memo(function MessageBubble({ 
   message, 
   isCurrentUser,
-  onReply
+  onReply,
+  onScrollToMessage
 }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -270,11 +272,14 @@ export const MessageBubble = memo(function MessageBubble({
 
           {/* Reply preview */}
           {message.replyToMessage && (
-            <div className={`mb-2 p-2 rounded border-l-2 ${
-              isCurrentUser 
-                ? "bg-emerald-400/10 border-emerald-300/50 text-emerald-100" 
-                : "bg-slate-500/20 border-slate-400/50 text-slate-300"
-            }`}>
+            <div 
+              className={`mb-2 p-2 rounded border-l-2 cursor-pointer hover:opacity-80 transition-opacity ${
+                isCurrentUser 
+                  ? "bg-emerald-400/10 border-emerald-300/50 text-emerald-100 hover:bg-emerald-400/20" 
+                  : "bg-slate-500/20 border-slate-400/50 text-slate-300 hover:bg-slate-500/30"
+              }`}
+              onClick={() => message.replyToId && onScrollToMessage?.(message.replyToId)}
+            >
               <div className="text-xs opacity-75 mb-1">
                 Replying to {message.replyToSender}
               </div>
