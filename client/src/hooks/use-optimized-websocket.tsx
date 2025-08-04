@@ -66,7 +66,7 @@ export function useOptimizedWebSocket() {
             return newMessages;
           });
 
-          
+
         } else if (data.type === 'typing') {
           const username = document.cookie
             .split('; ')
@@ -84,7 +84,7 @@ export function useOptimizedWebSocket() {
             });
           }
         }
-        
+
       } catch (error) {
         console.error('WebSocket message error:', error);
       }
@@ -174,8 +174,6 @@ export function useOptimizedWebSocket() {
       wsRef.current.send(message);
     }
   }, [isConnected]);
-
-
 
   return {
     isConnected,

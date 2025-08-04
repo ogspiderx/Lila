@@ -46,7 +46,19 @@ export const insertMessageSchema = z.object({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
-export type WebSocketMessage = Omit<Message, 'timestamp'> & { timestamp: number };
+export interface WebSocketMessage {
+  id: string;
+  content: string;
+  sender: string;
+  timestamp: number;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  fileType?: string;
+  replyToId?: string;
+  replyToMessage?: string;
+  replyToSender?: string;
+}
 
 // Typing indicator message type
 export type TypingMessage = {
