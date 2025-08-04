@@ -83,6 +83,7 @@ export function useOptimizedWebSocket() {
               return updated;
             });
           }
+        }
         
       } catch (error) {
         console.error('WebSocket message error:', error);
