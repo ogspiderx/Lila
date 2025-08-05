@@ -6,6 +6,9 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(): Promise<Message[]>;
+  updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId: string): Promise<void>;
+  markMessageAsDelivered(messageId: string): Promise<void>;
+  markMessageAsSeen(messageId: string, userId: string): Promise<void>;
 }
 
 // In-memory storage implementation - resets when server restarts
@@ -87,6 +90,37 @@ export class MemStorage implements IStorage {
     return this.messages
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
       .slice(-50);
+  }
+
+  async updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId: string): Promise<void> {
+    const message = this.messages.find(msg => msg.id === messageId);
+    if (!message) return;
+
+    if (status === 'delivered') {
+      message.deliveryStatus = 'delivered';
+    } else if (status === 'seen') {
+      message.deliveryStatus = 'seen';
+      if (!message.seenBy.includes(userId)) {
+        message.seenBy.push(userId);
+      }
+    }
+  }
+
+  async markMessageAsDelivered(messageId: string): Promise<void> {
+    const message = this.messages.find(msg => msg.id === messageId);
+    if (message && message.deliveryStatus === 'sent') {
+      message.deliveryStatus = 'delivered';
+    }
+  }
+
+  async markMessageAsSeen(messageId: string, userId: string): Promise<void> {
+    const message = this.messages.find(msg => msg.id === messageId);
+    if (!message) return;
+
+    message.deliveryStatus = 'seen';
+    if (!message.seenBy.includes(userId)) {
+      message.seenBy.push(userId);
+    }
   }
 }
 

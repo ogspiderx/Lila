@@ -83,6 +83,22 @@ export function useOptimizedWebSocket() {
               return updated;
             });
           }
+        } else if (data.type === 'message_status') {
+          // Handle message status updates (delivered/seen)
+          setMessages(prev => {
+            return prev.map(msg => {
+              if (msg.id === data.messageId) {
+                return {
+                  ...msg,
+                  deliveryStatus: data.status,
+                  seenBy: data.status === 'seen' && data.userId ? 
+                    [...(msg.seenBy || []), data.userId].filter((id, index, arr) => arr.indexOf(id) === index) :
+                    msg.seenBy
+                };
+              }
+              return msg;
+            });
+          });
         }
 
       } catch (error) {
@@ -175,12 +191,24 @@ export function useOptimizedWebSocket() {
     }
   }, [isConnected]);
 
+  const sendMessageStatus = useCallback((messageId: string, status: 'delivered' | 'seen') => {
+    const message = JSON.stringify({
+      type: "message_seen",
+      messageId: messageId
+    });
+
+    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
+      wsRef.current.send(message);
+    }
+  }, [isConnected]);
+
   return {
     isConnected,
     messages,
     typingUsers,
     sendMessage,
     sendTyping,
+    sendMessageStatus,
     setMessages
   };
 }

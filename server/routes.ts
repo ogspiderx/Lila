@@ -372,6 +372,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create message in storage
           const message = await storage.createMessage(validatedData);
 
+          // Mark message as delivered when broadcasting to other users
+          setTimeout(async () => {
+            await storage.markMessageAsDelivered(message.id);
+            
+            // Send delivery status update to sender
+            const deliveryUpdate = JSON.stringify({
+              type: 'message_status',
+              messageId: message.id,
+              status: 'delivered'
+            });
+            
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(deliveryUpdate);
+            }
+          }, 100);
+
           // Broadcast to authenticated clients only
           const broadcastData = JSON.stringify({
             type: 'message',
@@ -411,6 +427,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
               client.send(typingData);
             }
           });
+        }
+
+        // Handle message seen status
+        else if (messageData.type === 'message_seen') {
+          const messageId = messageData.messageId;
+          if (messageId) {
+            await storage.markMessageAsSeen(messageId, userInfo.userId);
+            
+            // Broadcast seen status to all other clients
+            const seenUpdate = JSON.stringify({
+              type: 'message_status',
+              messageId: messageId,
+              status: 'seen',
+              userId: userInfo.userId
+            });
+            
+            Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
+              if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(seenUpdate);
+              }
+            });
+          }
         }
 
 

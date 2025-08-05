@@ -101,9 +101,19 @@ export default function ChatOptimized() {
 
       // Add WebSocket messages with proper timestamp handling
       wsMessages.forEach(message => {
-        const normalizedMessage = {
+        const normalizedMessage: Message = {
           ...message,
-          timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp)
+          timestamp: typeof message.timestamp === 'number' ? new Date(message.timestamp) : message.timestamp,
+          edited: message.edited || false,
+          deliveryStatus: message.deliveryStatus || 'sent' as const,
+          seenBy: message.seenBy || [],
+          fileUrl: message.fileUrl || null,
+          fileName: message.fileName || null,
+          fileSize: message.fileSize || null,
+          fileType: message.fileType || null,
+          replyToId: message.replyToId || null,
+          replyToMessage: message.replyToMessage || null,
+          replyToSender: message.replyToSender || null,
         };
         messageMap.set(message.id, normalizedMessage);
       });
@@ -272,8 +282,26 @@ export default function ChatOptimized() {
     }
   }, [compressImage]);
 
-  const handleReply = useCallback((message: Message) => {
-    setReplyingTo(message);
+  const handleReply = useCallback((message: Message | WebSocketMessage) => {
+    // Convert WebSocketMessage to Message format if needed
+    const messageToReply: Message = 'timestamp' in message && typeof message.timestamp === 'number' 
+      ? {
+          ...message,
+          timestamp: new Date(message.timestamp),
+          edited: message.edited || false,
+          deliveryStatus: message.deliveryStatus || 'sent' as const,
+          seenBy: message.seenBy || [],
+          fileUrl: message.fileUrl || null,
+          fileName: message.fileName || null,
+          fileSize: message.fileSize || null,
+          fileType: message.fileType || null,
+          replyToId: message.replyToId || null,
+          replyToMessage: message.replyToMessage || null,
+          replyToSender: message.replyToSender || null,
+        }
+      : message as Message;
+    
+    setReplyingTo(messageToReply);
     textareaRef.current?.focus();
   }, []);
 
@@ -398,6 +426,42 @@ export default function ChatOptimized() {
     }, 100);
     return () => clearTimeout(timer);
   }, [scrollToBottom]);
+
+  // Mark messages as seen when they come into view
+  useEffect(() => {
+    if (!currentUser || displayMessages.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && (entry.target as HTMLElement).dataset.messageId) {
+            const messageId = (entry.target as HTMLElement).dataset.messageId;
+            const message = displayMessages.find(m => m.id === messageId);
+            
+            // Only mark as seen if it's not our own message and hasn't been seen yet
+            if (message && messageId && message.sender !== currentUser.username && 
+                (!('deliveryStatus' in message) || message.deliveryStatus !== 'seen')) {
+              sendMessageStatus(messageId, 'seen');
+            }
+          }
+        });
+      },
+      { threshold: 0.5 } // Mark as seen when 50% visible
+    );
+
+    // Observe all message elements
+    displayMessages.forEach((message) => {
+      const element = messageRefs.current.get(message.id);
+      if (element) {
+        element.dataset.messageId = message.id;
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [displayMessages, currentUser, sendMessageStatus]);
 
   useEffect(() => {
     return () => {

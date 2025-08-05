@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, memo, useCallback } from "react";
-import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, Hash, Reply } from "lucide-react";
+import { MoreVertical, Copy, Check, Download, File, Image, Video, Music, FileText, X, Hash, Reply, CheckCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,9 +65,9 @@ export const MessageBubble = memo(function MessageBubble({
         ]);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
-      } else {
+      } else if (navigator.clipboard && 'writeText' in navigator.clipboard) {
         // Fallback: copy image URL
-        await navigator.clipboard.writeText(message.fileUrl);
+        await navigator.clipboard.writeText(message.fileUrl || '');
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       }
@@ -75,7 +75,7 @@ export const MessageBubble = memo(function MessageBubble({
       console.error('Failed to copy image:', error);
       // Fallback: copy image URL
       try {
-        await navigator.clipboard.writeText(message.fileUrl);
+        await navigator.clipboard.writeText(message.fileUrl || '');
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
       } catch (fallbackError) {
@@ -92,6 +92,30 @@ export const MessageBubble = memo(function MessageBubble({
     } catch (error) {
       console.error('Failed to copy message ID:', error);
     }
+  };
+
+  // Component for delivery status ticks
+  const DeliveryStatusTicks = () => {
+    if (!isCurrentUser || !('deliveryStatus' in message)) return null;
+    
+    const status = (message as Message).deliveryStatus;
+    const seenBy = (message as Message).seenBy || [];
+    
+    if (status === 'sent') {
+      return (
+        <Check className="w-3 h-3 text-slate-400 ml-1 flex-shrink-0" />
+      );
+    } else if (status === 'delivered') {
+      return (
+        <CheckCheck className="w-3 h-3 text-slate-400 ml-1 flex-shrink-0" />
+      );
+    } else if (status === 'seen' || seenBy.length > 0) {
+      return (
+        <CheckCheck className="w-3 h-3 text-emerald-400 ml-1 flex-shrink-0" />
+      );
+    }
+    
+    return null;
   };
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
@@ -215,9 +239,12 @@ export const MessageBubble = memo(function MessageBubble({
           <span className={`text-[10px] font-medium ${isCurrentUser ? "text-emerald-400" : "text-amber-400"}`}>
             {message.sender}
           </span>
-          <span className="text-slate-400 text-[10px]">
-            {formatTime(message.timestamp)}
-          </span>
+          <div className="flex items-center">
+            <span className="text-slate-400 text-[10px]">
+              {formatTime(message.timestamp)}
+            </span>
+            <DeliveryStatusTicks />
+          </div>
           
         </div>
 

@@ -51,6 +51,9 @@ export interface WebSocketMessage {
   content: string;
   sender: string;
   timestamp: number;
+  edited?: boolean;
+  deliveryStatus?: 'sent' | 'delivered' | 'seen';
+  seenBy?: string[];
   fileUrl?: string;
   fileName?: string;
   fileSize?: number;
