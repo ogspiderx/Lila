@@ -27,6 +27,7 @@ export default function ChatOptimized() {
     null,
   );
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -511,6 +512,47 @@ export default function ChatOptimized() {
     [messageInput],
   );
 
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only set dragOver to false if we're leaving the main container
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
+    setIsDragOver(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      const file = files[0]; // Take the first file
+      
+      // Check file size (300MB limit)
+      if (file.size > 300 * 1024 * 1024) {
+        alert("File size must be less than 300MB");
+        return;
+      }
+      
+      setSelectedFile(file);
+    }
+  }, []);
+
   // Auto-scroll on new messages only if user is at bottom
   useEffect(() => {
     if (displayMessages.length > 0 && !isUserScrolledUpRef.current) {
@@ -581,7 +623,13 @@ export default function ChatOptimized() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div 
+      className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       {/* Enhanced header with glass effect */}
       <header className="glass-card border-b border-slate-700/50 px-6 py-4 flex items-center justify-between backdrop-blur-xl bg-slate-800/80">
         <div className="flex items-center space-x-4">
@@ -618,6 +666,19 @@ export default function ChatOptimized() {
           </Button>
         </div>
       </header>
+
+      {/* Drag and drop overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-emerald-500/20 border-2 border-dashed border-emerald-400 rounded-2xl p-12 text-center max-w-md mx-4">
+            <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500/20 rounded-full flex items-center justify-center">
+              <Paperclip className="w-8 h-8 text-emerald-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">Drop your file here</h3>
+            <p className="text-slate-300 text-sm">Release to upload (max 300MB)</p>
+          </div>
+        </div>
+      )}
 
       {/* Enhanced messages area */}
       <div className="flex-1 overflow-hidden flex flex-col relative">
