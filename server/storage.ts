@@ -6,6 +6,8 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(): Promise<Message[]>;
+  markMessageAsSeen(messageId: string, userId: string): Promise<Message | undefined>;
+  markMessageAsDelivered(messageId: string): Promise<Message | undefined>;
 }
 
 // In-memory storage implementation - resets when server restarts
@@ -87,6 +89,27 @@ export class MemStorage implements IStorage {
     return this.messages
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
       .slice(-50);
+  }
+
+  async markMessageAsSeen(messageId: string, userId: string): Promise<Message | undefined> {
+    const message = this.messages.find(msg => msg.id === messageId);
+    if (message) {
+      // Add user to seenBy array if not already there
+      if (!message.seenBy.includes(userId)) {
+        message.seenBy.push(userId);
+      }
+      // Update delivery status to seen
+      message.deliveryStatus = 'seen';
+    }
+    return message;
+  }
+
+  async markMessageAsDelivered(messageId: string): Promise<Message | undefined> {
+    const message = this.messages.find(msg => msg.id === messageId);
+    if (message && message.deliveryStatus === 'sent') {
+      message.deliveryStatus = 'delivered';
+    }
+    return message;
   }
 }
 
