@@ -437,8 +437,10 @@ export default function ChatOptimized() {
         setMessageInput(value);
 
         if (value.trim()) {
+          console.log('Starting typing indicator'); // Debug log
           handleTypingStart();
         } else {
+          console.log('Stopping typing indicator'); // Debug log
           handleTypingStop();
         }
       }

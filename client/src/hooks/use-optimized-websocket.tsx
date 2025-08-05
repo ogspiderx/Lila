@@ -68,21 +68,46 @@ export function useOptimizedWebSocket() {
 
 
         } else if (data.type === 'typing') {
-          const username = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('username='))
-            ?.split('=')[1];
-          if (username && data.sender !== username) {
-            setTypingUsers(prev => {
-              const updated = new Set(prev);
-              if (data.isTyping) {
-                updated.add(data.sender);
-              } else {
-                updated.delete(data.sender);
+          const typingMessage = data as TypingMessage;
+          console.log('Received typing message:', typingMessage); // Debug log
+
+          setTypingUsers(prev => {
+            const newSet = new Set(prev);
+            if (typingMessage.isTyping) {
+              newSet.add(typingMessage.username);
+
+              // Clear existing timeout for this user
+              const existingTimeout = typingTimeoutsRef.current.get(typingMessage.username);
+              if (existingTimeout) {
+                clearTimeout(existingTimeout);
               }
-              return updated;
-            });
-          }
+
+              // Set new timeout to remove user from typing
+              const timeout = setTimeout(() => {
+                if (mountedRef.current) {
+                  setTypingUsers(currentSet => {
+                    const updatedSet = new Set(currentSet);
+                    updatedSet.delete(typingMessage.username);
+                    return updatedSet;
+                  });
+                }
+                typingTimeoutsRef.current.delete(typingMessage.username);
+              }, 5000); // Remove after 5 seconds of inactivity
+
+              typingTimeoutsRef.current.set(typingMessage.username, timeout);
+            } else {
+              newSet.delete(typingMessage.username);
+
+              // Clear timeout for this user
+              const existingTimeout = typingTimeoutsRef.current.get(typingMessage.username);
+              if (existingTimeout) {
+                clearTimeout(existingTimeout);
+                typingTimeoutsRef.current.delete(typingMessage.username);
+              }
+            }
+            console.log('Updated typing users:', Array.from(newSet)); // Debug log
+            return newSet;
+          });
         } else if (data.type === 'message_status') {
           // Handle message status updates (delivered/seen)
           setMessages(prev => {
@@ -181,15 +206,17 @@ export function useOptimizedWebSocket() {
   }, [isConnected]);
 
   const sendTyping = useCallback((isTyping: boolean) => {
-    const message = JSON.stringify({
-      type: "typing",
-      isTyping
-    });
-
-    if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
-      wsRef.current.send(message);
+    console.log('Sending typing:', isTyping); // Debug log
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'typing',
+        isTyping
+      }));
+      console.log('Typing message sent successfully'); // Debug log
+    } else {
+      console.log('WebSocket not open, cannot send typing indicator'); // Debug log
     }
-  }, [isConnected]);
+  }, []);
 
   const sendMessageStatus = useCallback((messageId: string, status: 'delivered' | 'seen') => {
     const message = JSON.stringify({
