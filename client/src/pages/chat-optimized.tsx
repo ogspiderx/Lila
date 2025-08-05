@@ -538,35 +538,50 @@ export default function ChatOptimized() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-slate-900">
-      {/* Minimal header */}
-      <header className="bg-slate-800 border-b border-slate-700 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <h1 className="text-lg font-semibold text-white">Chat</h1>
-          {isConnected && (
-            <div className="flex items-center space-x-1 text-emerald-400 text-sm">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-              <span>Online</span>
-            </div>
-          )}
+    <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Enhanced header with glass effect */}
+      <header className="glass-card border-b border-slate-700/50 px-6 py-4 flex items-center justify-between backdrop-blur-xl bg-slate-800/80">
+        <div className="flex items-center space-x-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-lg">💬</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white font-poppins">Chat</h1>
+            {isConnected && (
+              <div className="flex items-center space-x-2 text-emerald-400 text-xs">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span className="font-medium">Connected</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <span className="text-slate-300 text-sm">{currentUser.username}</span>
+        <div className="flex items-center space-x-3">
+          <div className="text-right">
+            <div className="text-white font-medium text-sm">{currentUser.username}</div>
+            <div className="text-slate-400 text-xs">Active now</div>
+          </div>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white font-semibold text-sm border-2 border-slate-500">
+            {currentUser.username.charAt(0).toUpperCase()}
+          </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="text-slate-300 hover:text-white hover:bg-slate-700"
+            className="text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full w-8 h-8 p-0 transition-all"
+            title="Sign out"
           >
             <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </header>
 
-      {/* Messages area with minimal styling */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+      {/* Enhanced messages area */}
+      <div className="flex-1 overflow-hidden flex flex-col relative">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_1px_1px,_rgba(255,255,255,0.15)_1px,_transparent_0)] bg-[length:20px_20px]"></div>
+        
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 scroll-smooth messages-container relative z-10">
           {displayMessages.map((message) => (
             <div
               key={message.id}
@@ -603,8 +618,8 @@ export default function ChatOptimized() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input form with file upload */}
-        <form onSubmit={handleSubmit} className="border-t border-slate-700 p-4">
+        {/* Enhanced input form */}
+        <form onSubmit={handleSubmit} className="border-t border-slate-700/30 p-6 bg-slate-800/50 backdrop-blur-sm">
           {/* Reply preview */}
           {replyingTo && (
             <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
@@ -681,8 +696,8 @@ export default function ChatOptimized() {
             </div>
           )}
 
-          {/* Clean input container */}
-          <div className="flex items-end gap-3 bg-slate-800 rounded-lg p-3 border border-slate-600">
+          {/* Enhanced input container with modern design */}
+          <div className="flex items-end gap-3 bg-gradient-to-r from-slate-800/90 to-slate-700/90 rounded-2xl p-4 border border-slate-600/50 shadow-xl backdrop-blur-sm transition-all hover:shadow-2xl hover:border-emerald-500/30">
             {/* File attachment button */}
             <input
               ref={fileInputRef}

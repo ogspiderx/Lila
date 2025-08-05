@@ -279,17 +279,17 @@ export const MessageBubble = memo(function MessageBubble({
             whileTap={{ scale: 0.98 }}
             onContextMenu={handleContextMenu}
             className={`
-            relative overflow-hidden group min-w-0 w-full
+            relative overflow-hidden group min-w-0 w-full message-slide-in
             ${
               isCurrentUser
-                ? "bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white rounded-tr-sm"
-                : "bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-slate-50 border border-slate-500/40 rounded-tl-sm"
+                ? "bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white rounded-tr-sm message-glow-green"
+                : "bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-slate-50 border border-slate-500/30 rounded-tl-sm message-glow-slate"
             } 
-            rounded-lg px-3 py-2 sm:px-3 sm:py-2 
-            transition-all duration-300 ease-out
-            shadow-sm hover:shadow-lg
-            ${isCurrentUser ? "shadow-emerald-500/30 hover:shadow-emerald-500/40" : "shadow-slate-900/40 hover:shadow-slate-900/60"}
-            backdrop-blur-sm
+            rounded-2xl px-4 py-3 sm:px-4 sm:py-3
+            transition-all duration-300 ease-out smooth-transition
+            shadow-lg hover:shadow-2xl message-hover-effect
+            ${isCurrentUser ? "shadow-emerald-500/25 hover:shadow-emerald-500/40" : "shadow-slate-900/30 hover:shadow-slate-900/60"}
+            backdrop-blur-sm border-opacity-50
           `}
           >
             {/* File preview for previewable content */}
