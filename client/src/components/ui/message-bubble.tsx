@@ -324,7 +324,7 @@ export const MessageBubble = memo(function MessageBubble({
             <p className={`
               relative z-10 text-xs sm:text-sm leading-snug 
               break-words whitespace-pre-wrap
-              ${isCurrentUser ? "text-white" : "text-slate-50"} 
+              ${isCurrentUser ? "text-white pr-8" : "text-slate-50"} 
               ${isDeleted ? "italic text-slate-400" : ""}
               drop-shadow-sm
             `}
@@ -339,9 +339,11 @@ export const MessageBubble = memo(function MessageBubble({
           )}
 
           {/* Delivery Status Ticks - Bottom Right Corner */}
-          <div className="absolute bottom-1 right-2 z-20">
-            <DeliveryStatusTicks />
-          </div>
+          {isCurrentUser && (
+            <div className="absolute bottom-1 right-2 z-20">
+              <DeliveryStatusTicks />
+            </div>
+          )}
         </motion.div>
         </div>
 
