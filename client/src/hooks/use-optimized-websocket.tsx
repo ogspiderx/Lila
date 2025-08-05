@@ -137,7 +137,9 @@ export function useOptimizedWebSocket() {
           // Handle message deletion
           console.log("Received message deletion:", data);
           setMessages((prev) => {
-            return prev.filter((msg) => msg.id !== data.messageId);
+            const filtered = prev.filter((msg) => msg.id !== data.messageId);
+            console.log("Messages before filter:", prev.length, "after filter:", filtered.length);
+            return filtered;
           });
         }
       } catch (error) {

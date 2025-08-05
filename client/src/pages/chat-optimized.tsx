@@ -102,9 +102,13 @@ export default function ChatOptimized() {
 
   // Sync WebSocket messages with optimized performance
   useEffect(() => {
-    if (wsMessages.length === 0) return;
-
+    console.log("Syncing wsMessages to allMessages, wsMessages count:", wsMessages.length);
     setAllMessages((prev) => {
+      console.log("Previous allMessages count:", prev.length);
+      
+      // If no WebSocket messages, return existing messages
+      if (wsMessages.length === 0) return prev;
+
       const messageMap = new Map<string, Message>();
 
       // Add existing messages
@@ -133,7 +137,9 @@ export default function ChatOptimized() {
       });
 
       // Messages are already sorted by backend, just keep the last 100 for performance
-      return Array.from(messageMap.values()).slice(-100);
+      const result = Array.from(messageMap.values()).slice(-100);
+      console.log("Final allMessages count:", result.length);
+      return result;
     });
   }, [wsMessages]);
 
