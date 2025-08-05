@@ -16,27 +16,32 @@ import type { Message } from "@shared/schema";
 
 export default function ChatOptimized() {
   const [messageInput, setMessageInput] = useState("");
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    username: string;
+  } | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [lastSeenMessageId, setLastSeenMessageId] = useState<string | null>(null);
+  const [lastSeenMessageId, setLastSeenMessageId] = useState<string | null>(
+    null,
+  );
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [, setLocation] = useLocation();
 
-  const { 
-    isConnected, 
-    messages: wsMessages, 
-    typingUsers, 
-    sendMessage, 
+  const {
+    isConnected,
+    messages: wsMessages,
+    typingUsers,
+    sendMessage,
     sendTyping,
     sendMessageStatus,
-    setMessages: setWsMessages 
+    setMessages: setWsMessages,
   } = useOptimizedWebSocket();
 
   const { handleTypingStart, handleTypingStop, cleanup } = useTypingIndicator({
@@ -58,7 +63,7 @@ export default function ChatOptimized() {
   });
 
   useEffect(() => {
-    if (userData && typeof userData === 'object' && 'user' in userData) {
+    if (userData && typeof userData === "object" && "user" in userData) {
       setCurrentUser((userData as any).user);
     } else if (userData === null || (!userLoading && !userData)) {
       setLocation("/");
@@ -82,10 +87,15 @@ export default function ChatOptimized() {
   // Initialize messages from REST API
   useEffect(() => {
     if (existingMessages && existingMessages.length > 0) {
-      setAllMessages(existingMessages.map(msg => ({
-        ...msg,
-        timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp)
-      })));
+      setAllMessages(
+        existingMessages.map((msg) => ({
+          ...msg,
+          timestamp:
+            msg.timestamp instanceof Date
+              ? msg.timestamp
+              : new Date(msg.timestamp),
+        })),
+      );
     }
   }, [existingMessages]);
 
@@ -93,19 +103,22 @@ export default function ChatOptimized() {
   useEffect(() => {
     if (wsMessages.length === 0) return;
 
-    setAllMessages(prev => {
+    setAllMessages((prev) => {
       const messageMap = new Map<string, Message>();
 
       // Add existing messages
-      prev.forEach(msg => messageMap.set(msg.id, msg));
+      prev.forEach((msg) => messageMap.set(msg.id, msg));
 
       // Add WebSocket messages with proper timestamp handling
-      wsMessages.forEach(message => {
+      wsMessages.forEach((message) => {
         const normalizedMessage: Message = {
           ...message,
-          timestamp: typeof message.timestamp === 'number' ? new Date(message.timestamp) : message.timestamp,
+          timestamp:
+            typeof message.timestamp === "number"
+              ? new Date(message.timestamp)
+              : message.timestamp,
           edited: message.edited || false,
-          deliveryStatus: message.deliveryStatus || 'sent' as const,
+          deliveryStatus: message.deliveryStatus || ("sent" as const),
           seenBy: message.seenBy || [],
           fileUrl: message.fileUrl || null,
           fileName: message.fileName || null,
@@ -126,21 +139,24 @@ export default function ChatOptimized() {
   // Memoize sorted messages for performance
   const displayMessages = useMemo(() => {
     return allMessages
-      .filter(msg => msg.content.trim() || msg.fileUrl)
+      .filter((msg) => msg.content.trim() || msg.fileUrl)
       .slice(-50); // Display only last 50 messages
   }, [allMessages]);
 
   // Find the index of the last seen message to show divider
   const lastSeenIndex = useMemo(() => {
     if (!lastSeenMessageId) return -1;
-    return displayMessages.findIndex(msg => msg.id === lastSeenMessageId);
+    return displayMessages.findIndex((msg) => msg.id === lastSeenMessageId);
   }, [displayMessages, lastSeenMessageId]);
 
   // Mark messages as seen when they come into view
   const markMessagesAsSeen = useCallback(() => {
     if (displayMessages.length > 0 && currentUser) {
       const latestMessage = displayMessages[displayMessages.length - 1];
-      if (latestMessage.sender !== currentUser.username && latestMessage.id !== lastSeenMessageId) {
+      if (
+        latestMessage.sender !== currentUser.username &&
+        latestMessage.id !== lastSeenMessageId
+      ) {
         setLastSeenMessageId(latestMessage.id);
         // Here you would typically send a WebSocket message to mark as seen
         // sendMessageSeen(latestMessage.id, currentUser.username);
@@ -148,17 +164,20 @@ export default function ChatOptimized() {
     }
   }, [displayMessages, currentUser, lastSeenMessageId]);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check file size (300MB limit)
-      if (file.size > 300 * 1024 * 1024) {
-        alert("File size must be less than 300MB");
-        return;
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        // Check file size (300MB limit)
+        if (file.size > 300 * 1024 * 1024) {
+          alert("File size must be less than 300MB");
+          return;
+        }
+        setSelectedFile(file);
       }
-      setSelectedFile(file);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const handleRemoveFile = useCallback(() => {
     setSelectedFile(null);
@@ -167,140 +186,153 @@ export default function ChatOptimized() {
     }
   }, []);
 
-  const compressImage = useCallback(async (file: File, quality: number = 0.8): Promise<File> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+  const compressImage = useCallback(
+    async (file: File, quality: number = 0.8): Promise<File> => {
+      return new Promise((resolve) => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const img = new Image();
 
-      img.onload = () => {
-        // Calculate new dimensions (max 1920x1080)
-        let { width, height } = img;
-        const maxWidth = 1920;
-        const maxHeight = 1080;
+        img.onload = () => {
+          // Calculate new dimensions (max 1920x1080)
+          let { width, height } = img;
+          const maxWidth = 1920;
+          const maxHeight = 1080;
 
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height);
-          width *= ratio;
-          height *= ratio;
-        }
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width *= ratio;
+            height *= ratio;
+          }
 
-        canvas.width = width;
-        canvas.height = height;
+          canvas.width = width;
+          canvas.height = height;
 
-        ctx?.drawImage(img, 0, 0, width, height);
+          ctx?.drawImage(img, 0, 0, width, height);
 
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            } else {
-              resolve(file);
-            }
-          },
-          'image/jpeg',
-          quality
-        );
-      };
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            "image/jpeg",
+            quality,
+          );
+        };
 
-      img.onerror = () => resolve(file);
-      img.src = URL.createObjectURL(file);
-    });
-  }, []);
-
-
+        img.onerror = () => resolve(file);
+        img.src = URL.createObjectURL(file);
+      });
+    },
+    [],
+  );
 
   // Auto-scroll with performance optimization
   const scrollToBottom = useCallback((smooth = false) => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ 
+      messagesEndRef.current.scrollIntoView({
         behavior: smooth ? "smooth" : "auto",
-        block: "end"
+        block: "end",
       });
     }
   }, []);
 
-  const uploadFileWithProgress = useCallback(async (file: File): Promise<{ fileUrl: string; fileName: string; fileSize: number; fileType: string } | null> => {
-    let fileToUpload = file;
+  const uploadFileWithProgress = useCallback(
+    async (
+      file: File,
+    ): Promise<{
+      fileUrl: string;
+      fileName: string;
+      fileSize: number;
+      fileType: string;
+    } | null> => {
+      let fileToUpload = file;
 
-    // Compress images
-    if (file.type.startsWith('image/') && file.size > 500 * 1024) { // 500KB threshold
-      try {
-        setUploadProgress(10);
-        fileToUpload = await compressImage(file);
-        setUploadProgress(20);
-      } catch (error) {
-        console.error('Image compression failed:', error);
+      // Compress images
+      if (file.type.startsWith("image/") && file.size > 500 * 1024) {
+        // 500KB threshold
+        try {
+          setUploadProgress(10);
+          fileToUpload = await compressImage(file);
+          setUploadProgress(20);
+        } catch (error) {
+          console.error("Image compression failed:", error);
+        }
       }
-    }
 
-    const formData = new FormData();
-    formData.append('file', fileToUpload);
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
 
-    try {
-      setUploadProgress(30);
+      try {
+        setUploadProgress(30);
 
-      const xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
 
-      return new Promise((resolve, reject) => {
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            const progress = Math.round((e.loaded / e.total) * 70) + 30; // 30-100%
-            setUploadProgress(progress);
-          }
-        });
-
-        xhr.addEventListener('load', () => {
-          if (xhr.status === 200) {
-            try {
-              const result = JSON.parse(xhr.responseText);
-              setUploadProgress(100);
-              resolve(result);
-            } catch (error) {
-              reject(new Error('Invalid response'));
+        return new Promise((resolve, reject) => {
+          xhr.upload.addEventListener("progress", (e) => {
+            if (e.lengthComputable) {
+              const progress = Math.round((e.loaded / e.total) * 70) + 30; // 30-100%
+              setUploadProgress(progress);
             }
-          } else {
-            reject(new Error('Upload failed'));
-          }
-        });
+          });
 
-        xhr.addEventListener('error', () => {
-          reject(new Error('Upload failed'));
-        });
+          xhr.addEventListener("load", () => {
+            if (xhr.status === 200) {
+              try {
+                const result = JSON.parse(xhr.responseText);
+                setUploadProgress(100);
+                resolve(result);
+              } catch (error) {
+                reject(new Error("Invalid response"));
+              }
+            } else {
+              reject(new Error("Upload failed"));
+            }
+          });
 
-        xhr.open('POST', '/api/upload');
-        xhr.withCredentials = true;
-        xhr.send(formData);
-      });
-    } catch (error) {
-      console.error('File upload error:', error);
-      return null;
-    }
-  }, [compressImage]);
+          xhr.addEventListener("error", () => {
+            reject(new Error("Upload failed"));
+          });
+
+          xhr.open("POST", "/api/upload");
+          xhr.withCredentials = true;
+          xhr.send(formData);
+        });
+      } catch (error) {
+        console.error("File upload error:", error);
+        return null;
+      }
+    },
+    [compressImage],
+  );
 
   const handleReply = useCallback((message: Message | WebSocketMessage) => {
     // Convert WebSocketMessage to Message format if needed
-    const messageToReply: Message = 'timestamp' in message && typeof message.timestamp === 'number' 
-      ? {
-          ...message,
-          timestamp: new Date(message.timestamp),
-          edited: message.edited || false,
-          deliveryStatus: message.deliveryStatus || 'sent' as const,
-          seenBy: message.seenBy || [],
-          fileUrl: message.fileUrl || null,
-          fileName: message.fileName || null,
-          fileSize: message.fileSize || null,
-          fileType: message.fileType || null,
-          replyToId: message.replyToId || null,
-          replyToMessage: message.replyToMessage || null,
-          replyToSender: message.replyToSender || null,
-        }
-      : message as Message;
-    
+    const messageToReply: Message =
+      "timestamp" in message && typeof message.timestamp === "number"
+        ? {
+            ...message,
+            timestamp: new Date(message.timestamp),
+            edited: message.edited || false,
+            deliveryStatus: message.deliveryStatus || ("sent" as const),
+            seenBy: message.seenBy || [],
+            fileUrl: message.fileUrl || null,
+            fileName: message.fileName || null,
+            fileSize: message.fileSize || null,
+            fileType: message.fileType || null,
+            replyToId: message.replyToId || null,
+            replyToMessage: message.replyToMessage || null,
+            replyToSender: message.replyToSender || null,
+          }
+        : (message as Message);
+
     setReplyingTo(messageToReply);
     textareaRef.current?.focus();
   }, []);
@@ -312,92 +344,113 @@ export default function ChatOptimized() {
   const scrollToMessage = useCallback((messageId: string) => {
     const messageElement = messageRefs.current.get(messageId);
     if (messageElement) {
-      messageElement.scrollIntoView({ 
-        behavior: "smooth", 
-        block: "center" 
+      messageElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
       });
-      
+
       // Add a highlight effect
-      messageElement.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
-      messageElement.style.borderRadius = '8px';
-      messageElement.style.transition = 'background-color 0.3s ease';
-      
+      messageElement.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+      messageElement.style.borderRadius = "8px";
+      messageElement.style.transition = "background-color 0.3s ease";
+
       setTimeout(() => {
-        messageElement.style.backgroundColor = '';
+        messageElement.style.backgroundColor = "";
       }, 2000);
     }
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const content = messageInput.trim();
-    if ((!content && !selectedFile) || !currentUser) return;
+      const content = messageInput.trim();
+      if ((!content && !selectedFile) || !currentUser) return;
 
-    if (content && content.length > 1000) return;
+      if (content && content.length > 1000) return;
 
-    setIsUploading(true);
-    setUploadProgress(0);
-    handleTypingStop();
+      setIsUploading(true);
+      setUploadProgress(0);
+      handleTypingStop();
 
-    try {
-      let fileData = null;
+      try {
+        let fileData = null;
 
-      // Upload file if selected
-      if (selectedFile) {
-        fileData = await uploadFileWithProgress(selectedFile);
-        if (!fileData) {
-          alert("File upload failed. Please try again.");
-          return;
+        // Upload file if selected
+        if (selectedFile) {
+          fileData = await uploadFileWithProgress(selectedFile);
+          if (!fileData) {
+            alert("File upload failed. Please try again.");
+            return;
+          }
+        }
+
+        // Send message with reply data if replying
+        sendMessage(
+          currentUser.username,
+          content || "",
+          fileData,
+          replyingTo
+            ? {
+                replyToId: replyingTo.id,
+                replyToMessage: (
+                  replyingTo.content ||
+                  replyingTo.fileName ||
+                  "File"
+                ).substring(0, 500),
+                replyToSender: replyingTo.sender,
+              }
+            : undefined,
+        );
+
+        setMessageInput("");
+        setSelectedFile(null);
+        setReplyingTo(null);
+        setUploadProgress(0);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+
+        // Scroll to bottom after sending
+        setTimeout(() => scrollToBottom(true), 100);
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }
+    },
+    [
+      messageInput,
+      selectedFile,
+      currentUser,
+      handleTypingStop,
+      sendMessage,
+      uploadFileWithProgress,
+      scrollToBottom,
+      replyingTo,
+    ],
+  );
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value;
+      if (value.length <= 1000) {
+        setMessageInput(value);
+
+        if (value.trim()) {
+          handleTypingStart();
+        } else {
+          handleTypingStop();
         }
       }
-
-      // Send message with reply data if replying
-      sendMessage(
-        currentUser.username, 
-        content || "", 
-        fileData,
-        replyingTo ? {
-          replyToId: replyingTo.id,
-          replyToMessage: (replyingTo.content || replyingTo.fileName || "File").substring(0, 500),
-          replyToSender: replyingTo.sender
-        } : undefined
-      );
-
-      setMessageInput("");
-      setSelectedFile(null);
-      setReplyingTo(null);
-      setUploadProgress(0);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
-      // Scroll to bottom after sending
-      setTimeout(() => scrollToBottom(true), 100);
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-  }, [messageInput, selectedFile, currentUser, handleTypingStop, sendMessage, uploadFileWithProgress, scrollToBottom, replyingTo]);
-
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    if (value.length <= 1000) {
-      setMessageInput(value);
-
-      if (value.trim()) {
-        handleTypingStart();
-      } else {
-        handleTypingStop();
-      }
-    }
-  }, [handleTypingStart, handleTypingStop]);
+    },
+    [handleTypingStart, handleTypingStop],
+  );
 
   const handleLogout = useCallback(async () => {
     try {
       await fetch("/api/auth/logout", {
         method: "POST",
-        credentials: 'include'
+        credentials: "include",
       });
     } catch (error) {
       // Ignore logout errors
@@ -405,12 +458,15 @@ export default function ChatOptimized() {
     setLocation("/");
   }, [setLocation]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  }, [handleSubmit]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+      }
+    },
+    [handleSubmit],
+  );
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -434,19 +490,27 @@ export default function ChatOptimized() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && (entry.target as HTMLElement).dataset.messageId) {
+          if (
+            entry.isIntersecting &&
+            (entry.target as HTMLElement).dataset.messageId
+          ) {
             const messageId = (entry.target as HTMLElement).dataset.messageId;
-            const message = displayMessages.find(m => m.id === messageId);
-            
+            const message = displayMessages.find((m) => m.id === messageId);
+
             // Only mark as seen if it's not our own message and hasn't been seen yet
-            if (message && messageId && message.sender !== currentUser.username && 
-                (!('deliveryStatus' in message) || message.deliveryStatus !== 'seen')) {
-              sendMessageStatus(messageId, 'seen');
+            if (
+              message &&
+              messageId &&
+              message.sender !== currentUser.username &&
+              (!("deliveryStatus" in message) ||
+                message.deliveryStatus !== "seen")
+            ) {
+              sendMessageStatus(messageId, "seen");
             }
           }
         });
       },
-      { threshold: 0.5 } // Mark as seen when 50% visible
+      { threshold: 0.5 }, // Mark as seen when 50% visible
     );
 
     // Observe all message elements
@@ -468,10 +532,6 @@ export default function ChatOptimized() {
       cleanup();
     };
   }, [cleanup]);
-
-
-
-
 
   if (!currentUser) {
     return null;
@@ -529,7 +589,15 @@ export default function ChatOptimized() {
 
           {/* Typing indicator */}
           {typingUsers.size > 0 && (
-            <TypingIndicator typingUsers={new Set(Array.from(typingUsers).filter(user => user !== currentUser.username))} />
+            <TypingIndicator
+              typingUsers={
+                new Set(
+                  Array.from(typingUsers).filter(
+                    (user) => user !== currentUser.username,
+                  ),
+                )
+              }
+            />
           )}
 
           <div ref={messagesEndRef} />
@@ -543,7 +611,9 @@ export default function ChatOptimized() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <Reply className="w-4 h-4 text-emerald-400" />
-                  <span className="text-sm text-emerald-400">Replying to {replyingTo.sender}</span>
+                  <span className="text-sm text-emerald-400">
+                    Replying to {replyingTo.sender}
+                  </span>
                 </div>
                 <Button
                   type="button"
@@ -556,10 +626,10 @@ export default function ChatOptimized() {
                 </Button>
               </div>
               <div className="text-sm text-slate-300 truncate">
-                {(replyingTo.content || replyingTo.fileName || "File").length > 100 
+                {(replyingTo.content || replyingTo.fileName || "File").length >
+                100
                   ? `${(replyingTo.content || replyingTo.fileName || "File").substring(0, 100)}...`
-                  : (replyingTo.content || replyingTo.fileName || "File")
-                }
+                  : replyingTo.content || replyingTo.fileName || "File"}
               </div>
             </div>
           )}
@@ -592,7 +662,7 @@ export default function ChatOptimized() {
               {/* Upload progress bar */}
               {isUploading && uploadProgress > 0 && (
                 <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
-                  <div 
+                  <div
                     className="bg-emerald-500 h-2 rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${uploadProgress}%` }}
                   />
@@ -601,8 +671,11 @@ export default function ChatOptimized() {
 
               {isUploading && (
                 <div className="text-xs text-slate-400 text-center">
-                  {uploadProgress < 20 ? 'Compressing...' : 
-                   uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Finalizing...'}
+                  {uploadProgress < 20
+                    ? "Compressing..."
+                    : uploadProgress < 100
+                      ? `Uploading... ${uploadProgress}%`
+                      : "Finalizing..."}
                 </div>
               )}
             </div>
@@ -636,7 +709,7 @@ export default function ChatOptimized() {
               value={messageInput}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
+              placeholder=" Type a message..."
               className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-transparent border-0 text-white placeholder-slate-400 focus:ring-0 focus:outline-none p-0"
               disabled={!isConnected || isUploading}
             />
@@ -644,7 +717,11 @@ export default function ChatOptimized() {
             {/* Send button */}
             <Button
               type="submit"
-              disabled={(!messageInput.trim() && !selectedFile) || !isConnected || isUploading}
+              disabled={
+                (!messageInput.trim() && !selectedFile) ||
+                !isConnected ||
+                isUploading
+              }
               className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 disabled:text-slate-400 h-10 w-10 p-0 rounded-full transition-all flex-shrink-0"
               title="Send message"
             >
@@ -660,13 +737,22 @@ export default function ChatOptimized() {
           {(messageInput.length > 0 || selectedFile) && (
             <div className="mt-2 px-1 text-xs text-slate-500 flex justify-between">
               {messageInput.length > 0 && (
-                <span className={messageInput.length > 900 ? "text-yellow-400" : messageInput.length > 950 ? "text-red-400" : ""}>
+                <span
+                  className={
+                    messageInput.length > 900
+                      ? "text-yellow-400"
+                      : messageInput.length > 950
+                        ? "text-red-400"
+                        : ""
+                  }
+                >
                   {messageInput.length}/1000
                 </span>
               )}
               {selectedFile && (
                 <span className="text-slate-400">
-                  {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
+                  {selectedFile.name} (
+                  {(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
                 </span>
               )}
             </div>
