@@ -243,7 +243,7 @@ export const MessageBubble = memo(function MessageBubble({
             <span className="text-slate-400 text-[10px]">
               {formatTime(message.timestamp)}
             </span>
-            <DeliveryStatusTicks />
+
           </div>
           
         </div>
@@ -337,6 +337,11 @@ export const MessageBubble = memo(function MessageBubble({
               {message.content}
             </p>
           )}
+
+          {/* Delivery Status Ticks - Bottom Right Corner */}
+          <div className="absolute bottom-1 right-2 z-20">
+            <DeliveryStatusTicks />
+          </div>
         </motion.div>
         </div>
 
