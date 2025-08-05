@@ -135,6 +135,25 @@ export class MemStorage implements IStorage {
     this.messages.splice(messageIndex, 1);
     return true;
   }
+
+  async editMessage(messageId: string, userId: string, newContent: string): Promise<Message | null> {
+    const messageIndex = this.messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return null;
+
+    const message = this.messages[messageIndex];
+    // Only allow message editing by the sender
+    if (message.sender !== userId) return null;
+
+    // Update the message content and mark as edited
+    this.messages[messageIndex] = {
+      ...message,
+      content: newContent,
+      edited: true,
+      editedAt: new Date()
+    };
+
+    return this.messages[messageIndex];
+  }
 }
 
 // Use in-memory storage - everything resets when server restarts

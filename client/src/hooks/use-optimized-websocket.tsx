@@ -141,6 +141,22 @@ export function useOptimizedWebSocket() {
             console.log("Messages before filter:", prev.length, "after filter:", filtered.length);
             return filtered;
           });
+        } else if (data.type === "message_edited") {
+          // Handle message editing
+          console.log("Received message edit:", data);
+          setMessages((prev) => {
+            return prev.map((msg) => {
+              if (msg.id === data.data.id) {
+                return {
+                  ...msg,
+                  content: data.data.content,
+                  edited: data.data.edited,
+                  editedAt: data.data.editedAt,
+                };
+              }
+              return msg;
+            });
+          });
         }
       } catch (error) {
         console.error("WebSocket message error:", error);
@@ -291,6 +307,25 @@ export function useOptimizedWebSocket() {
     [isConnected],
   );
 
+  const editMessage = useCallback(
+    (messageId: string, content: string) => {
+      console.log("Attempting to edit message:", messageId, "with content:", content);
+      const message = JSON.stringify({
+        type: "edit_message",
+        messageId: messageId,
+        content: content,
+      });
+
+      if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
+        console.log("Sending edit message via WebSocket");
+        wsRef.current.send(message);
+      } else {
+        console.log("WebSocket not connected, cannot edit message");
+      }
+    },
+    [isConnected],
+  );
+
   return {
     isConnected,
     messages,
@@ -299,6 +334,7 @@ export function useOptimizedWebSocket() {
     sendTyping,
     sendMessageStatus,
     deleteMessage,
+    editMessage,
     setMessages,
   };
 }

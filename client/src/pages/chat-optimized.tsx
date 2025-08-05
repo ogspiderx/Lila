@@ -42,6 +42,7 @@ export default function ChatOptimized() {
     sendTyping,
     sendMessageStatus,
     deleteMessage,
+    editMessage,
     setMessages: setWsMessages,
   } = useOptimizedWebSocket();
 
@@ -113,6 +114,7 @@ export default function ChatOptimized() {
           ? new Date(message.timestamp)
           : message.timestamp,
       edited: message.edited || false,
+      editedAt: message.editedAt ? new Date(message.editedAt) : undefined,
       deliveryStatus: message.deliveryStatus || ("sent" as const),
       seenBy: message.seenBy || [],
       fileUrl: message.fileUrl || null,
@@ -318,6 +320,11 @@ export default function ChatOptimized() {
     console.log("Delete button clicked for message:", messageId);
     deleteMessage(messageId);
   }, [deleteMessage]);
+
+  const handleEditMessage = useCallback((messageId: string, newContent: string) => {
+    console.log("Edit button clicked for message:", messageId, "with content:", newContent);
+    editMessage(messageId, newContent);
+  }, [editMessage]);
 
   const scrollToMessage = useCallback((messageId: string) => {
     const messageElement = messageRefs.current.get(messageId);
@@ -579,6 +586,7 @@ export default function ChatOptimized() {
                 onReply={handleReply}
                 onScrollToMessage={scrollToMessage}
                 onDelete={handleDeleteMessage}
+                onEdit={handleEditMessage}
               />
             </div>
           ))}

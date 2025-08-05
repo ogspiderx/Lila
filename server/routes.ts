@@ -281,6 +281,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Edit message endpoint
+  app.patch("/api/messages/:messageId", requireAuth, async (req: any, res) => {
+    try {
+      const messageId = req.params.messageId;
+      const userId = req.user.username;
+      const { content } = req.body;
+
+      // Validate content
+      if (!content || typeof content !== 'string' || content.trim().length === 0) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+
+      if (content.trim().length > 2000) {
+        return res.status(400).json({ message: "Content is too long" });
+      }
+
+      const editedMessage = await storage.editMessage(messageId, userId, content.trim());
+
+      if (!editedMessage) {
+        return res.status(403).json({ message: "You can only edit your own messages" });
+      }
+
+      res.json({ success: true, message: editedMessage });
+    } catch (error) {
+      console.error("Edit message error:", error);
+      res.status(500).json({ message: "Failed to edit message" });
+    }
+  });
+
   // Serve uploaded files securely
   app.get("/api/files/:filename", requireAuth, async (req, res) => {
     try {
@@ -494,6 +523,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ws.send(JSON.stringify({
                 type: 'error',
                 message: 'Failed to delete message. You can only delete your own messages.'
+              }));
+            }
+          }
+        }
+
+        // Handle message editing
+        else if (messageData.type === 'edit_message') {
+          const { messageId, content } = messageData;
+          if (messageId && content && typeof content === 'string' && content.trim().length > 0) {
+            const editedMessage = await storage.editMessage(messageId, userInfo.username, content.trim());
+            
+            if (editedMessage) {
+              // Broadcast edit to all clients
+              const editUpdate = JSON.stringify({
+                type: 'message_edited',
+                data: {
+                  id: editedMessage.id,
+                  sender: editedMessage.sender,
+                  content: editedMessage.content,
+                  timestamp: editedMessage.timestamp,
+                  edited: editedMessage.edited,
+                  editedAt: editedMessage.editedAt,
+                  fileUrl: editedMessage.fileUrl,
+                  fileName: editedMessage.fileName,
+                  fileSize: editedMessage.fileSize,
+                  fileType: editedMessage.fileType,
+                  replyToId: editedMessage.replyToId,
+                  replyToMessage: editedMessage.replyToMessage,
+                  replyToSender: editedMessage.replyToSender,
+                }
+              });
+              
+              Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
+                if (client.readyState === WebSocket.OPEN) {
+                  client.send(editUpdate);
+                }
+              });
+            } else {
+              // Send error back to sender
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Failed to edit message. You can only edit your own messages.'
               }));
             }
           }

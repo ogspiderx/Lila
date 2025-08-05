@@ -15,6 +15,8 @@ import {
   Reply,
   CheckCheck,
   Trash2,
+  Edit3,
+  Save,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,6 +33,7 @@ interface MessageBubbleProps {
   onReply?: (message: Message) => void;
   onScrollToMessage?: (messageId: string) => void;
   onDelete?: (messageId: string) => void;
+  onEdit?: (messageId: string, newContent: string) => void;
 }
 
 export const MessageBubble = memo(function MessageBubble({
@@ -39,6 +42,7 @@ export const MessageBubble = memo(function MessageBubble({
   onReply,
   onScrollToMessage,
   onDelete,
+  onEdit,
 }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -49,6 +53,8 @@ export const MessageBubble = memo(function MessageBubble({
     y: 0,
   });
   const [copiedId, setCopiedId] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
   const isDeleted = message.content === "[This message was deleted]";
 
   const formatTime = (timestamp: Date | number) => {
@@ -233,6 +239,29 @@ export const MessageBubble = memo(function MessageBubble({
     return null;
   };
 
+  const handleEdit = useCallback(() => {
+    setIsEditing(true);
+    setEditContent(message.content);
+  }, [message.content]);
+
+  const handleSaveEdit = useCallback(() => {
+    if (onEdit && editContent.trim() && editContent.trim() !== message.content) {
+      onEdit(message.id, editContent.trim());
+    }
+    setIsEditing(false);
+  }, [onEdit, message.id, editContent, message.content]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditContent(message.content);
+  }, [message.content]);
+
+  const handleDelete = useCallback(() => {
+    if (onDelete) {
+      onDelete(message.id);
+    }
+  }, [onDelete, message.id]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -346,25 +375,71 @@ export const MessageBubble = memo(function MessageBubble({
               </div>
             )}
 
-            {/* Text content */}
+            {/* Text content - editable or display */}
             {message.content && (
-              <p
-                className={`
-              relative z-10 text-xs sm:text-sm leading-snug 
-              break-words whitespace-pre-wrap
-              ${isCurrentUser ? "text-white pr-4" : "text-slate-50"} 
-              ${isDeleted ? "italic text-slate-400" : ""}
-              drop-shadow-sm
-            `}
-                style={{
-                  wordBreak: "break-word",
-                  overflowWrap: "break-word",
-                  wordWrap: "break-word",
-                  hyphens: "auto",
-                }}
-              >
-                {message.content}
-              </p>
+              <div className="relative z-10">
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="w-full min-h-[60px] p-2 text-xs sm:text-sm bg-slate-700/50 border border-slate-600 rounded text-white resize-none"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                          handleSaveEdit();
+                        } else if (e.key === 'Escape') {
+                          handleCancelEdit();
+                        }
+                      }}
+                    />
+                    <div className="flex items-center justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancelEdit}
+                        className="h-6 px-2 text-xs text-slate-400 hover:text-slate-200"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleSaveEdit}
+                        className="h-6 px-2 text-xs text-emerald-400 hover:text-emerald-300"
+                        disabled={!editContent.trim() || editContent.trim() === message.content}
+                      >
+                        <Save className="h-3 w-3 mr-1" />
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p
+                    className={`
+                    text-xs sm:text-sm leading-snug 
+                    break-words whitespace-pre-wrap
+                    ${isCurrentUser ? "text-white pr-4" : "text-slate-50"} 
+                    ${isDeleted ? "italic text-slate-400" : ""}
+                    drop-shadow-sm
+                  `}
+                    style={{
+                      wordBreak: "break-word",
+                      overflowWrap: "break-word",
+                      wordWrap: "break-word",
+                      hyphens: "auto",
+                    }}
+                  >
+                    {message.content}
+                    {message.edited && (
+                      <span className="ml-2 text-xs opacity-60 italic">
+                        (edited)
+                      </span>
+                    )}
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Delivery Status Ticks - Bottom Right Corner */}
@@ -414,6 +489,17 @@ export const MessageBubble = memo(function MessageBubble({
                 >
                   <Reply className="mr-2 h-3 w-3" />
                   Reply
+                </DropdownMenuItem>
+              )}
+
+              {/* Edit option - only for current user's text messages */}
+              {isCurrentUser && message.content && !isDeleted && onEdit && (
+                <DropdownMenuItem
+                  onClick={handleEdit}
+                  className="cursor-pointer"
+                >
+                  <Edit3 className="mr-2 h-3 w-3" />
+                  Edit
                 </DropdownMenuItem>
               )}
 

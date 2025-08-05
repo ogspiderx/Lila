@@ -13,6 +13,7 @@ export type Message = {
   content: string;
   timestamp: Date;
   edited: boolean;
+  editedAt?: Date;
   fileUrl: string | null;
   fileName: string | null;
   fileSize: number | null;
@@ -52,6 +53,7 @@ export interface WebSocketMessage {
   sender: string;
   timestamp: number;
   edited?: boolean;
+  editedAt?: number;
   deliveryStatus?: 'sent' | 'delivered' | 'seen';
   seenBy?: string[];
   fileUrl?: string;
