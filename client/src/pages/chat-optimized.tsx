@@ -32,6 +32,8 @@ export default function ChatOptimized() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isUserScrolledUpRef = useRef<boolean>(false);
   const [, setLocation] = useLocation();
 
   const {
@@ -235,6 +237,16 @@ export default function ChatOptimized() {
         behavior: smooth ? "smooth" : "auto",
         block: "end",
       });
+      isUserScrolledUpRef.current = false;
+    }
+  }, []);
+
+  // Check if user is scrolled up
+  const handleScroll = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // 50px threshold
+      isUserScrolledUpRef.current = !isAtBottom;
     }
   }, []);
 
@@ -396,7 +408,8 @@ export default function ChatOptimized() {
           fileInputRef.current.value = "";
         }
 
-        // Scroll to bottom after sending
+        // Force scroll to bottom after sending (user action)
+        isUserScrolledUpRef.current = false;
         setTimeout(() => scrollToBottom(true), 100);
       } finally {
         setIsUploading(false);
@@ -455,9 +468,9 @@ export default function ChatOptimized() {
     [handleSubmit],
   );
 
-  // Auto-scroll on new messages
+  // Auto-scroll on new messages only if user is at bottom
   useEffect(() => {
-    if (displayMessages.length > 0) {
+    if (displayMessages.length > 0 && !isUserScrolledUpRef.current) {
       scrollToBottom(true);
     }
   }, [displayMessages, scrollToBottom]);
@@ -568,7 +581,11 @@ export default function ChatOptimized() {
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_1px_1px,_rgba(255,255,255,0.15)_1px,_transparent_0)] bg-[length:20px_20px]"></div>
         
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 scroll-smooth messages-container relative z-10">
+        <div 
+          ref={messagesContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto px-6 py-6 space-y-4 scroll-smooth messages-container relative z-10"
+        >
           {displayMessages.map((message) => (
             <div
               key={message.id}
