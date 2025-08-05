@@ -468,6 +468,49 @@ export default function ChatOptimized() {
     [handleSubmit],
   );
 
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent) => {
+      const clipboardData = e.clipboardData;
+      
+      // Handle files from clipboard (like screenshots)
+      if (clipboardData.files.length > 0) {
+        const file = clipboardData.files[0];
+        
+        // Check file size (300MB limit)
+        if (file.size > 300 * 1024 * 1024) {
+          alert("File size must be less than 300MB");
+          return;
+        }
+        
+        setSelectedFile(file);
+        return;
+      }
+      
+      // Handle text from clipboard
+      const pastedText = clipboardData.getData('text');
+      if (pastedText) {
+        // Insert at cursor position
+        const textarea = textareaRef.current;
+        if (textarea) {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const currentValue = messageInput;
+          const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
+          
+          if (newValue.length <= 1000) {
+            setMessageInput(newValue);
+            
+            // Set cursor position after pasted text
+            setTimeout(() => {
+              textarea.selectionStart = textarea.selectionEnd = start + pastedText.length;
+            }, 0);
+          }
+        }
+      }
+    },
+    [messageInput],
+  );
+
   // Auto-scroll on new messages only if user is at bottom
   useEffect(() => {
     if (displayMessages.length > 0 && !isUserScrolledUpRef.current) {
@@ -730,7 +773,8 @@ export default function ChatOptimized() {
               value={messageInput}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder=" Type a message..."
+              onPaste={handlePaste}
+              placeholder=" Type a message or paste content..."
               className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-transparent border-0 text-white placeholder-slate-400 focus:ring-0 focus:outline-none p-0"
               disabled={!isConnected || isUploading}
             />
