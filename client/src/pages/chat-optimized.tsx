@@ -85,9 +85,10 @@ export default function ChatOptimized() {
   // Unified message state optimized for performance
   const [allMessages, setAllMessages] = useState<Message[]>([]);
 
-  // Initialize messages from REST API
+  // Initialize messages from REST API only if no WebSocket messages exist
   useEffect(() => {
-    if (existingMessages && existingMessages.length > 0) {
+    if (existingMessages && existingMessages.length > 0 && wsMessages.length === 0) {
+      console.log("Initializing from REST API, message count:", existingMessages.length);
       setAllMessages(
         existingMessages.map((msg) => ({
           ...msg,
@@ -98,49 +99,33 @@ export default function ChatOptimized() {
         })),
       );
     }
-  }, [existingMessages]);
+  }, [existingMessages, wsMessages.length]);
 
-  // Sync WebSocket messages with optimized performance
+  // Sync WebSocket messages with optimized performance - replace entire state with WebSocket messages
   useEffect(() => {
     console.log("Syncing wsMessages to allMessages, wsMessages count:", wsMessages.length);
-    setAllMessages((prev) => {
-      console.log("Previous allMessages count:", prev.length);
-      
-      // If no WebSocket messages, return existing messages
-      if (wsMessages.length === 0) return prev;
+    
+    // Always use WebSocket messages as the source of truth
+    const normalizedMessages = wsMessages.map((message) => ({
+      ...message,
+      timestamp:
+        typeof message.timestamp === "number"
+          ? new Date(message.timestamp)
+          : message.timestamp,
+      edited: message.edited || false,
+      deliveryStatus: message.deliveryStatus || ("sent" as const),
+      seenBy: message.seenBy || [],
+      fileUrl: message.fileUrl || null,
+      fileName: message.fileName || null,
+      fileSize: message.fileSize || null,
+      fileType: message.fileType || null,
+      replyToId: message.replyToId || null,
+      replyToMessage: message.replyToMessage || null,
+      replyToSender: message.replyToSender || null,
+    }));
 
-      const messageMap = new Map<string, Message>();
-
-      // Add existing messages
-      prev.forEach((msg) => messageMap.set(msg.id, msg));
-
-      // Add WebSocket messages with proper timestamp handling
-      wsMessages.forEach((message) => {
-        const normalizedMessage: Message = {
-          ...message,
-          timestamp:
-            typeof message.timestamp === "number"
-              ? new Date(message.timestamp)
-              : message.timestamp,
-          edited: message.edited || false,
-          deliveryStatus: message.deliveryStatus || ("sent" as const),
-          seenBy: message.seenBy || [],
-          fileUrl: message.fileUrl || null,
-          fileName: message.fileName || null,
-          fileSize: message.fileSize || null,
-          fileType: message.fileType || null,
-          replyToId: message.replyToId || null,
-          replyToMessage: message.replyToMessage || null,
-          replyToSender: message.replyToSender || null,
-        };
-        messageMap.set(message.id, normalizedMessage);
-      });
-
-      // Messages are already sorted by backend, just keep the last 100 for performance
-      const result = Array.from(messageMap.values()).slice(-100);
-      console.log("Final allMessages count:", result.length);
-      return result;
-    });
+    console.log("Setting allMessages to normalized WebSocket messages, count:", normalizedMessages.length);
+    setAllMessages(normalizedMessages.slice(-100)); // Keep last 100 for performance
   }, [wsMessages]);
 
   // Memoize sorted messages for performance
