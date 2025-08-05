@@ -566,7 +566,7 @@ export default function ChatOptimized() {
 
       {/* Messages area with minimal styling */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
           {displayMessages.map((message) => (
             <div
               key={message.id}
