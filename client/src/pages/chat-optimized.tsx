@@ -324,6 +324,7 @@ export default function ChatOptimized() {
   }, []);
 
   const handleDeleteMessage = useCallback((messageId: string) => {
+    console.log("Delete button clicked for message:", messageId);
     deleteMessage(messageId);
   }, [deleteMessage]);
 

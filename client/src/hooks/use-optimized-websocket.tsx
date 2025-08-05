@@ -135,6 +135,7 @@ export function useOptimizedWebSocket() {
           });
         } else if (data.type === "message_deleted") {
           // Handle message deletion
+          console.log("Received message deletion:", data);
           setMessages((prev) => {
             return prev.filter((msg) => msg.id !== data.messageId);
           });
@@ -272,13 +273,17 @@ export function useOptimizedWebSocket() {
 
   const deleteMessage = useCallback(
     (messageId: string) => {
+      console.log("Attempting to delete message:", messageId);
       const message = JSON.stringify({
         type: "delete_message",
         messageId: messageId,
       });
 
       if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
+        console.log("Sending delete message via WebSocket");
         wsRef.current.send(message);
+      } else {
+        console.log("WebSocket not connected, cannot delete message");
       }
     },
     [isConnected],

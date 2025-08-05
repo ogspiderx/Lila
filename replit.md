@@ -21,6 +21,7 @@ The application follows a monorepo structure, separating client, server, and sha
 *   **Styling**: Tailwind CSS with shadcn/ui component library.
 *   **State Management**: TanStack Query for server state management.
 *   **Authentication**: Secure JWT tokens with bcrypt hashing, rate limiting, and comprehensive server-side validation using Zod schemas. WebSocket connections require JWT authentication.
+*   **Message Features**: Real-time messaging with typing indicators, message editing, message deletion (users can only delete their own messages), file attachments, and message replies.
 *   **Data Flow**:
     *   **Authentication**: User submits credentials, server validates, client stores session, redirects to chat.
     *   **Message Flow**: Client fetches history via REST, real-time messages via WebSocket. New messages sent via WebSocket to all connected clients.

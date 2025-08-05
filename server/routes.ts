@@ -436,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         else if (messageData.type === 'typing') {
           const typingData = JSON.stringify({
             type: 'typing',
-            username: userInfo.username,
+            sender: userInfo.username,
             isTyping: messageData.isTyping
           });
 

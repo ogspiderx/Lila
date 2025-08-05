@@ -87,11 +87,6 @@ export const MessageBubble = memo(function MessageBubble({
         ]);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
-      } else {
-        // Fallback: copy image URL
-        await navigator.clipboard.writeText(message.fileUrl || "");
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
       }
     } catch (error) {
       console.error("Failed to copy image:", error);
