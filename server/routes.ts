@@ -262,6 +262,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete message endpoint
+  app.delete("/api/messages/:messageId", requireAuth, async (req: any, res) => {
+    try {
+      const messageId = req.params.messageId;
+      const userId = req.user.username;
+
+      const deleted = await storage.deleteMessage(messageId, userId);
+      
+      if (deleted) {
+        res.json({ success: true, message: "Message deleted successfully" });
+      } else {
+        res.status(403).json({ message: "You can only delete your own messages" });
+      }
+    } catch (error) {
+      console.error("Delete message error:", error);
+      res.status(500).json({ message: "Failed to delete message" });
+    }
+  });
+
   // Serve uploaded files securely
   app.get("/api/files/:filename", requireAuth, async (req, res) => {
     try {
@@ -448,6 +467,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 client.send(seenUpdate);
               }
             });
+          }
+        }
+
+        // Handle message deletion
+        else if (messageData.type === 'delete_message') {
+          const messageId = messageData.messageId;
+          if (messageId) {
+            const deleted = await storage.deleteMessage(messageId, userInfo.username);
+            
+            if (deleted) {
+              // Broadcast deletion to all clients
+              const deleteUpdate = JSON.stringify({
+                type: 'message_deleted',
+                messageId: messageId,
+                deletedBy: userInfo.username
+              });
+              
+              Array.from(authenticatedSockets.entries()).forEach(([client, clientInfo]) => {
+                if (client.readyState === WebSocket.OPEN) {
+                  client.send(deleteUpdate);
+                }
+              });
+            } else {
+              // Send error back to sender
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Failed to delete message. You can only delete your own messages.'
+              }));
+            }
           }
         }
 

@@ -41,6 +41,7 @@ export default function ChatOptimized() {
     sendMessage,
     sendTyping,
     sendMessageStatus,
+    deleteMessage,
     setMessages: setWsMessages,
   } = useOptimizedWebSocket();
 
@@ -313,33 +314,18 @@ export default function ChatOptimized() {
     [compressImage],
   );
 
-  const handleReply = useCallback((message: Message | WebSocketMessage) => {
-    // Convert WebSocketMessage to Message format if needed
-    const messageToReply: Message =
-      "timestamp" in message && typeof message.timestamp === "number"
-        ? {
-            ...message,
-            timestamp: new Date(message.timestamp),
-            edited: message.edited || false,
-            deliveryStatus: message.deliveryStatus || ("sent" as const),
-            seenBy: message.seenBy || [],
-            fileUrl: message.fileUrl || null,
-            fileName: message.fileName || null,
-            fileSize: message.fileSize || null,
-            fileType: message.fileType || null,
-            replyToId: message.replyToId || null,
-            replyToMessage: message.replyToMessage || null,
-            replyToSender: message.replyToSender || null,
-          }
-        : (message as Message);
-
-    setReplyingTo(messageToReply);
+  const handleReply = useCallback((message: Message) => {
+    setReplyingTo(message);
     textareaRef.current?.focus();
   }, []);
 
   const handleCancelReply = useCallback(() => {
     setReplyingTo(null);
   }, []);
+
+  const handleDeleteMessage = useCallback((messageId: string) => {
+    deleteMessage(messageId);
+  }, [deleteMessage]);
 
   const scrollToMessage = useCallback((messageId: string) => {
     const messageElement = messageRefs.current.get(messageId);
@@ -600,6 +586,7 @@ export default function ChatOptimized() {
                 isCurrentUser={message.sender === currentUser.username}
                 onReply={handleReply}
                 onScrollToMessage={scrollToMessage}
+                onDelete={handleDeleteMessage}
               />
             </div>
           ))}

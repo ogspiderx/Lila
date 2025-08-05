@@ -9,6 +9,7 @@ export interface IStorage {
   updateMessageStatus(messageId: string, status: 'delivered' | 'seen', userId: string): Promise<void>;
   markMessageAsDelivered(messageId: string): Promise<void>;
   markMessageAsSeen(messageId: string, userId: string): Promise<void>;
+  deleteMessage(messageId: string, userId: string): Promise<boolean>;
 }
 
 // In-memory storage implementation - resets when server restarts
@@ -121,6 +122,18 @@ export class MemStorage implements IStorage {
     if (!message.seenBy.includes(userId)) {
       message.seenBy.push(userId);
     }
+  }
+
+  async deleteMessage(messageId: string, userId: string): Promise<boolean> {
+    const messageIndex = this.messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return false;
+
+    const message = this.messages[messageIndex];
+    // Only allow message deletion by the sender
+    if (message.sender !== userId) return false;
+
+    this.messages.splice(messageIndex, 1);
+    return true;
   }
 }
 

@@ -76,11 +76,11 @@ export function useOptimizedWebSocket() {
           setTypingUsers((prev) => {
             const newSet = new Set(prev);
             if (typingMessage.isTyping) {
-              newSet.add(typingMessage.username);
+              newSet.add(typingMessage.sender);
 
               // Clear existing timeout for this user
               const existingTimeout = typingTimeoutsRef.current.get(
-                typingMessage.username,
+                typingMessage.sender,
               );
               if (existingTimeout) {
                 clearTimeout(existingTimeout);
@@ -91,24 +91,24 @@ export function useOptimizedWebSocket() {
                 if (mountedRef.current) {
                   setTypingUsers((currentSet) => {
                     const updatedSet = new Set(currentSet);
-                    updatedSet.delete(typingMessage.username);
+                    updatedSet.delete(typingMessage.sender);
                     return updatedSet;
                   });
                 }
-                typingTimeoutsRef.current.delete(typingMessage.username);
+                typingTimeoutsRef.current.delete(typingMessage.sender);
               }, 30000); // Remove after 12 seconds of inactivity
 
-              typingTimeoutsRef.current.set(typingMessage.username, timeout);
+              typingTimeoutsRef.current.set(typingMessage.sender, timeout);
             } else {
-              newSet.delete(typingMessage.username);
+              newSet.delete(typingMessage.sender);
 
               // Clear timeout for this user
               const existingTimeout = typingTimeoutsRef.current.get(
-                typingMessage.username,
+                typingMessage.sender,
               );
               if (existingTimeout) {
                 clearTimeout(existingTimeout);
-                typingTimeoutsRef.current.delete(typingMessage.username);
+                typingTimeoutsRef.current.delete(typingMessage.sender);
               }
             }
             console.log("Updated typing users:", Array.from(newSet)); // Debug log
@@ -132,6 +132,11 @@ export function useOptimizedWebSocket() {
               }
               return msg;
             });
+          });
+        } else if (data.type === "message_deleted") {
+          // Handle message deletion
+          setMessages((prev) => {
+            return prev.filter((msg) => msg.id !== data.messageId);
           });
         }
       } catch (error) {
@@ -265,6 +270,20 @@ export function useOptimizedWebSocket() {
     [isConnected],
   );
 
+  const deleteMessage = useCallback(
+    (messageId: string) => {
+      const message = JSON.stringify({
+        type: "delete_message",
+        messageId: messageId,
+      });
+
+      if (wsRef.current?.readyState === WebSocket.OPEN && isConnected) {
+        wsRef.current.send(message);
+      }
+    },
+    [isConnected],
+  );
+
   return {
     isConnected,
     messages,
@@ -272,6 +291,7 @@ export function useOptimizedWebSocket() {
     sendMessage,
     sendTyping,
     sendMessageStatus,
+    deleteMessage,
     setMessages,
   };
 }

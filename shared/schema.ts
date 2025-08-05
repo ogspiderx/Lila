@@ -85,5 +85,12 @@ export type MessageSeenUpdate = {
   seenBy: string;
 };
 
+// Message deletion type
+export type MessageDeletedUpdate = {
+  type: 'message_deleted';
+  messageId: string;
+  deletedBy: string;
+};
+
 // Combined WebSocket message types
-export type WebSocketChatMessage = WebSocketMessage | TypingMessage | MessageSeenUpdate | MessageStatusUpdate;
+export type WebSocketChatMessage = WebSocketMessage | TypingMessage | MessageSeenUpdate | MessageStatusUpdate | MessageDeletedUpdate;

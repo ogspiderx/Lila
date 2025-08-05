@@ -14,6 +14,7 @@ import {
   Hash,
   Reply,
   CheckCheck,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,13 +23,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import type { Message, WebSocketMessage } from "@shared/schema";
+import type { Message } from "@shared/schema";
 
 interface MessageBubbleProps {
-  message: Message | WebSocketMessage;
+  message: Message;
   isCurrentUser: boolean;
-  onReply?: (message: Message | WebSocketMessage) => void;
+  onReply?: (message: Message) => void;
   onScrollToMessage?: (messageId: string) => void;
+  onDelete?: (messageId: string) => void;
 }
 
 export const MessageBubble = memo(function MessageBubble({
@@ -36,6 +38,7 @@ export const MessageBubble = memo(function MessageBubble({
   isCurrentUser,
   onReply,
   onScrollToMessage,
+  onDelete,
 }: MessageBubbleProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -84,7 +87,7 @@ export const MessageBubble = memo(function MessageBubble({
         ]);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
-      } else if (navigator.clipboard && "writeText" in navigator.clipboard) {
+      } else {
         // Fallback: copy image URL
         await navigator.clipboard.writeText(message.fileUrl || "");
         setIsCopied(true);
@@ -481,6 +484,16 @@ export const MessageBubble = memo(function MessageBubble({
                   </>
                 )}
               </DropdownMenuItem>
+
+              {isCurrentUser && onDelete && (
+                <DropdownMenuItem
+                  onClick={() => onDelete(message.id)}
+                  className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                >
+                  <Trash2 className="mr-2 h-3 w-3" />
+                  Delete message
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
