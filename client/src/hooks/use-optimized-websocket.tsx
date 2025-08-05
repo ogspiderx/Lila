@@ -92,7 +92,7 @@ export function useOptimizedWebSocket() {
                   });
                 }
                 typingTimeoutsRef.current.delete(typingMessage.username);
-              }, 5000); // Remove after 5 seconds of inactivity
+              }, 12000); // Remove after 12 seconds of inactivity
 
               typingTimeoutsRef.current.set(typingMessage.username, timeout);
             } else {

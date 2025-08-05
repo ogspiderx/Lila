@@ -46,8 +46,8 @@ export default function ChatOptimized() {
 
   const { handleTypingStart, handleTypingStop, cleanup } = useTypingIndicator({
     sendTyping,
-    debounceMs: 200,
-    stopTypingDelayMs: 2000,
+    debounceMs: 100,
+    stopTypingDelayMs: 10000,
   });
 
   // Load current user with minimal caching
