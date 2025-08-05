@@ -608,40 +608,45 @@ export default function ChatOptimized() {
             </div>
           )}
 
-          <div className="flex space-x-2">
-            <div className="flex items-end space-x-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileSelect}
-                className="hidden"
-                accept="*/*"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={!isConnected || isUploading}
-                className="text-slate-400 hover:text-white hover:bg-slate-700 p-2"
-              >
-                <Paperclip className="w-4 h-4" />
-              </Button>
-            </div>
+          {/* Clean input container */}
+          <div className="flex items-end gap-3 bg-slate-800 rounded-lg p-3 border border-slate-600">
+            {/* File attachment button */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="*/*"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={!isConnected || isUploading}
+              className="text-slate-400 hover:text-emerald-400 hover:bg-slate-700/50 h-10 w-10 p-0 rounded-full transition-colors flex-shrink-0"
+              title="Attach file"
+            >
+              <Paperclip className="w-4 h-4" />
+            </Button>
 
+            {/* Message input */}
             <Textarea
               ref={textareaRef}
               value={messageInput}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
-              className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+              className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-transparent border-0 text-white placeholder-slate-400 focus:ring-0 focus:outline-none p-0"
               disabled={!isConnected || isUploading}
             />
+
+            {/* Send button */}
             <Button
               type="submit"
               disabled={(!messageInput.trim() && !selectedFile) || !isConnected || isUploading}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4"
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 disabled:text-slate-400 h-10 w-10 p-0 rounded-full transition-all flex-shrink-0"
+              title="Send message"
             >
               {isUploading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -650,12 +655,22 @@ export default function ChatOptimized() {
               )}
             </Button>
           </div>
-          <div className="mt-2 text-xs text-slate-400 flex justify-between">
-            <span>{messageInput.length}/1000 characters</span>
-            {selectedFile && (
-              <span>File: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)</span>
-            )}
-          </div>
+
+          {/* Character count and file info */}
+          {(messageInput.length > 0 || selectedFile) && (
+            <div className="mt-2 px-1 text-xs text-slate-500 flex justify-between">
+              {messageInput.length > 0 && (
+                <span className={messageInput.length > 900 ? "text-yellow-400" : messageInput.length > 950 ? "text-red-400" : ""}>
+                  {messageInput.length}/1000
+                </span>
+              )}
+              {selectedFile && (
+                <span className="text-slate-400">
+                  {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
+                </span>
+              )}
+            </div>
+          )}
         </form>
       </div>
     </div>
