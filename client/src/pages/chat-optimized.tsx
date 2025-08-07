@@ -642,7 +642,7 @@ export default function ChatOptimized() {
         </div>
       )}
       {/* Enhanced header with glass effect */}
-      <header className="glass-card border-b border-slate-700/50 px-6 py-4 flex items-center justify-between backdrop-blur-xl bg-slate-800/80 relative z-10">
+      <header className="glass-card border-b border-slate-700/50 px-6 py-4 flex items-center justify-between backdrop-blur-xl relative z-10 bg-[#1e293b00]">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">💬</span>
