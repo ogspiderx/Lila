@@ -95,8 +95,15 @@ export default function ChatOptimized() {
 
   // Initialize messages from REST API only if no WebSocket messages exist
   useEffect(() => {
-    if (existingMessages && existingMessages.length > 0 && wsMessages.length === 0) {
-      console.log("Initializing from REST API, message count:", existingMessages.length);
+    if (
+      existingMessages &&
+      existingMessages.length > 0 &&
+      wsMessages.length === 0
+    ) {
+      console.log(
+        "Initializing from REST API, message count:",
+        existingMessages.length,
+      );
       setAllMessages(
         existingMessages.map((msg) => ({
           ...msg,
@@ -111,8 +118,11 @@ export default function ChatOptimized() {
 
   // Sync WebSocket messages with optimized performance - replace entire state with WebSocket messages
   useEffect(() => {
-    console.log("Syncing wsMessages to allMessages, wsMessages count:", wsMessages.length);
-    
+    console.log(
+      "Syncing wsMessages to allMessages, wsMessages count:",
+      wsMessages.length,
+    );
+
     // Always use WebSocket messages as the source of truth
     const normalizedMessages = wsMessages.map((message) => ({
       ...message,
@@ -133,7 +143,10 @@ export default function ChatOptimized() {
       replyToSender: message.replyToSender || null,
     }));
 
-    console.log("Setting allMessages to normalized WebSocket messages, count:", normalizedMessages.length);
+    console.log(
+      "Setting allMessages to normalized WebSocket messages, count:",
+      normalizedMessages.length,
+    );
     setAllMessages(normalizedMessages.slice(-100)); // Keep last 100 for performance
   }, [wsMessages]);
 
@@ -249,7 +262,8 @@ export default function ChatOptimized() {
   // Check if user is scrolled up
   const handleScroll = useCallback(() => {
     if (messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const { scrollTop, scrollHeight, clientHeight } =
+        messagesContainerRef.current;
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // 50px threshold
       isUserScrolledUpRef.current = !isAtBottom;
     }
@@ -333,15 +347,26 @@ export default function ChatOptimized() {
     setReplyingTo(null);
   }, []);
 
-  const handleDeleteMessage = useCallback((messageId: string) => {
-    console.log("Delete button clicked for message:", messageId);
-    deleteMessage(messageId);
-  }, [deleteMessage]);
+  const handleDeleteMessage = useCallback(
+    (messageId: string) => {
+      console.log("Delete button clicked for message:", messageId);
+      deleteMessage(messageId);
+    },
+    [deleteMessage],
+  );
 
-  const handleEditMessage = useCallback((messageId: string, newContent: string) => {
-    console.log("Edit button clicked for message:", messageId, "with content:", newContent);
-    editMessage(messageId, newContent);
-  }, [editMessage]);
+  const handleEditMessage = useCallback(
+    (messageId: string, newContent: string) => {
+      console.log(
+        "Edit button clicked for message:",
+        messageId,
+        "with content:",
+        newContent,
+      );
+      editMessage(messageId, newContent);
+    },
+    [editMessage],
+  );
 
   const scrollToMessage = useCallback((messageId: string) => {
     const messageElement = messageRefs.current.get(messageId);
@@ -440,10 +465,10 @@ export default function ChatOptimized() {
         setMessageInput(value);
 
         if (value.trim()) {
-          console.log('Starting typing indicator'); // Debug log
+          console.log("Starting typing indicator"); // Debug log
           handleTypingStart();
         } else {
-          console.log('Stopping typing indicator'); // Debug log
+          console.log("Stopping typing indicator"); // Debug log
           handleTypingStop();
         }
       }
@@ -476,23 +501,23 @@ export default function ChatOptimized() {
   const handlePaste = useCallback(
     async (e: React.ClipboardEvent) => {
       const clipboardData = e.clipboardData;
-      
+
       // Handle files from clipboard (like screenshots)
       if (clipboardData.files.length > 0) {
         const file = clipboardData.files[0];
-        
+
         // Check file size (300MB limit)
         if (file.size > 300 * 1024 * 1024) {
           alert("File size must be less than 300MB");
           return;
         }
-        
+
         setSelectedFile(file);
         return;
       }
-      
+
       // Handle text from clipboard
-      const pastedText = clipboardData.getData('text');
+      const pastedText = clipboardData.getData("text");
       if (pastedText) {
         // Insert at cursor position
         const textarea = textareaRef.current;
@@ -500,14 +525,18 @@ export default function ChatOptimized() {
           const start = textarea.selectionStart;
           const end = textarea.selectionEnd;
           const currentValue = messageInput;
-          const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
-          
+          const newValue =
+            currentValue.substring(0, start) +
+            pastedText +
+            currentValue.substring(end);
+
           if (newValue.length <= 1000) {
             setMessageInput(newValue);
-            
+
             // Set cursor position after pasted text
             setTimeout(() => {
-              textarea.selectionStart = textarea.selectionEnd = start + pastedText.length;
+              textarea.selectionStart = textarea.selectionEnd =
+                start + pastedText.length;
             }, 0);
           }
         }
@@ -525,7 +554,7 @@ export default function ChatOptimized() {
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Only set dragOver to false if we're leaving the main container
     if (e.currentTarget.contains(e.relatedTarget as Node)) {
       return;
@@ -546,13 +575,13 @@ export default function ChatOptimized() {
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       const file = files[0]; // Take the first file
-      
+
       // Check file size (300MB limit)
       if (file.size > 300 * 1024 * 1024) {
         alert("File size must be less than 300MB");
         return;
       }
-      
+
       setSelectedFile(file);
     }
   }, []);
@@ -627,7 +656,7 @@ export default function ChatOptimized() {
   }
 
   return (
-    <div 
+    <div
       className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
@@ -642,13 +671,13 @@ export default function ChatOptimized() {
         </div>
       )}
       {/* Enhanced header with glass effect */}
-      <header className="glass-card border-b border-slate-700/50 px-6 py-4 flex items-center justify-between backdrop-blur-xl relative z-10 bg-[#1e293b00]">
+      <header className="px-6 py-4 flex items-center justify-between relative z-10 bg-transparent border-none backdrop-blur-0">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">💬</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white font-poppins">Chat</h1>
+            <h1 className="text-xl text-white font-poppins font-extrabold">Lila</h1>
             {isConnected && (
               <div className="flex items-center space-x-2 text-emerald-400 text-xs">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -660,7 +689,9 @@ export default function ChatOptimized() {
 
         <div className="flex items-center space-x-3">
           <div className="text-right">
-            <div className="text-white font-medium text-sm">{currentUser.username}</div>
+            <div className="text-white font-medium text-sm">
+              {currentUser.username}
+            </div>
             <div className="text-slate-400 text-xs">Active now</div>
           </div>
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white font-semibold text-sm border-2 border-slate-500">
@@ -685,8 +716,12 @@ export default function ChatOptimized() {
             <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500/20 rounded-full flex items-center justify-center">
               <Paperclip className="w-8 h-8 text-emerald-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Drop your file here</h3>
-            <p className="text-slate-300 text-sm">Release to upload (max 300MB)</p>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              Drop your file here
+            </h3>
+            <p className="text-slate-300 text-sm">
+              Release to upload (max 300MB)
+            </p>
           </div>
         </div>
       )}
@@ -694,8 +729,8 @@ export default function ChatOptimized() {
       <div className="flex-1 overflow-hidden flex flex-col relative">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_1px_1px,_rgba(255,255,255,0.15)_1px,_transparent_0)] bg-[length:20px_20px]"></div>
-        
-        <div 
+
+        <div
           ref={messagesContainerRef}
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto px-6 py-6 space-y-4 scroll-smooth messages-container relative z-10"
@@ -739,7 +774,10 @@ export default function ChatOptimized() {
         </div>
 
         {/* Enhanced input form */}
-        <form onSubmit={handleSubmit} className="border-t border-slate-700/30 p-6 backdrop-blur-sm relative z-10 bg-[#1e293b00] text-[#f8fafc]">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 relative z-10 text-[#f8fafc] bg-transparent border-none backdrop-blur-0"
+        >
           {/* Reply preview */}
           {replyingTo && (
             <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
