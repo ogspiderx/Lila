@@ -31,8 +31,6 @@ export default function ChatOptimized() {
   );
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [showInterface, setShowInterface] = useState(true);
-  const [autoHideTimeout, setAutoHideTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -653,50 +651,6 @@ export default function ChatOptimized() {
     };
   }, [cleanup]);
 
-  // Auto-hide interface functionality
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    const windowHeight = window.innerHeight;
-    const mouseY = e.clientY;
-    const threshold = 50; // pixels from edge to trigger show
-    
-    // Clear existing timeout
-    if (autoHideTimeout) {
-      clearTimeout(autoHideTimeout);
-      setAutoHideTimeout(null);
-    }
-    
-    // Show interface if mouse is near top (header) or bottom (input)
-    if (mouseY <= threshold || mouseY >= windowHeight - threshold) {
-      setShowInterface(true);
-    } else {
-      // Hide interface after 3 seconds of mouse not being near edges
-      const timeout = setTimeout(() => {
-        setShowInterface(false);
-      }, 3000);
-      setAutoHideTimeout(timeout);
-    }
-  }, [autoHideTimeout]);
-
-  // Add mouse move listener
-  useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      if (autoHideTimeout) {
-        clearTimeout(autoHideTimeout);
-      }
-    };
-  }, [handleMouseMove, autoHideTimeout]);
-
-  // Always show interface when typing or interacting
-  const handleInteraction = useCallback(() => {
-    setShowInterface(true);
-    if (autoHideTimeout) {
-      clearTimeout(autoHideTimeout);
-      setAutoHideTimeout(null);
-    }
-  }, [autoHideTimeout]);
-
   if (!currentUser) {
     return null;
   }
@@ -717,9 +671,7 @@ export default function ChatOptimized() {
         </div>
       )}
       {/* Enhanced header with glass effect */}
-      <header className={`px-6 py-4 flex items-center justify-between relative z-10 bg-transparent border-none backdrop-blur-0 transition-all duration-500 ease-in-out ${
-        showInterface ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-      }`}>
+      <header className="px-6 py-4 flex items-center justify-between relative z-10 bg-transparent border-none backdrop-blur-0">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">💬</span>
@@ -824,11 +776,7 @@ export default function ChatOptimized() {
         {/* Enhanced input form */}
         <form
           onSubmit={handleSubmit}
-          className={`p-6 relative z-10 text-[#f8fafc] bg-transparent border-none backdrop-blur-0 transition-all duration-500 ease-in-out ${
-            showInterface ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-          }`}
-          onFocus={handleInteraction}
-          onClick={handleInteraction}
+          className="p-6 relative z-10 text-[#f8fafc] bg-transparent border-none backdrop-blur-0"
         >
           {/* Reply preview */}
           {replyingTo && (
@@ -935,7 +883,6 @@ export default function ChatOptimized() {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
-              onFocus={handleInteraction}
               placeholder=" Type a message or paste content..."
               className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-transparent border-0 text-white placeholder-slate-400 focus:ring-0 focus:outline-none p-0"
               disabled={!isConnected || isUploading}
