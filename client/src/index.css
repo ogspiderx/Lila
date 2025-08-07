@@ -128,9 +128,12 @@ html {
 
 /* Apply auto theme colors to specific elements */
 .auto-theme .bg-emerald-500,
+.auto-theme .bg-emerald-600,
+.auto-theme .bg-emerald-400,
 .auto-theme .bg-emerald-500\/10,
 .auto-theme .bg-emerald-500\/20,
-.auto-theme .bg-emerald-500\/30 {
+.auto-theme .bg-emerald-500\/30,
+.auto-theme .bg-emerald-400\/80 {
   background-color: var(--theme-primary) !important;
 }
 
@@ -138,7 +141,8 @@ html {
   background-color: color-mix(in srgb, var(--theme-primary) 10%, transparent) !important;
 }
 
-.auto-theme .bg-emerald-500\/20 {
+.auto-theme .bg-emerald-500\/20,
+.auto-theme .bg-emerald-400\/20 {
   background-color: color-mix(in srgb, var(--theme-primary) 20%, transparent) !important;
 }
 
@@ -146,12 +150,20 @@ html {
   background-color: color-mix(in srgb, var(--theme-primary) 30%, transparent) !important;
 }
 
+.auto-theme .bg-emerald-400\/80,
+.auto-theme .bg-emerald-500\/80 {
+  background-color: color-mix(in srgb, var(--theme-primary) 80%, transparent) !important;
+}
+
 .auto-theme .text-emerald-400,
-.auto-theme .text-emerald-500 {
+.auto-theme .text-emerald-500,
+.auto-theme .text-emerald-300 {
   color: var(--theme-accent) !important;
 }
 
 .auto-theme .border-emerald-500,
+.auto-theme .border-emerald-400,
+.auto-theme .border-emerald-300\/50,
 .auto-theme .ring-emerald-500,
 .auto-theme .focus\:ring-emerald-500:focus,
 .auto-theme .focus\:border-emerald-500:focus {
@@ -188,8 +200,12 @@ html {
 
 /* Input and button theming */
 .auto-theme .hover\:bg-emerald-600:hover,
-.auto-theme .hover\:bg-emerald-500:hover {
+.auto-theme .hover\:bg-emerald-500:hover,
+.auto-theme .hover\:bg-emerald-700:hover,
+.auto-theme .hover\:text-emerald-400:hover,
+.auto-theme .hover\:text-emerald-300:hover {
   background-color: var(--theme-secondary) !important;
+  color: var(--theme-text) !important;
 }
 
 /* Chat input box theming */
@@ -217,6 +233,44 @@ html {
 
 .auto-theme .drag-overlay .text-emerald-400 {
   color: var(--theme-accent) !important;
+}
+
+/* Hover states and interactive elements */
+.auto-theme .hover\:bg-emerald-400\/80:hover,
+.auto-theme .bg-emerald-400\/80:hover {
+  background-color: color-mix(in srgb, var(--theme-primary) 85%, transparent) !important;
+}
+
+.auto-theme .hover\:shadow-emerald-500\/40:hover {
+  box-shadow: 0 0 25px color-mix(in srgb, var(--theme-primary) 40%, transparent) !important;
+}
+
+.auto-theme .shadow-emerald-500\/25 {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary) 25%, transparent) !important;
+}
+
+/* Connected indicator and status elements */
+.auto-theme .animate-pulse {
+  animation-name: auto-theme-pulse;
+}
+
+@keyframes auto-theme-pulse {
+  0%, 100% {
+    background-color: var(--theme-accent);
+  }
+  50% {
+    background-color: color-mix(in srgb, var(--theme-accent) 60%, transparent);
+  }
+}
+
+/* Progress bars and loading elements */
+.auto-theme .bg-emerald-500 {
+  background-color: var(--theme-primary) !important;
+}
+
+/* Reply and interactive buttons */
+.auto-theme .text-emerald-100 {
+  color: color-mix(in srgb, var(--theme-text) 90%, white) !important;
 }
 
 /* Custom section and dialog theming */
