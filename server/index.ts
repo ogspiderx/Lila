@@ -2,7 +2,6 @@ import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -22,7 +21,7 @@ app.use(helmet({
       connectSrc: ["'self'", "ws:", "wss:"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'", "data:", "blob:"],
+      mediaSrc: ["'self'"],
       frameSrc: ["'none'"],
     },
   },
@@ -101,16 +100,6 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Serve attached assets before Vite middleware
-  const attachedAssetsPath = path.resolve(import.meta.dirname, "..", "attached_assets");
-  app.use("/attached_assets", express.static(attachedAssetsPath, {
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.mp4')) {
-        res.setHeader('Content-Type', 'video/mp4');
-      }
-    }
-  }));
-  
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes

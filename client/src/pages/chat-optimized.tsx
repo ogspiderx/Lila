@@ -624,8 +624,7 @@ export default function ChatOptimized() {
 
   return (
     <div 
-      className="h-screen flex flex-col overflow-hidden relative"
-      style={{ background: 'transparent' }}
+      className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative"
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -667,6 +666,7 @@ export default function ChatOptimized() {
           </Button>
         </div>
       </header>
+
       {/* Drag and drop overlay */}
       {isDragOver && (
         <div className="absolute inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
@@ -679,6 +679,7 @@ export default function ChatOptimized() {
           </div>
         </div>
       )}
+
       {/* Enhanced messages area */}
       <div className="flex-1 overflow-hidden flex flex-col relative">
         {/* Subtle background pattern */}
@@ -727,7 +728,162 @@ export default function ChatOptimized() {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Enhanced input form */}
+        <form onSubmit={handleSubmit} className="border-t border-slate-700/30 p-6 bg-slate-800/50 backdrop-blur-sm">
+          {/* Reply preview */}
+          {replyingTo && (
+            <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Reply className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm text-emerald-400">
+                    Replying to {replyingTo.sender}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelReply}
+                  className="text-slate-400 hover:text-white p-1"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="text-sm text-slate-300 truncate">
+                {(replyingTo.content || replyingTo.fileName || "File").length >
+                100
+                  ? `${(replyingTo.content || replyingTo.fileName || "File").substring(0, 100)}...`
+                  : replyingTo.content || replyingTo.fileName || "File"}
+              </div>
+            </div>
+          )}
+          {/* File preview */}
+          {selectedFile && (
+            <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Paperclip className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-300 truncate max-w-xs">
+                    {selectedFile.name}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
+                  </span>
+                </div>
+                {!isUploading && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveFile}
+                    className="text-slate-400 hover:text-white p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
 
+              {/* Upload progress bar */}
+              {isUploading && uploadProgress > 0 && (
+                <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
+                  <div
+                    className="bg-emerald-500 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              )}
+
+              {isUploading && (
+                <div className="text-xs text-slate-400 text-center">
+                  {uploadProgress < 20
+                    ? "Compressing..."
+                    : uploadProgress < 100
+                      ? `Uploading... ${uploadProgress}%`
+                      : "Finalizing..."}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Enhanced input container with modern design */}
+          <div className="flex items-end gap-3 bg-gradient-to-r from-slate-800/90 to-slate-700/90 rounded-2xl p-4 border border-slate-600/50 shadow-xl backdrop-blur-sm transition-all hover:shadow-2xl hover:border-emerald-500/30">
+            {/* File attachment button */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="*/*"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={!isConnected || isUploading}
+              className="text-slate-400 hover:text-emerald-400 hover:bg-slate-700/50 h-10 w-10 p-0 rounded-full transition-colors flex-shrink-0"
+              title="Attach file"
+            >
+              <Paperclip className="w-4 h-4" />
+            </Button>
+
+            {/* Message input */}
+            <Textarea
+              ref={textareaRef}
+              value={messageInput}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder=" Type a message or paste content..."
+              className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-transparent border-0 text-white placeholder-slate-400 focus:ring-0 focus:outline-none p-0"
+              disabled={!isConnected || isUploading}
+            />
+
+            {/* Send button */}
+            <Button
+              type="submit"
+              disabled={
+                (!messageInput.trim() && !selectedFile) ||
+                !isConnected ||
+                isUploading
+              }
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 disabled:text-slate-400 h-10 w-10 p-0 rounded-full transition-all flex-shrink-0"
+              title="Send message"
+            >
+              {isUploading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+
+          {/* Character count and file info */}
+          {(messageInput.length > 0 || selectedFile) && (
+            <div className="mt-2 px-1 text-xs text-slate-500 flex justify-between">
+              {messageInput.length > 0 && (
+                <span
+                  className={
+                    messageInput.length > 900
+                      ? "text-yellow-400"
+                      : messageInput.length > 950
+                        ? "text-red-400"
+                        : ""
+                  }
+                >
+                  {messageInput.length}/1000
+                </span>
+              )}
+              {selectedFile && (
+                <span className="text-slate-400">
+                  {selectedFile.name} (
+                  {(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
+                </span>
+              )}
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );
