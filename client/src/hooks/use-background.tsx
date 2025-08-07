@@ -12,7 +12,7 @@ export interface BackgroundSettings {
 interface BackgroundContextType {
   currentBackground: string | null;
   setBackground: (background: string | null) => void;
-  backgrounds: { name: string; url: string | null; description: string; colors: { primary: string; secondary: string; accent: string; text: string } }[];
+  backgrounds: { name: string; url: string; description: string; colors: { primary: string; secondary: string; accent: string; text: string } }[];
   settings: BackgroundSettings;
   updateSettings: (settings: Partial<BackgroundSettings>) => void;
   resetSettings: () => void;
@@ -53,6 +53,127 @@ const backgrounds = [
       secondary: "hsl(35, 75%, 45%)",
       accent: "hsl(25, 90%, 65%)",
       text: "hsl(45, 20%, 85%)"
+    }
+  },
+  {
+    name: "Japanese House",
+    url: "/attached_assets/japanese-house.3840x2160_1754558549551.mp4",
+    description: "Traditional Japanese architecture",
+    colors: {
+      primary: "hsl(15, 60%, 50%)",
+      secondary: "hsl(30, 40%, 45%)",
+      accent: "hsl(0, 70%, 55%)",
+      text: "hsl(15, 25%, 85%)"
+    }
+  },
+  {
+    name: "Purple Sunset",
+    url: "/attached_assets/purple-sunset2.1920x1080_1754558549554.mp4",
+    description: "Magical purple evening sky",
+    colors: {
+      primary: "hsl(280, 70%, 60%)",
+      secondary: "hsl(300, 60%, 50%)",
+      accent: "hsl(260, 80%, 70%)",
+      text: "hsl(280, 30%, 90%)"
+    }
+  },
+  {
+    name: "Samurai Moonlight",
+    url: "/attached_assets/samurai-spirit-under-the-moon.3840x2160_1754558549560.mp4",
+    description: "Warrior spirit under moonlight",
+    colors: {
+      primary: "hsl(200, 60%, 40%)",
+      secondary: "hsl(220, 50%, 35%)",
+      accent: "hsl(180, 70%, 50%)",
+      text: "hsl(200, 25%, 85%)"
+    }
+  },
+  {
+    name: "Train Sunset",
+    url: "/attached_assets/train_sunset_1754558549564.mp4",
+    description: "Journey through golden sunset",
+    colors: {
+      primary: "hsl(35, 80%, 55%)",
+      secondary: "hsl(25, 70%, 45%)",
+      accent: "hsl(15, 90%, 65%)",
+      text: "hsl(35, 20%, 85%)"
+    }
+  },
+  {
+    name: "Cherry Blossoms",
+    url: "/attached_assets/Cherry Blossoms Branches Live Wallpaper_1754559194614.mp4",
+    description: "Delicate pink cherry blossoms",
+    colors: {
+      primary: "hsl(330, 60%, 65%)",
+      secondary: "hsl(340, 50%, 55%)",
+      accent: "hsl(320, 70%, 75%)",
+      text: "hsl(330, 25%, 85%)"
+    }
+  },
+  {
+    name: "Chihiro's Garden",
+    url: "/attached_assets/Chihiro In The Garden Of Flowers Spirited Away Live Wallpaper_1754559194617.mp4",
+    description: "Spirited Away flower garden",
+    colors: {
+      primary: "hsl(110, 60%, 50%)",
+      secondary: "hsl(130, 50%, 40%)",
+      accent: "hsl(90, 70%, 60%)",
+      text: "hsl(110, 25%, 80%)"
+    }
+  },
+  {
+    name: "Street Sunset",
+    url: "/attached_assets/Colorful Sunset on Street Live Wallpaper_1754559194620.mp4",
+    description: "Colorful urban sunset scene",
+    colors: {
+      primary: "hsl(25, 75%, 60%)",
+      secondary: "hsl(15, 65%, 50%)",
+      accent: "hsl(35, 85%, 70%)",
+      text: "hsl(25, 20%, 85%)"
+    }
+  },
+  {
+    name: "Howl's Flower Field",
+    url: "/attached_assets/Howl And Sophie In The Flower Field Howl's Moving Castle Live Wallpaper_1754559194622.mp4",
+    description: "Moving Castle flower meadow",
+    colors: {
+      primary: "hsl(60, 65%, 55%)",
+      secondary: "hsl(80, 55%, 45%)",
+      accent: "hsl(40, 75%, 65%)",
+      text: "hsl(60, 25%, 80%)"
+    }
+  },
+  {
+    name: "Shou's Garden",
+    url: "/attached_assets/Shou Relaxing Flower Field The Secret World Of Arrietty Live Wallpaper_1754559194623.mp4",
+    description: "Secret World of Arrietty garden",
+    colors: {
+      primary: "hsl(100, 60%, 45%)",
+      secondary: "hsl(120, 50%, 35%)",
+      accent: "hsl(80, 70%, 55%)",
+      text: "hsl(100, 25%, 80%)"
+    }
+  },
+  {
+    name: "Forest Rain",
+    url: "/attached_assets/Totoro Forest Rain Live Wallpaper_1754559194625.mp4",
+    description: "Peaceful forest rain with Totoro",
+    colors: {
+      primary: "hsl(140, 55%, 40%)",
+      secondary: "hsl(160, 45%, 30%)",
+      accent: "hsl(120, 65%, 50%)",
+      text: "hsl(140, 25%, 85%)"
+    }
+  },
+  {
+    name: "Totoro Sunrise",
+    url: "/attached_assets/Totoro Sunrise My Neighbor Totoro Live Wallpaper_1754559194626.mp4",
+    description: "My Neighbor Totoro at sunrise",
+    colors: {
+      primary: "hsl(50, 80%, 60%)",
+      secondary: "hsl(40, 70%, 50%)",
+      accent: "hsl(30, 90%, 70%)",
+      text: "hsl(50, 20%, 85%)"
     }
   }
 ];

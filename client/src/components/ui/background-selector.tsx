@@ -2,27 +2,18 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel 
-} from '@/components/ui/dropdown-menu';
-import { 
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { Image, X, Settings, RotateCcw, Palette, Download } from 'lucide-react';
+import { Settings, RotateCcw, Palette } from 'lucide-react';
 import { useBackground } from '@/hooks/use-background';
+import { BackgroundPreviewGrid } from '@/components/ui/background-preview-grid';
 
 export function BackgroundSelector() {
   const { 
     currentBackground, 
-    setBackground, 
     backgrounds, 
     settings, 
     updateSettings, 
@@ -30,82 +21,27 @@ export function BackgroundSelector() {
     getCurrentColors
   } = useBackground();
   const [showCustomization, setShowCustomization] = useState(false);
-  const [loadingVideo, setLoadingVideo] = useState<string | null>(null);
 
   const currentBackgroundInfo = backgrounds.find(bg => bg.url === currentBackground);
   const currentColors = getCurrentColors();
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <div className="flex items-center space-x-1">
+        <BackgroundPreviewGrid />
+        {currentBackground && (
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => setShowCustomization(true)}
             className="text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full w-8 h-8 p-0 transition-all"
-            title="Change background"
+            title="Customize background"
+            data-testid="button-customize-background"
           >
-            <Image className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-slate-800 border-slate-700">
-          <DropdownMenuLabel className="text-slate-300">Background Theme</DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-slate-700" />
-          
-          <DropdownMenuItem 
-            onClick={() => setBackground(null)}
-            className={`cursor-pointer hover:bg-slate-700 ${!currentBackground ? 'bg-slate-700' : ''}`}
-          >
-            <X className="w-4 h-4 mr-2" />
-            Default Background
-          </DropdownMenuItem>
-          
-          <DropdownMenuSeparator className="bg-slate-700" />
-          
-          {backgrounds.map((bg) => (
-            <DropdownMenuItem
-              key={bg.url}
-              onClick={() => {
-                setLoadingVideo(bg.url || '');
-                setBackground(bg.url);
-                // Clear loading state after a delay to allow the video to start loading
-                setTimeout(() => setLoadingVideo(null), 1000);
-              }}
-              className={`cursor-pointer hover:bg-slate-700 ${
-                currentBackground === bg.url ? 'bg-slate-700' : ''
-              } flex-col items-start p-3`}
-            >
-              <div className="flex items-center w-full">
-                <div className="w-4 h-4 mr-2 bg-emerald-500/20 rounded flex items-center justify-center">
-                  {loadingVideo === bg.url ? (
-                    <Download className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
-                  ) : (
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  )}
-                </div>
-                <span className="font-medium">{bg.name}</span>
-                {loadingVideo === bg.url && (
-                  <span className="ml-auto text-xs text-emerald-400">Loading...</span>
-                )}
-              </div>
-              <span className="text-xs text-slate-400 ml-6">{bg.description}</span>
-            </DropdownMenuItem>
-          ))}
-
-          {currentBackground && (
-            <>
-              <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem
-                onClick={() => setShowCustomization(true)}
-                className="cursor-pointer hover:bg-slate-700"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Customize Background
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        )}
+      </div>
 
       <Dialog open={showCustomization} onOpenChange={setShowCustomization}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
