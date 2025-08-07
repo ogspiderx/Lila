@@ -2,7 +2,6 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 
-import totoroVideo from "@assets/totoro-watching-starry-night-sky-moewalls-com_1754542222272.mp4";
 import Login from "@/pages/login-optimized";
 import Chat from "@/pages/chat-optimized";
 import NotFound from "@/pages/not-found";
@@ -28,7 +27,7 @@ function App() {
         playsInline
         disablePictureInPicture
       >
-        <source src={totoroVideo} type="video/mp4" />
+        <source src="/attached_assets/totoro-watching-starry-night-sky-moewalls-com_1754542222272.mp4" type="video/mp4" />
       </video>
       <div className="min-h-screen bg-background text-foreground">
         <Router />
