@@ -10,9 +10,9 @@
   --foreground: hsl(210, 45%, 98%);
   --muted: hsl(217, 20%, 15%);
   --muted-foreground: hsl(215, 25%, 70%);
-  --popover: hsl(220, 25%, 10%);
+  --popover: hsla(220, 25%, 10%, 0.8);
   --popover-foreground: hsl(210, 45%, 98%);
-  --card: hsl(220, 25%, 10%);
+  --card: hsla(220, 25%, 10%, 0.7);
   --card-foreground: hsl(210, 45%, 98%);
   --border: hsl(217, 20%, 18%);
   --input: hsl(217, 20%, 15%);
@@ -38,11 +38,11 @@
   --emerald-900: hsl(142, 60%, 15%);
   
   /* Surface Colors */
-  --surface-primary: hsl(220, 25%, 8%);
-  --surface-secondary: hsl(220, 20%, 12%);
-  --surface-tertiary: hsl(220, 18%, 16%);
-  --surface-glass: hsla(220, 25%, 12%, 0.8);
-  --surface-overlay: hsla(220, 25%, 5%, 0.9);
+  --surface-primary: hsla(220, 25%, 8%, 0.3);
+  --surface-secondary: hsla(220, 20%, 12%, 0.4);
+  --surface-tertiary: hsla(220, 18%, 16%, 0.5);
+  --surface-glass: hsla(220, 25%, 12%, 0.6);
+  --surface-overlay: hsla(220, 25%, 5%, 0.7);
   
   /* Text Colors */
   --text-primary: hsl(210, 45%, 98%);
@@ -68,9 +68,10 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: radial-gradient(ellipse at top, hsl(220, 25%, 10%) 0%, var(--surface-primary) 50%);
+    background: transparent;
     color: var(--text-primary);
     min-height: 100vh;
+    position: relative;
   }
 
   /* Hide scrollbars completely */
@@ -108,21 +109,22 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Animated background particles */
-body::before {
-  content: '';
+/* Video background */
+.video-background {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 20%, hsla(142, 80%, 50%, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, hsla(142, 80%, 40%, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 40% 70%, hsla(142, 75%, 45%, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
-  animation: float 20s ease-in-out infinite;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -2;
+  background: transparent;
+  opacity: 1;
+}
+
+/* No overlay - let video show through completely */
+body::before {
+  display: none;
 }
 
 @layer utilities {
