@@ -859,7 +859,7 @@ export default function ChatOptimized() {
           )}
 
           {/* Enhanced input container with modern design */}
-          <div className="flex items-end gap-3 bg-gradient-to-r from-slate-800/90 to-slate-700/90 rounded-2xl p-4 border border-slate-600/50 shadow-xl backdrop-blur-sm transition-all hover:shadow-2xl hover:border-emerald-500/30">
+          <div className="flex items-end gap-3 bg-gradient-to-r from-slate-800/80 to-slate-700/80 rounded-2xl p-4 border border-slate-600/50 shadow-xl backdrop-blur-sm transition-all hover:shadow-2xl hover:border-emerald-500/30"></div>
             {/* File attachment button */}
             <input
               ref={fileInputRef}
