@@ -678,7 +678,7 @@ export default function ChatOptimized() {
       <header className="px-6 py-4 flex items-center justify-between relative z-10 bg-transparent border-none backdrop-blur-0">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">💬</span>
+            <span className="text-white font-bold text-lg">L</span>
           </div>
           <div>
             <h1 className="text-xl text-white font-poppins font-extrabold">Lila</h1>
