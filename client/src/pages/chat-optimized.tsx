@@ -711,7 +711,7 @@ export default function ChatOptimized() {
       </header>
       {/* Drag and drop overlay */}
       {isDragOver && (
-        <div className="absolute inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
+        <div className="drag-overlay absolute inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-emerald-500/20 border-2 border-dashed border-emerald-400 rounded-2xl p-12 text-center max-w-md mx-4">
             <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500/20 rounded-full flex items-center justify-center">
               <Paperclip className="w-8 h-8 text-emerald-400" />

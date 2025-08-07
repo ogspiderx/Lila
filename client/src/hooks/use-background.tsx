@@ -7,12 +7,13 @@ export interface BackgroundSettings {
   contrast: number;
   saturation: number;
   autoPickColors: boolean;
+  lightMode: boolean;
 }
 
 interface BackgroundContextType {
   currentBackground: string | null;
   setBackground: (background: string | null) => void;
-  backgrounds: { name: string; url: string; description: string; colors: { primary: string; secondary: string; accent: string; text: string } }[];
+  backgrounds: { name: string; url: string | null; description: string; colors: { primary: string; secondary: string; accent: string; text: string } }[];
   settings: BackgroundSettings;
   updateSettings: (settings: Partial<BackgroundSettings>) => void;
   resetSettings: () => void;
@@ -54,6 +55,17 @@ const backgrounds = [
       accent: "hsl(25, 90%, 65%)",
       text: "hsl(45, 20%, 85%)"
     }
+  },
+  {
+    name: "Light Theme",
+    url: null,
+    description: "Clean light theme for daytime use",
+    colors: {
+      primary: "hsl(220, 60%, 50%)",
+      secondary: "hsl(210, 40%, 60%)",
+      accent: "hsl(200, 70%, 55%)",
+      text: "hsl(220, 30%, 20%)"
+    }
   }
 ];
 
@@ -63,7 +75,8 @@ const defaultSettings: BackgroundSettings = {
   brightness: 100,
   contrast: 100,
   saturation: 100,
-  autoPickColors: false
+  autoPickColors: false,
+  lightMode: false
 };
 
 interface BackgroundProviderProps {
@@ -114,7 +127,15 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
   };
 
   const getCurrentColors = () => {
-    if (!currentBackground || !settings.autoPickColors) return null;
+    if (!settings.autoPickColors) return null;
+    
+    // Handle Light Theme case (no video background)
+    if (settings.lightMode && !currentBackground) {
+      const lightTheme = backgrounds.find(bg => bg.name === "Light Theme");
+      return lightTheme?.colors || null;
+    }
+    
+    if (!currentBackground) return null;
     const background = backgrounds.find(bg => bg.url === currentBackground);
     return background?.colors || null;
   };
@@ -138,6 +159,17 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
       root.classList.remove('auto-theme');
     }
   }, [currentBackground, settings.autoPickColors]);
+
+  // Apply light mode when enabled
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    if (settings.lightMode) {
+      root.classList.add('light-mode');
+    } else {
+      root.classList.remove('light-mode');
+    }
+  }, [settings.lightMode]);
 
   return (
     <BackgroundContext.Provider value={{ 

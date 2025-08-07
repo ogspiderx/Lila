@@ -123,19 +123,40 @@ html {
   --emerald-500: var(--theme-primary);
   --emerald-400: var(--theme-accent);
   --emerald-600: var(--theme-secondary);
+  --emerald-500-rgb: var(--theme-primary);
 }
 
 /* Apply auto theme colors to specific elements */
-.auto-theme .bg-emerald-500 {
+.auto-theme .bg-emerald-500,
+.auto-theme .bg-emerald-500\/10,
+.auto-theme .bg-emerald-500\/20,
+.auto-theme .bg-emerald-500\/30 {
   background-color: var(--theme-primary) !important;
 }
 
-.auto-theme .text-emerald-400 {
+.auto-theme .bg-emerald-500\/10 {
+  background-color: color-mix(in srgb, var(--theme-primary) 10%, transparent) !important;
+}
+
+.auto-theme .bg-emerald-500\/20 {
+  background-color: color-mix(in srgb, var(--theme-primary) 20%, transparent) !important;
+}
+
+.auto-theme .bg-emerald-500\/30 {
+  background-color: color-mix(in srgb, var(--theme-primary) 30%, transparent) !important;
+}
+
+.auto-theme .text-emerald-400,
+.auto-theme .text-emerald-500 {
   color: var(--theme-accent) !important;
 }
 
-.auto-theme .border-emerald-500 {
+.auto-theme .border-emerald-500,
+.auto-theme .ring-emerald-500,
+.auto-theme .focus\:ring-emerald-500:focus,
+.auto-theme .focus\:border-emerald-500:focus {
   border-color: var(--theme-primary) !important;
+  --tw-ring-color: var(--theme-primary) !important;
 }
 
 .auto-theme .from-emerald-500 {
@@ -144,6 +165,14 @@ html {
 
 .auto-theme .to-emerald-600 {
   --tw-gradient-to: var(--theme-secondary) !important;
+}
+
+.auto-theme .via-emerald-600 {
+  --tw-gradient-via: var(--theme-secondary) !important;
+}
+
+.auto-theme .to-emerald-700 {
+  --tw-gradient-to: color-mix(in srgb, var(--theme-secondary) 80%, black) !important;
 }
 
 /* Message bubble auto theming */
@@ -158,12 +187,134 @@ html {
 }
 
 /* Input and button theming */
-.auto-theme .bg-emerald-500\/20 {
-  background-color: color-mix(in srgb, var(--theme-primary) 20%, transparent) !important;
+.auto-theme .hover\:bg-emerald-600:hover,
+.auto-theme .hover\:bg-emerald-500:hover {
+  background-color: var(--theme-secondary) !important;
 }
 
-.auto-theme .hover\:bg-emerald-600:hover {
-  background-color: var(--theme-secondary) !important;
+/* Chat input box theming */
+.auto-theme textarea:focus,
+.auto-theme input:focus {
+  border-color: var(--theme-primary) !important;
+  --tw-ring-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-primary) 20%, transparent) !important;
+}
+
+/* Scrollbar theming */
+.auto-theme ::-webkit-scrollbar-thumb {
+  background: var(--theme-primary) !important;
+}
+
+.auto-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-secondary) !important;
+}
+
+/* Upload overlay theming */
+.auto-theme .drag-overlay {
+  border-color: var(--theme-primary) !important;
+  background-color: color-mix(in srgb, var(--theme-primary) 10%, transparent) !important;
+}
+
+.auto-theme .drag-overlay .text-emerald-400 {
+  color: var(--theme-accent) !important;
+}
+
+/* Custom section and dialog theming */
+.auto-theme .bg-slate-800,
+.auto-theme .bg-slate-700,
+.auto-theme .bg-slate-700\/50 {
+  background-color: color-mix(in srgb, var(--theme-secondary) 30%, var(--surface-secondary)) !important;
+}
+
+.auto-theme .border-slate-700,
+.auto-theme .border-slate-600 {
+  border-color: color-mix(in srgb, var(--theme-primary) 40%, transparent) !important;
+}
+
+/* Light mode theme */
+.light-mode {
+  /* Core colors */
+  --background: hsl(0, 0%, 98%);
+  --foreground: hsl(220, 10%, 10%);
+  --muted: hsl(210, 20%, 95%);
+  --muted-foreground: hsl(215, 15%, 40%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(220, 10%, 10%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(220, 10%, 10%);
+  --border: hsl(220, 13%, 91%);
+  --input: hsl(220, 13%, 95%);
+  --primary: hsl(220, 60%, 50%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(210, 40%, 95%);
+  --secondary-foreground: hsl(220, 10%, 10%);
+  --accent: hsl(200, 70%, 55%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(220, 60%, 50%);
+  
+  /* Surface colors */
+  --surface-primary: hsl(0, 0%, 98%);
+  --surface-secondary: hsl(210, 20%, 95%);
+  --surface-tertiary: hsl(220, 13%, 91%);
+  --surface-glass: hsla(0, 0%, 100%, 0.9);
+  --surface-overlay: hsla(0, 0%, 100%, 0.95);
+  
+  /* Text colors */
+  --text-primary: hsl(220, 10%, 10%);
+  --text-secondary: hsl(215, 15%, 30%);
+  --text-muted: hsl(215, 10%, 50%);
+  --text-accent: hsl(200, 70%, 45%);
+  
+  /* Glass effects */
+  --glass-bg: hsla(0, 0%, 100%, 0.8);
+  --glass-border: hsla(220, 60%, 50%, 0.2);
+}
+
+.light-mode body {
+  background: linear-gradient(135deg, hsl(210, 20%, 98%) 0%, hsl(220, 20%, 95%) 100%);
+  color: var(--text-primary);
+}
+
+.light-mode .bg-slate-900,
+.light-mode .bg-slate-800 {
+  background-color: hsl(0, 0%, 100%) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+.light-mode .bg-slate-700,
+.light-mode .bg-slate-600 {
+  background-color: hsl(210, 20%, 95%) !important;
+  color: var(--text-primary) !important;
+}
+
+.light-mode .text-white,
+.light-mode .text-slate-50 {
+  color: var(--text-primary) !important;
+}
+
+.light-mode .text-slate-400,
+.light-mode .text-slate-300 {
+  color: var(--text-secondary) !important;
+}
+
+.light-mode .border-slate-700,
+.light-mode .border-slate-600 {
+  border-color: var(--border) !important;
+}
+
+/* Light mode message bubbles */
+.light-mode [data-message-type="sent"] {
+  background: linear-gradient(135deg, hsl(220, 60%, 55%), hsl(220, 60%, 45%)) !important;
+  color: white !important;
+}
+
+.light-mode [data-message-type="received"] {
+  background-color: hsl(210, 20%, 95%) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
 }
 
 /* Animated background particles */
