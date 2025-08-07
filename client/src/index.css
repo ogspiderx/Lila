@@ -119,19 +119,12 @@ html {
   object-fit: cover;
   z-index: -2;
   background: transparent;
+  opacity: 1;
 }
 
-/* Minimal overlay for readability */
+/* No overlay - let video show through completely */
 body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: hsla(220, 25%, 8%, 0.15);
-  pointer-events: none;
-  z-index: -1;
+  display: none;
 }
 
 @layer utilities {
