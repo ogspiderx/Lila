@@ -305,6 +305,7 @@ export const MessageBubble = memo(function MessageBubble({
             }}
             whileTap={{ scale: 0.98 }}
             onContextMenu={handleContextMenu}
+            data-message-type={isCurrentUser ? "sent" : "received"}
             className={`
             relative overflow-hidden group min-w-0 w-full message-slide-in
             ${

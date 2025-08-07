@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Image, X, Settings, RotateCcw } from 'lucide-react';
+import { Image, X, Settings, RotateCcw, Palette } from 'lucide-react';
 import { useBackground } from '@/hooks/use-background';
 
 export function BackgroundSelector() {
@@ -26,11 +26,13 @@ export function BackgroundSelector() {
     backgrounds, 
     settings, 
     updateSettings, 
-    resetSettings 
+    resetSettings,
+    getCurrentColors
   } = useBackground();
   const [showCustomization, setShowCustomization] = useState(false);
 
   const currentBackgroundInfo = backgrounds.find(bg => bg.url === currentBackground);
+  const currentColors = getCurrentColors();
 
   return (
     <>
@@ -181,6 +183,56 @@ export function BackgroundSelector() {
                 step={5}
                 className="w-full"
               />
+            </div>
+
+            <div className="border-t border-slate-700 pt-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="autoPickColors"
+                    checked={settings.autoPickColors}
+                    onChange={(e) => updateSettings({ autoPickColors: e.target.checked })}
+                    className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500 focus:ring-2"
+                  />
+                  <label htmlFor="autoPickColors" className="text-sm font-medium text-slate-300 flex items-center">
+                    <Palette className="w-4 h-4 mr-1" />
+                    Auto-pick colors from video
+                  </label>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                When enabled, the chat interface colors will automatically match the selected video theme instead of using the default green colors.
+              </p>
+              
+              {currentColors && settings.autoPickColors && (
+                <div className="mt-3 p-3 bg-slate-700/50 rounded-lg">
+                  <p className="text-xs font-medium text-slate-300 mb-2">Current theme colors:</p>
+                  <div className="flex space-x-2">
+                    <div className="flex items-center space-x-1">
+                      <div 
+                        className="w-3 h-3 rounded-full border border-slate-600" 
+                        style={{ backgroundColor: currentColors.primary }}
+                      ></div>
+                      <span className="text-xs text-slate-400">Primary</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div 
+                        className="w-3 h-3 rounded-full border border-slate-600" 
+                        style={{ backgroundColor: currentColors.secondary }}
+                      ></div>
+                      <span className="text-xs text-slate-400">Secondary</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div 
+                        className="w-3 h-3 rounded-full border border-slate-600" 
+                        style={{ backgroundColor: currentColors.accent }}
+                      ></div>
+                      <span className="text-xs text-slate-400">Accent</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>

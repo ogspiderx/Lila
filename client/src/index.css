@@ -108,6 +108,64 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Auto theme styles when video colors are enabled */
+.auto-theme {
+  /* Message bubbles */
+  --message-sent-bg: var(--theme-primary);
+  --message-received-bg: var(--theme-secondary);
+  --message-text: var(--theme-text);
+  
+  /* UI elements */
+  --ui-accent: var(--theme-accent);
+  --ui-primary: var(--theme-primary);
+  
+  /* Override emerald colors when auto theme is active */
+  --emerald-500: var(--theme-primary);
+  --emerald-400: var(--theme-accent);
+  --emerald-600: var(--theme-secondary);
+}
+
+/* Apply auto theme colors to specific elements */
+.auto-theme .bg-emerald-500 {
+  background-color: var(--theme-primary) !important;
+}
+
+.auto-theme .text-emerald-400 {
+  color: var(--theme-accent) !important;
+}
+
+.auto-theme .border-emerald-500 {
+  border-color: var(--theme-primary) !important;
+}
+
+.auto-theme .from-emerald-500 {
+  --tw-gradient-from: var(--theme-primary) !important;
+}
+
+.auto-theme .to-emerald-600 {
+  --tw-gradient-to: var(--theme-secondary) !important;
+}
+
+/* Message bubble auto theming */
+.auto-theme [data-message-type="sent"] {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary)) !important;
+  color: var(--theme-text) !important;
+}
+
+.auto-theme [data-message-type="received"] {
+  background-color: var(--theme-secondary) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Input and button theming */
+.auto-theme .bg-emerald-500\/20 {
+  background-color: color-mix(in srgb, var(--theme-primary) 20%, transparent) !important;
+}
+
+.auto-theme .hover\:bg-emerald-600:hover {
+  background-color: var(--theme-secondary) !important;
+}
+
 /* Animated background particles */
 body::before {
   content: '';
