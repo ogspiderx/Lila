@@ -194,7 +194,7 @@ export const MessageBubble = memo(function MessageBubble({
       return (
         <div className="mb-2 relative max-w-xs">
           {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-700/50 rounded-lg">
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-700/80 rounded-lg">
               <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             </div>
           )}
@@ -310,8 +310,8 @@ export const MessageBubble = memo(function MessageBubble({
             relative overflow-hidden group min-w-0 w-full message-slide-in
             ${
               isCurrentUser
-                ? "bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white rounded-tr-sm message-glow-green"
-                : "bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-slate-50 border border-slate-500/30 rounded-tl-sm message-glow-slate"
+                ? "bg-gradient-to-br from-emerald-500/80 via-emerald-600/80 to-emerald-700/80 text-white rounded-tr-sm message-glow-green"
+                : "bg-gradient-to-br from-slate-600/80 via-slate-700/80 to-slate-800/80 text-slate-50 border border-slate-500/30 rounded-tl-sm message-glow-slate"
             } 
             rounded-2xl px-4 py-3 sm:px-4 sm:py-3
             transition-all duration-300 ease-out smooth-transition
@@ -333,8 +333,8 @@ export const MessageBubble = memo(function MessageBubble({
                 flex items-center space-x-2 p-2 rounded-lg transition-colors cursor-pointer
                 ${
                   isCurrentUser
-                    ? "bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-100"
-                    : "bg-slate-600/40 hover:bg-slate-600/60 text-slate-200"
+                    ? "bg-emerald-400/80 hover:bg-emerald-400/80 text-emerald-100"
+                    : "bg-slate-600/80 hover:bg-slate-600/80 text-slate-200"
                 }
               `}
                 >
@@ -358,8 +358,8 @@ export const MessageBubble = memo(function MessageBubble({
               <div
                 className={`mb-2 p-2 rounded border-l-2 cursor-pointer hover:opacity-80 transition-opacity ${
                   isCurrentUser
-                    ? "bg-emerald-400/10 border-emerald-300/50 text-emerald-100 hover:bg-emerald-400/20"
-                    : "bg-slate-500/20 border-slate-400/50 text-slate-300 hover:bg-slate-500/30"
+                    ? "bg-emerald-400/80 border-emerald-300/50 text-emerald-100 hover:bg-emerald-400/80"
+                    : "bg-slate-500/80 border-slate-400/50 text-slate-300 hover:bg-slate-500/80"
                 }`}
                 onClick={() =>
                   message.replyToId && onScrollToMessage?.(message.replyToId)
@@ -384,7 +384,7 @@ export const MessageBubble = memo(function MessageBubble({
                     <textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full min-h-[60px] p-2 text-xs sm:text-sm bg-slate-700/50 border border-slate-600 rounded text-white resize-none"
+                      className="w-full min-h-[60px] p-2 text-xs sm:text-sm bg-slate-700/80 border border-slate-600 rounded text-white resize-none"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && e.ctrlKey) {
@@ -460,7 +460,7 @@ export const MessageBubble = memo(function MessageBubble({
               variant="ghost"
               size="sm"
               onClick={() => onReply(message)}
-              className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+              className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/80 text-slate-400 hover:text-slate-200"
               data-testid="button-reply"
             >
               <Reply className="h-3 w-3" />
@@ -473,7 +473,7 @@ export const MessageBubble = memo(function MessageBubble({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-slate-200"
+                className="h-6 w-6 p-0 rounded-full hover:bg-slate-700/80 text-slate-400 hover:text-slate-200"
                 data-testid="button-message-options"
               >
                 <MoreVertical className="h-3 w-3" />
