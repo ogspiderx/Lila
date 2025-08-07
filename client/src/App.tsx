@@ -26,8 +26,14 @@ function App() {
         loop
         playsInline
         disablePictureInPicture
+        preload="auto"
+        onLoadStart={() => console.log('Video loading started')}
+        onLoadedData={() => console.log('Video data loaded')}
+        onError={(e) => console.error('Video error:', e)}
+        style={{ zIndex: -2 }}
       >
         <source src="/attached_assets/totoro-watching-starry-night-sky-moewalls-com_1754542222272.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
       </video>
       <div className="min-h-screen bg-background text-foreground">
         <Router />
