@@ -64,23 +64,15 @@ export function BackgroundSelector() {
           
           {backgrounds.map((bg) => (
             <DropdownMenuItem
-              key={bg.url || bg.name}
+              key={bg.url}
               onClick={() => {
-                if (bg.name === "Light Theme") {
-                  setBackground(null);
-                  updateSettings({ lightMode: true, autoPickColors: true });
-                } else {
-                  setLoadingVideo(bg.url || '');
-                  setBackground(bg.url);
-                  updateSettings({ lightMode: false });
-                  // Clear loading state after a delay to allow the video to start loading
-                  setTimeout(() => setLoadingVideo(null), 1000);
-                }
+                setLoadingVideo(bg.url || '');
+                setBackground(bg.url);
+                // Clear loading state after a delay to allow the video to start loading
+                setTimeout(() => setLoadingVideo(null), 1000);
               }}
               className={`cursor-pointer hover:bg-slate-700 ${
-                (bg.name === "Light Theme" && settings.lightMode && !currentBackground) ||
-                (currentBackground === bg.url && bg.name !== "Light Theme") 
-                  ? 'bg-slate-700' : ''
+                currentBackground === bg.url ? 'bg-slate-700' : ''
               } flex-col items-start p-3`}
             >
               <div className="flex items-center w-full">
@@ -228,23 +220,6 @@ export function BackgroundSelector() {
                 When enabled, the chat interface colors will automatically match the selected video theme instead of using the default green colors.
               </p>
               
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="lightMode"
-                    checked={settings.lightMode}
-                    onChange={(e) => updateSettings({ lightMode: e.target.checked })}
-                    className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500 focus:ring-2"
-                  />
-                  <label htmlFor="lightMode" className="text-sm font-medium text-slate-300 flex items-center">
-                    ☀️ Light Mode
-                  </label>
-                </div>
-              </div>
-              <p className="text-xs text-slate-400">
-                Switch to light theme for better visibility in bright environments.
-              </p>
               
               {currentColors && settings.autoPickColors && (
                 <div className="mt-3 p-3 bg-slate-700/50 rounded-lg">
