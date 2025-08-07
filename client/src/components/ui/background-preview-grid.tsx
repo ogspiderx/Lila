@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Dialog,
@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Image, X, Check } from 'lucide-react';
+import { Image, X, Check, Play } from 'lucide-react';
 import { useBackground } from '@/hooks/use-background';
 
 interface BackgroundPreviewProps {
@@ -20,58 +20,35 @@ interface BackgroundPreviewProps {
 }
 
 function BackgroundPreview({ url, name, description, isSelected, isLoading, onClick }: BackgroundPreviewProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.preload = 'metadata';
-      
-      if (isHovered) {
-        video.currentTime = 0;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // Auto-play was prevented
-          });
-        }
-      } else {
-        video.pause();
-      }
-    }
-  }, [isHovered, url]);
+  const [thumbnailError, setThumbnailError] = useState(false);
 
   return (
     <div 
-      className={`relative cursor-pointer rounded-lg overflow-hidden transition-all duration-300 border-2 ${
+      className={`relative cursor-pointer rounded-lg overflow-hidden transition-all duration-300 border-2 hover:scale-105 ${
         isSelected 
-          ? 'border-emerald-400 shadow-lg shadow-emerald-500/20 scale-105' 
-          : 'border-slate-600 hover:border-slate-500'
+          ? 'border-emerald-400 shadow-lg shadow-emerald-500/20' 
+          : 'border-slate-600 hover:border-slate-400'
       } ${isLoading ? 'opacity-70' : ''}`}
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       data-testid={`background-preview-${name.toLowerCase().replace(/\s+/g, '-')}`}
     >
       <div className="aspect-video relative bg-slate-800">
-        <video
-          ref={videoRef}
-          src={url}
-          className="w-full h-full object-cover"
-          muted
-          loop
-          playsInline
-          preload="metadata"
-        />
+        {!thumbnailError ? (
+          <video
+            src={url}
+            className="w-full h-full object-cover"
+            muted
+            preload="metadata"
+            onError={() => setThumbnailError(true)}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+            <Play className="w-8 h-8 text-slate-500" />
+          </div>
+        )}
         
         {/* Overlay */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${
-          isHovered ? 'opacity-100' : 'opacity-80'
-        }`}>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
           {/* Selected indicator */}
           {isSelected && (
             <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
@@ -85,6 +62,13 @@ function BackgroundPreview({ url, name, description, isSelected, isLoading, onCl
               <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
+          
+          {/* Play icon overlay */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+            <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm">
+              <Play className="w-5 h-5 text-white ml-0.5" />
+            </div>
+          </div>
           
           {/* Title */}
           <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -167,7 +151,7 @@ export function BackgroundPreviewGrid() {
           
           <div className="pt-4 border-t border-slate-700">
             <p className="text-slate-400 text-sm">
-              Hover over videos to preview • Selected theme will affect chat colors
+              Click to select video background • Selected theme will affect chat colors
             </p>
           </div>
         </DialogContent>
