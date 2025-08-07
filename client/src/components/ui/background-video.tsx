@@ -14,40 +14,51 @@ export function BackgroundVideo({ src, settings, className = "", videoName = "Vi
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
   const [hasError, setHasError] = useState(false);
+  const isLoadingRef = useRef(true);
 
   const handleLoadStart = useCallback(() => {
+    console.log('Video load started:', videoName);
     setIsLoading(true);
+    isLoadingRef.current = true;
     setLoadProgress(0);
     setHasError(false);
-  }, []);
+  }, [videoName]);
 
   const handleProgress = useCallback(() => {
     const video = videoRef.current;
-    if (video && video.buffered.length > 0) {
+    if (video && video.buffered.length > 0 && video.duration > 0) {
       const buffered = video.buffered.end(video.buffered.length - 1);
       const duration = video.duration;
-      if (duration > 0) {
-        const progress = Math.min((buffered / duration) * 100, 95); // Cap at 95% to avoid getting stuck
-        setLoadProgress(progress);
-      }
+      const progress = Math.min((buffered / duration) * 100, 95);
+      console.log('Video progress:', Math.round(progress) + '%', videoName);
+      setLoadProgress(progress);
     }
-  }, []);
+  }, [videoName]);
 
   const handleCanPlayThrough = useCallback(() => {
+    console.log('Video can play through:', videoName);
     setLoadProgress(100);
+    isLoadingRef.current = false;
     // Add a small delay before hiding the loader to show 100%
     setTimeout(() => {
       setIsLoading(false);
-    }, 300);
-  }, []);
+    }, 500);
+  }, [videoName]);
 
   const handleError = useCallback(() => {
+    console.error('Error loading video:', src, videoName);
     setHasError(true);
     setIsLoading(false);
-    console.error('Error loading video:', src);
-  }, [src]);
+    isLoadingRef.current = false;
+  }, [src, videoName]);
 
   useEffect(() => {
+    // Reset state when src changes
+    setIsLoading(true);
+    isLoadingRef.current = true;
+    setLoadProgress(0);
+    setHasError(false);
+    
     const video = videoRef.current;
     if (video) {
       video.muted = true;
@@ -58,17 +69,30 @@ export function BackgroundVideo({ src, settings, className = "", videoName = "Vi
       // Add event listeners for loading progress
       video.addEventListener('loadstart', handleLoadStart);
       video.addEventListener('progress', handleProgress);
+      video.addEventListener('loadedmetadata', () => {
+        console.log('Video metadata loaded:', videoName);
+        setLoadProgress(10);
+      });
+      video.addEventListener('loadeddata', () => {
+        console.log('Video data loaded:', videoName);
+        setLoadProgress(30);
+      });
+      video.addEventListener('canplay', () => {
+        console.log('Video can start playing:', videoName);
+        setLoadProgress(70);
+      });
       video.addEventListener('canplaythrough', handleCanPlayThrough);
-      video.addEventListener('canplay', handleCanPlayThrough); // Also listen for canplay
       video.addEventListener('error', handleError);
       
       // Add timeout to prevent getting stuck
       const timeout = setTimeout(() => {
-        if (isLoading) {
+        if (isLoadingRef.current) {
+          console.log('Video loading timeout, forcing completion:', videoName);
           setLoadProgress(100);
+          isLoadingRef.current = false;
           setTimeout(() => setIsLoading(false), 200);
         }
-      }, 8000); // 8 second timeout
+      }, 5000); // 5 second timeout
       
       // Start loading
       video.load();
