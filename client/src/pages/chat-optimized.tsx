@@ -624,7 +624,8 @@ export default function ChatOptimized() {
 
   return (
     <div 
-      className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative"
+      className="h-screen flex flex-col overflow-hidden relative"
+      style={{ background: 'transparent' }}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}

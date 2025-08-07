@@ -61,7 +61,7 @@ export default function LoginOptimized() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'transparent' }}>
       <Card className="w-full max-w-md bg-slate-800 border-slate-700">
         <CardContent className="p-6">
           <div className="text-center mb-6">

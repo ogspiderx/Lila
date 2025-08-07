@@ -89,7 +89,7 @@ function App() {
         Your browser does not support the video tag.
       </video>
       
-      <div className="min-h-screen text-foreground relative z-10">
+      <div className="min-h-screen text-foreground relative z-10" style={{ background: 'transparent' }}>
         <Router />
       </div>
     </QueryClientProvider>
