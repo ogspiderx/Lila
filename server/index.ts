@@ -58,6 +58,9 @@ app.use(compression({
   }
 }));
 
+// Serve static assets
+app.use('/attached_assets', express.static('attached_assets'));
+
 // Body parsing with size limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));

@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { LogOut, Send, Paperclip, X, Reply } from "lucide-react";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { TypingIndicator } from "@/components/ui/typing-indicator";
+import { BackgroundVideo } from "@/components/ui/background-video";
+import { BackgroundSelector } from "@/components/ui/background-selector";
+import { useBackground } from "@/hooks/use-background";
 
 import { useOptimizedWebSocket } from "@/hooks/use-optimized-websocket";
 import { useTypingIndicator } from "@/hooks/use-typing-indicator";
@@ -36,6 +39,7 @@ export default function ChatOptimized() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isUserScrolledUpRef = useRef<boolean>(false);
   const [, setLocation] = useLocation();
+  const { currentBackground } = useBackground();
 
   const {
     isConnected,
@@ -630,8 +634,15 @@ export default function ChatOptimized() {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      {/* Background video */}
+      {currentBackground && (
+        <div className="absolute inset-0 z-0">
+          <BackgroundVideo src={currentBackground} className="opacity-30" />
+          <div className="absolute inset-0 bg-slate-900/60"></div>
+        </div>
+      )}
       {/* Enhanced header with glass effect */}
-      <header className="glass-card border-b border-slate-700/50 px-6 py-4 flex items-center justify-between backdrop-blur-xl bg-slate-800/80">
+      <header className="glass-card border-b border-slate-700/50 px-6 py-4 flex items-center justify-between backdrop-blur-xl bg-slate-800/80 relative z-10">
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">💬</span>
@@ -655,6 +666,7 @@ export default function ChatOptimized() {
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white font-semibold text-sm border-2 border-slate-500">
             {currentUser.username.charAt(0).toUpperCase()}
           </div>
+          <BackgroundSelector />
           <Button
             variant="ghost"
             size="sm"
@@ -729,7 +741,7 @@ export default function ChatOptimized() {
         </div>
 
         {/* Enhanced input form */}
-        <form onSubmit={handleSubmit} className="border-t border-slate-700/30 p-6 bg-slate-800/50 backdrop-blur-sm">
+        <form onSubmit={handleSubmit} className="border-t border-slate-700/30 p-6 bg-slate-800/50 backdrop-blur-sm relative z-10">
           {/* Reply preview */}
           {replyingTo && (
             <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
