@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Image, X, Settings, RotateCcw, Palette } from 'lucide-react';
+import { Image, X, Settings, RotateCcw, Palette, Download } from 'lucide-react';
 import { useBackground } from '@/hooks/use-background';
 
 export function BackgroundSelector() {
@@ -30,6 +30,7 @@ export function BackgroundSelector() {
     getCurrentColors
   } = useBackground();
   const [showCustomization, setShowCustomization] = useState(false);
+  const [loadingVideo, setLoadingVideo] = useState<string | null>(null);
 
   const currentBackgroundInfo = backgrounds.find(bg => bg.url === currentBackground);
   const currentColors = getCurrentColors();
@@ -69,8 +70,11 @@ export function BackgroundSelector() {
                   setBackground(null);
                   updateSettings({ lightMode: true, autoPickColors: true });
                 } else {
+                  setLoadingVideo(bg.url || '');
                   setBackground(bg.url);
                   updateSettings({ lightMode: false });
+                  // Clear loading state after a delay to allow the video to start loading
+                  setTimeout(() => setLoadingVideo(null), 1000);
                 }
               }}
               className={`cursor-pointer hover:bg-slate-700 ${
@@ -81,9 +85,16 @@ export function BackgroundSelector() {
             >
               <div className="flex items-center w-full">
                 <div className="w-4 h-4 mr-2 bg-emerald-500/20 rounded flex items-center justify-center">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                  {loadingVideo === bg.url ? (
+                    <Download className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
+                  ) : (
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                  )}
                 </div>
                 <span className="font-medium">{bg.name}</span>
+                {loadingVideo === bg.url && (
+                  <span className="ml-auto text-xs text-emerald-400">Loading...</span>
+                )}
               </div>
               <span className="text-xs text-slate-400 ml-6">{bg.description}</span>
             </DropdownMenuItem>
