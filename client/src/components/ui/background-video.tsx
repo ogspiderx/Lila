@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
+import type { BackgroundSettings } from '@/hooks/use-background';
 
 interface BackgroundVideoProps {
   src: string;
+  settings: BackgroundSettings;
   className?: string;
 }
 
-export function BackgroundVideo({ src, className = "" }: BackgroundVideoProps) {
+export function BackgroundVideo({ src, settings, className = "" }: BackgroundVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -26,11 +28,22 @@ export function BackgroundVideo({ src, className = "" }: BackgroundVideoProps) {
     }
   }, [src]);
 
+  const videoStyle = {
+    opacity: settings.opacity / 100,
+    filter: `
+      blur(${settings.blur}px) 
+      brightness(${settings.brightness}%) 
+      contrast(${settings.contrast}%) 
+      saturate(${settings.saturation}%)
+    `.trim()
+  };
+
   return (
     <video
       ref={videoRef}
       src={src}
-      className={`absolute inset-0 w-full h-full object-cover ${className}`}
+      style={videoStyle}
+      className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${className}`}
       muted
       loop
       autoPlay

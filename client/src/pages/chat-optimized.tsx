@@ -39,7 +39,7 @@ export default function ChatOptimized() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isUserScrolledUpRef = useRef<boolean>(false);
   const [, setLocation] = useLocation();
-  const { currentBackground } = useBackground();
+  const { currentBackground, settings } = useBackground();
 
   const {
     isConnected,
@@ -637,8 +637,8 @@ export default function ChatOptimized() {
       {/* Background video */}
       {currentBackground && (
         <div className="absolute inset-0 z-0">
-          <BackgroundVideo src={currentBackground} className="opacity-30" />
-          <div className="absolute inset-0 bg-slate-900/60"></div>
+          <BackgroundVideo src={currentBackground} settings={settings} />
+          <div className="absolute inset-0 bg-slate-900/40"></div>
         </div>
       )}
       {/* Enhanced header with glass effect */}

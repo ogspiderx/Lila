@@ -37,6 +37,7 @@ The application follows a monorepo structure, separating client, server, and sha
     *   Custom green highlight for text selection.
     *   Desktop notifications that trigger when the tab is not focused, with permission management and auto-close features.
     *   Notification sounds that respect user settings and play only when the tab is not focused.
+    *   **Video Background System**: Customizable Totoro-themed video backgrounds with full controls for opacity, blur, brightness, contrast, and saturation. Settings persist in localStorage with real-time preview.
 
 ## External Dependencies
 
