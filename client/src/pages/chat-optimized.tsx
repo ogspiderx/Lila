@@ -667,7 +667,6 @@ export default function ChatOptimized() {
           </Button>
         </div>
       </header>
-
       {/* Drag and drop overlay */}
       {isDragOver && (
         <div className="absolute inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center">
@@ -680,7 +679,6 @@ export default function ChatOptimized() {
           </div>
         </div>
       )}
-
       {/* Enhanced messages area */}
       <div className="flex-1 overflow-hidden flex flex-col relative">
         {/* Subtle background pattern */}
@@ -730,7 +728,7 @@ export default function ChatOptimized() {
         </div>
 
         {/* Enhanced input form */}
-        <form onSubmit={handleSubmit} className="border-t border-slate-700/30 p-6 bg-slate-800/50 backdrop-blur-sm">
+        <form onSubmit={handleSubmit} className="border-t border-slate-700/30 p-6 backdrop-blur-sm pl-[24px] pr-[24px] pt-[24px] pb-[24px] mt-[0px] mb-[0px] ml-[0px] mr-[0px] bg-[#00000000]">
           {/* Reply preview */}
           {replyingTo && (
             <div className="mb-3 p-3 bg-slate-800 rounded-lg border border-slate-600">
