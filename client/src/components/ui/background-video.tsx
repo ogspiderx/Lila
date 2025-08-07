@@ -27,15 +27,18 @@ export function BackgroundVideo({ src, settings, className = "", videoName = "Vi
       const buffered = video.buffered.end(video.buffered.length - 1);
       const duration = video.duration;
       if (duration > 0) {
-        const progress = (buffered / duration) * 100;
+        const progress = Math.min((buffered / duration) * 100, 95); // Cap at 95% to avoid getting stuck
         setLoadProgress(progress);
       }
     }
   }, []);
 
   const handleCanPlayThrough = useCallback(() => {
-    setIsLoading(false);
     setLoadProgress(100);
+    // Add a small delay before hiding the loader to show 100%
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
   }, []);
 
   const handleError = useCallback(() => {
@@ -56,7 +59,16 @@ export function BackgroundVideo({ src, settings, className = "", videoName = "Vi
       video.addEventListener('loadstart', handleLoadStart);
       video.addEventListener('progress', handleProgress);
       video.addEventListener('canplaythrough', handleCanPlayThrough);
+      video.addEventListener('canplay', handleCanPlayThrough); // Also listen for canplay
       video.addEventListener('error', handleError);
+      
+      // Add timeout to prevent getting stuck
+      const timeout = setTimeout(() => {
+        if (isLoading) {
+          setLoadProgress(100);
+          setTimeout(() => setIsLoading(false), 200);
+        }
+      }, 8000); // 8 second timeout
       
       // Start loading
       video.load();
@@ -73,7 +85,9 @@ export function BackgroundVideo({ src, settings, className = "", videoName = "Vi
         video.removeEventListener('loadstart', handleLoadStart);
         video.removeEventListener('progress', handleProgress);
         video.removeEventListener('canplaythrough', handleCanPlayThrough);
+        video.removeEventListener('canplay', handleCanPlayThrough);
         video.removeEventListener('error', handleError);
+        clearTimeout(timeout);
       };
     }
   }, [src, handleLoadStart, handleProgress, handleCanPlayThrough, handleError]);
