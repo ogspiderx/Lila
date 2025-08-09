@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack real-time chat application featuring a React frontend with TypeScript, an Express.js backend, PostgreSQL database with Drizzle ORM, and WebSocket integration for real-time messaging. The UI is built using shadcn/ui components with Tailwind CSS for styling. Key capabilities include real-time typing indicators, message editing and deletion, personalized welcome screens, and desktop notifications. The project aims to provide a robust, modern chat experience with a focus on performance, security, and user experience.
+This is a full-stack real-time chat application featuring a React frontend with TypeScript, an Express.js backend, and WebSocket integration for real-time messaging. The application uses in-memory storage for simplicity (though Drizzle ORM is configured for future database integration). The UI is built using shadcn/ui components with Tailwind CSS for styling. Key capabilities include real-time typing indicators, message editing and deletion, file attachments, message replies, personalized welcome screens, desktop notifications, and customizable Totoro-themed video backgrounds. The project aims to provide a robust, modern chat experience with a focus on performance, security, and user experience.
 
 ## User Preferences
 
@@ -14,20 +14,21 @@ The application follows a monorepo structure, separating client, server, and sha
 
 **Technical Implementations & Design Patterns:**
 
-*   **Frontend**: React with TypeScript, Vite as build tool.
-*   **Backend**: Express.js server with TypeScript.
-*   **Storage**: In-memory storage for temporary message storage. All data resets when server restarts.
-*   **Real-time Communication**: WebSockets for instant message delivery.
-*   **Styling**: Tailwind CSS with shadcn/ui component library.
-*   **State Management**: TanStack Query for server state management.
-*   **Authentication**: Secure JWT tokens with bcrypt hashing, rate limiting, and comprehensive server-side validation using Zod schemas. WebSocket connections require JWT authentication.
-*   **Message Features**: Real-time messaging with typing indicators, message editing, message deletion (users can only delete their own messages), file attachments, and message replies.
+*   **Frontend**: React 18 with TypeScript, Vite as build tool and development server.
+*   **Backend**: Express.js server with TypeScript, integrated with Vite for development.
+*   **Storage**: In-memory storage implementation with IStorage interface. Data resets when server restarts. Pre-configured test users (wale/xiu with password: password123).
+*   **Real-time Communication**: WebSockets (`ws` library) for instant message delivery, typing indicators, and status updates.
+*   **Styling**: Tailwind CSS with shadcn/ui component library, Framer Motion for animations.
+*   **State Management**: TanStack Query v5 for server state management and caching.
+*   **Authentication**: JWT tokens with bcrypt password hashing (12 rounds), rate limiting, and comprehensive server-side validation using Zod schemas. WebSocket connections require JWT authentication.
+*   **Message Features**: Real-time messaging with typing indicators, message editing, message deletion (users can only delete their own messages), file attachments (up to 300MB), message replies, delivery status tracking, and seen receipts.
+*   **File Handling**: Multer for file uploads, stored in `uploads/` directory with proper validation.
 *   **Data Flow**:
-    *   **Authentication**: User submits credentials, server validates, client stores session, redirects to chat.
-    *   **Message Flow**: Client fetches history via REST, real-time messages via WebSocket. New messages sent via WebSocket to all connected clients.
-    *   **Client-Server Communication**: REST API for auth and history; WebSocket for real-time; TanStack Query for caching and sync.
-*   **Performance Optimization**: Server-side caching (database queries, user authentication), HTTP compression (Gzip), client-side optimization with React Query, limited database queries, and component memoization.
-*   **Security**: Helmet.js for security headers (Content Security Policy), progressive rate limiting, input validation, WebSocket security, strong password hashing, and data sanitization.
+    *   **Authentication**: User submits credentials, server validates with bcrypt, client stores JWT, redirects to chat.
+    *   **Message Flow**: Client fetches history via REST API, real-time messages via WebSocket with message normalization.
+    *   **Client-Server Communication**: REST API for auth and history; WebSocket for real-time with message batching and optimization.
+*   **Performance Optimization**: Server-side caching (user authentication), HTTP compression (Gzip), client-side optimization with React Query, WebSocket message batching, and component memoization.
+*   **Security**: Helmet.js for security headers (CSP), progressive rate limiting (5 attempts then slower), input validation with Zod, WebSocket JWT authentication, bcrypt password hashing, file upload validation, and data sanitization.
 *   **UI/UX Decisions**:
     *   Dark theme with emerald green accents and smooth transitions.
     *   Custom font integration (Dancing Script, Poppins, Inter) and professional typography hierarchy.
